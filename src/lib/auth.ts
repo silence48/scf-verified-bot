@@ -26,15 +26,11 @@ const authConfig: NextAuthConfig = {
       // We define a custom profile callback to ensure we have "id" as a string
       profile(profile: DiscordProfile) {
         // Return an object that has the shape of our DiscordUser
+        
         return {
-          id: profile.id,
-          name: profile.username,
-          email: profile.email ?? "",
-          image: profile.image_url,
-          discriminator: profile.discriminator,
-          // For "emailVerified", we can just default to null if we like:
-          emailVerified: profile.email_verified ?? null,
-        } satisfies DiscordUser;
+          discordId: profile.id,
+          ...profile
+        };
       },
     }),
   ],
@@ -50,15 +46,9 @@ const authConfig: NextAuthConfig = {
      */
     jwt({ token, user }) {
       if (user) {
-        // user is typed as `User | AdapterUser`, but we know from above it's shaped like our DiscordUser
-        const discordUser = user as DiscordUser;
-        token.user = {
-          id: discordUser.id,
-          name: discordUser.name,
-          email: discordUser.email ?? "",
-          image: discordUser.image,
-          discriminator: discordUser.discriminator,
-          emailVerified: discordUser.emailVerified ?? null,
+        // User is coming from the Discord OAuth profile
+        token.user = user as  DiscordProfile & {
+          discordId: string;
         };
       }
       return token;
@@ -71,7 +61,12 @@ const authConfig: NextAuthConfig = {
       if (token.user) {
         // "session.user" might be typed as an AdapterUser, which requires "emailVerified."
         // By including it in our custom user type, there's no conflict now.
-        session.user = token.user;
+        session.user = {
+          ...token.user,
+          discordId: token.user.discordId,
+          email: token.user.email ?? "",
+          emailVerified: token.user.verified ? new Date(Date.now()) : null,
+          };
       }
       return session;
     },
@@ -86,12 +81,17 @@ export const { auth, handlers, signIn, signOut } = NextAuth(authConfig);
  */
 declare module "next-auth" {
   interface Session {
-    user: DiscordUser;
+    user: DiscordProfile & {
+      discordId: string;
+    };
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
-    user?: DiscordUser;
+    user?: DiscordProfile & {
+      discordId: string;
+    };
+    
   }
 }

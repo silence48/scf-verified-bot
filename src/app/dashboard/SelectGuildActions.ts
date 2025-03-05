@@ -1,8 +1,8 @@
 // src/app/dashboard/SelectGuildActions.ts
 "use server";
 
+import { getClient } from "@/discord-bot/client";
 import { auth } from "@/lib/auth";
-import { client } from "@/lib/Discord-Client";
 
 interface DetailedGuild {
   id: string;
@@ -22,6 +22,7 @@ export async function fetchGuildDetailsAction(
   if (!session) {
     throw new Error("Not authenticated");
   }
+      const client = await getClient();
   // Optional: check if session.user.id in allowedAdminIds.
 
   if (!guildId) return null;

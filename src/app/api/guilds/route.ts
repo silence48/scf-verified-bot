@@ -1,11 +1,12 @@
 // app/api/guilds/route.ts
 import { NextResponse } from "next/server";
-import { client } from "@/lib/Discord-Client";
+import { getClient } from "@/discord-bot/client";
 // ^ If your `bot.ts` is at project root, or "lib/bot.ts", adapt the path
 
 export async function GET() {
   try {
     // The client should be connected & have a cache
+    const client = await getClient();
     const guilds = client.guilds.cache.map((g) => ({
       id: g.id,
       name: g.name,
@@ -19,3 +20,4 @@ export async function GET() {
     );
   }
 }
+ 

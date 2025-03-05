@@ -9,29 +9,43 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@next/bundle-analyzer": "^15.2.1",
     "@radix-ui/themes": "^3.2.0",
-    "@stellar/design-system": "^3.0.0",
+    "@stellar/stellar-sdk": "^13.1.0",
+    "@tailwindcss/postcss": "^4.0.9",
+    "bufferutil": "^4.0.9",
+    "class-variance-authority": "^0.7.1",
     "discord.js": "^14.17.3",
     "dotenv": "^16.4.7",
-    "next": "15.1.6",
+    "lucide-react": "^0.477.0",
+    "next": "^15.2.2-canary.1",
     "next-auth": "^5.0.0-beta.25",
+    "node-loader": "^2.1.0",
+    "postcss": "^8.5.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7",
+    "tailwind-merge": "^3.0.2",
     "zlib-sync": "^0.1.9"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@types/react": "19.0.3",
+    "@types/react-dom": "19.0.3",
     "eslint": "^9",
-    "eslint-config-next": "15.1.6",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
+    "eslint-config-next": "15.2.1",
+    "tailwindcss": "^4",
     "typescript": "^5"
   },
   "overrides": {
     "react-copy-to-clipboard": "github:silence48/react-copy-to-clipboard",
-    "undici": "^6.20.1"
+    "undici": "^6.20.1",
+    "@types/react": "19.0.3",
+    "@types/react-dom": "19.0.3",
+    "next": "^15.2.2-canary.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   }
 }

@@ -45,3 +45,8 @@ combine.cjs
 combined_files.txt
 .env.local
 !example.env
+src/discord-bot/old/
+.vscode
+!src/discord-bot/old/old-short.ts
+analyze
+*.old

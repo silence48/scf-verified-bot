@@ -1,0 +1,136 @@
+/* "@/css/navbar.css" */
+
+/* The main navbar wrapper */
+@import "tailwindcss";
+
+@reference "../app/globals.css";
+@layer components {
+.navbar {
+    @apply bg-[#1a1d29]/80 backdrop-blur-sm border-b border-gray-800/60 py-4 px-6 mb-6;
+  }
+  
+  /* The container for layout and spacing */
+  .navbar-container {
+    @apply container mx-auto flex justify-between items-center;
+  }
+  
+  /* The site title (e.g., 'SCF Roles') */
+  .navbar-title {
+    @apply text-xl font-schabo tracking-wide text-white/90;
+  }
+  
+  /* Desktop menu container, hidden on smaller screens */
+  .navbar-desktop-menu {
+    @apply hidden md:flex items-center space-x-4;
+  }
+  
+  /* Generic link styling for the nav (e.g. 'Members', 'Metrics') */
+  .navbar-link {
+    @apply text-white/80 hover:text-white transition-colors;
+  }
+  
+  /* Button used for user login (yellow) */
+  .navbar-login-button {
+    @apply bg-yellow-400 hover:bg-yellow-300 text-black;
+  }
+  
+  /* Dropdown trigger for a logged-in user’s profile */
+  .navbar-user-button {
+    @apply p-0 h-auto hover:bg-transparent;
+  }
+  
+  /* Container for user avatar + name */
+  .navbar-user-wrapper {
+    @apply flex items-center gap-2;
+  }
+  
+  /* Avatar styling for user (smaller) */
+  .navbar-avatar {
+    @apply h-8 w-8 border border-gray-700/50;
+  }
+  
+  /* Fallback styling if the avatar image is missing */
+  .navbar-avatar-fallback {
+    @apply bg-[#1e2235] text-white;
+  }
+  
+  /* Container for user’s text info (name, Discord username) */
+  .navbar-user-info {
+    @apply flex flex-col items-start text-sm;
+  }
+  
+  /* The chevron icon next to user's name (down arrow) */
+  .navbar-user-chevron {
+    @apply h-4 w-4 text-gray-300 ml-1;
+  }
+  
+  /* Dropdown menu content for user profile actions */
+  .navbar-dropdown-content {
+    @apply w-56 bg-[#1a1d29] border-gray-800/60 text-white shadow-lg;
+  }
+  
+  /* Header within the dropdown (the 'Signed in as ...' area) */
+  .navbar-dropdown-header {
+    @apply px-2 py-1.5 text-sm font-medium text-gray-300 border-b border-gray-800/60;
+  }
+  
+  /* Each dropdown item (Profile, Settings, Logout) */
+  .navbar-dropdown-item {
+    @apply hover:bg-[#1e2235]/80 focus:bg-[#1e2235]/80 text-gray-300 focus:text-white cursor-pointer;
+  }
+  
+  /* The thin separator line in the dropdown */
+  .navbar-dropdown-separator {
+    @apply bg-gray-800/60;
+  }
+  
+  /* Mobile-only menu trigger button */
+  .navbar-mobile-trigger {
+    @apply md:hidden;
+  }
+  
+  /* The side drawer content area for mobile menu */
+  .navbar-sheet-content {
+    @apply w-[300px] sm:w-[400px] bg-[#1a1d29]/95 border-gray-800/60;
+  }
+  
+  /* Title styling in the sheet content (the 'Menu' header) */
+  .navbar-sheet-title {
+    @apply text-white font-schabo;
+  }
+  
+  /* The container that holds the mobile menu links or user info */
+  .navbar-sheet-menu {
+    @apply flex flex-col space-y-4 mt-4;
+  }
+  
+  /* The user section in the mobile sheet, separated by a border */
+  .navbar-sheet-user-section {
+    @apply border-t border-gray-800/60 pt-4 mt-2;
+  }
+  
+  /* Row with avatar + user name inside the mobile sheet */
+  .navbar-sheet-user-row {
+    @apply flex items-center gap-3 mb-4;
+  }
+  
+  /* Slightly larger avatar for the mobile sheet */
+  .navbar-avatar-large {
+    @apply h-10 w-10 border border-gray-700/50;
+  }
+  
+  /* The fallback styling for the larger avatar */
+  .navbar-avatar-fallback-large {
+    @apply bg-[#1e2235] text-white;
+  }
+  
+  /* The user info text in the mobile sheet (name + smaller text) */
+  .navbar-user-full-info {
+    @apply flex flex-col;
+  }
+  
+  /* Outline button in the sheet (Profile, Settings, Logout) */
+  .navbar-sheet-button {
+    @apply w-full justify-start gap-2 border-gray-700/50 bg-[#0c0e14]/80 hover:bg-[#1e2235]/80 hover:text-white;
+  }
+}

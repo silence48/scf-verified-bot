@@ -1,0 +1,60 @@
+/* sidebar.css
+-------------------------------------------------------------------------
+Centralizes repeated TailwindCSS styles from the Sidebar component
+-------------------------------------------------------------------------
+*/
+@import "tailwindcss";
+
+@reference "../app/globals.css";
+@layer components {
+/* Main sidebar container */
+.sidebar {
+    @apply w-64 bg-[#1a1d29]/80 border-r border-gray-800/60 p-4 hidden md:block;
+  }
+  
+  /* Title above filters */
+  .sidebar-title {
+    @apply text-lg font-schabo tracking-wide text-white/90 mb-4;
+  }
+  
+  /* Search wrapper + icon + input */
+  .search-wrapper {
+    @apply mb-6;
+    position: relative;
+  }
+  
+  .search-icon {
+    @apply absolute left-2 top-2.5 h-4 w-4 text-gray-400;
+  }
+  
+  .search-input {
+    @apply pl-8 bg-[#0c0e14]/80 border-gray-700/50 focus-visible:border-gray-600 rounded-lg;
+  }
+  
+  /* Role heading + list + item grouping */
+  .role-heading {
+    @apply text-sm font-medium text-gray-400 uppercase tracking-wider;
+  }
+  
+  .role-list {
+    @apply space-y-3;
+  }
+  
+  .role-item {
+    @apply flex items-center space-x-2;
+  }
+  
+  /* Role checkbox + label */
+  .role-checkbox {
+    @apply border-gray-800/60 data-[state=checked]:bg-[#1e2235] data-[state=checked]:text-white;
+  }
+  
+  .role-label {
+    @apply text-sm cursor-pointer flex items-center gap-2;
+  }
+  
+  /* Circle indicator for color-coded roles */
+  .role-circle {
+    @apply w-2 h-2 rounded-full;
+  }
+}

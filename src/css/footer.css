@@ -1,0 +1,46 @@
+/* footer.css
+--------------------------------------------------------------------------------
+TailwindCSS file centralizing repeated Footer styles.
+Replace all the inline utilities with these classes.
+--------------------------------------------------------------------------------
+*/
+@import "tailwindcss";
+
+@reference "../app/globals.css";
+@layer components {
+
+/* Footer container element */
+.footer {
+  @apply mt-12 py-6 border-t border-gray-800/60;
+}
+
+/* Inner .container */
+.footer-inner {
+  @apply container flex flex-col sm:flex-row items-center justify-between gap-4;
+}
+
+/* Link group container */
+.footer-links {
+  @apply flex items-center gap-8;
+}
+
+/* Shared link style (gray text w/ hover) */
+.footer-link {
+  @apply text-gray-400 hover:text-white transition-colors;
+}
+
+/* Link style with icons + text side by side */
+.footer-link-icon {
+  @apply text-gray-400 hover:text-white transition-colors flex items-center gap-2;
+}
+
+/* Icon size */
+.footer-icon {
+  @apply h-4 w-4;
+}
+
+/* Small text at the bottom right */
+.footer-copyright {
+  @apply text-sm text-gray-500;
+}
+}

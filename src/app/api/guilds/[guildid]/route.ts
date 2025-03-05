@@ -1,14 +1,13 @@
 // app/api/discord/guilds/[guildId]/route.ts
 import { NextResponse } from "next/server";
-import { client } from "@/lib/Discord-Client";
+import { getClient } from "@/discord-bot/client";
 
-interface Params {
-  guildId: string;
-}
-
-export async function GET(_req: Request, { params }: { params: Params }) {
+export async function GET(_req: Request, { params }: { params: Promise<{ guildId: string }> }
+) {
   try {
-    const guild = client.guilds.cache.get(params.guildId);
+    const client = await getClient();
+    const { guildId }= await params;
+    const guild = client.guilds.cache.get(guildId);
     if (!guild) {
       return NextResponse.json({ error: "Guild not found" }, { status: 404 });
     }
@@ -17,7 +16,7 @@ export async function GET(_req: Request, { params }: { params: Params }) {
 
     const members = guild.members.cache.map((m) => ({
       id: m.id,
-      name: m.user.username,
+      name: m.user.username, 
     }));
 
     return NextResponse.json({
