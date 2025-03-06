@@ -289,6 +289,7 @@ export async function getRoleCounts(guildId: string): Promise<{
   navigator: number;
   pilot: number;
 }> {
+  console.log(`[getRoleCounts] with guildId ${guildId}`);
   const db = await getDatabase();
   
   // Example naive queries. Adjust to match how you store roles in `user_roles`, etc.
@@ -356,6 +357,7 @@ export interface MemberInfo {
  */
 export async function getAllMembersForGuild(guildId: string): Promise<MemberInfo[]> {
   const db = await getDatabase();
+  console.log(`[getAllMembersForGuild] with guildId ${guildId}`);
   // 1) fetch basic member info from 'members'
   const rows = await db.all<{
     member_id: string;

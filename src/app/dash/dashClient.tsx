@@ -78,7 +78,8 @@ export default function MembersDashboardClient({
       </div>
 
       {/* Role Stats (client side) */}
-      <RoleStats
+      {/*
+<RoleStats
         activeFilters={activeFilters}
         onFilterToggleAction={onFilterToggle} // local ephemeral toggler
         verifiedCount={roleStats.verified}
@@ -87,12 +88,17 @@ export default function MembersDashboardClient({
         pilotCount={roleStats.pilot}
       />
 
+      */}
+      
+
       {/* Members Table (client side) */}
+      {/* 
       <UserTable
         activeFilters={activeFilters}
         onFilterToggleAction={onFilterToggle}
         members={members}
       />
+      */}
 
       <Footer />
     </div>

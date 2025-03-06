@@ -217,3 +217,701 @@
     --ring: 212.7 26.8% 83.9%;
   }
 }
+
+@utility bg-muted {
+  background-color: hsl(var(--muted));
+}
+@utility border-border {
+  border-color: hsl(var(--border));
+}
+
+
+
+
+
+@layer components {
+  
+/* Footer container element */
+.footer {
+  @apply mt-12 py-6 border-t border-gray-800/60;
+}
+
+/* Inner .container */
+.footer-inner {
+  @apply container flex flex-col sm:flex-row items-center justify-between gap-4;
+}
+
+/* Link group container */
+.footer-links {
+  @apply flex items-center gap-8;
+}
+
+/* Shared link style (gray text w/ hover) */
+.footer-link {
+  @apply text-gray-400 hover:text-white transition-colors;
+}
+
+/* Link style with icons + text side by side */
+.footer-link-icon {
+  @apply text-gray-400 hover:text-white transition-colors flex items-center gap-2;
+}
+
+/* Icon size */
+.footer-icon {
+  @apply h-4 w-4;
+}
+
+/* Small text at the bottom right */
+.footer-copyright {
+  @apply text-sm text-gray-500;
+}
+/*============================================
+Avatar
+============================================*/
+.ui-avatar {
+  @apply relative flex w-8 h-8 shrink-0 overflow-hidden rounded-full;
+}
+.ui-avatar-image {
+  @apply aspect-square w-full h-full;
+}
+.ui-avatar-fallback {
+  @apply bg-[var(--background)]/80 flex w-full h-full items-center justify-center rounded-full;
+}
+
+/*============================================
+Badge
+============================================*/
+.ui-badge {
+  @apply inline-flex items-center justify-center rounded-md border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 gap-1 transition-[color,box-shadow] overflow-hidden;
+  @apply [&>svg]:size-3 [&>svg]:pointer-events-none;
+  @apply focus-visible:border-ring focus-visible:ring-ring focus-visible:ring-black/50 focus-visible:ring-3;
+  @apply aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive;
+}
+/* Variant classes (e.g. .ui-badge--default, .ui-badge--secondary, etc.) */
+.ui-badge--default {
+  @apply border-transparent bg-primary text-primary-foreground;
+}
+.ui-badge--secondary {
+  @apply border-transparent bg-secondary text-secondary-foreground;
+}
+.ui-badge--destructive {
+  @apply border-transparent bg-destructive text-white;
+}
+.ui-badge--outline {
+  @apply text-foreground;
+}
+
+/*============================================
+Button
+============================================*/
+.ui-button-base {
+  @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-[color,box-shadow] disabled:pointer-events-none disabled:opacity-50 shrink-0 outline-none;
+  @apply [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4;
+  @apply focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px];
+  @apply aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive;
+}
+/* Variant classes for Button */
+.ui-button--default {
+  @apply bg-primary text-primary-foreground shadow-xs hover:bg-primary/90;
+}
+.ui-button--destructive {
+  @apply bg-destructive text-white shadow-xs hover:bg-destructive/90;
+}
+.ui-button--outline {
+  @apply border border-input bg-background shadow-xs hover:bg-accent hover:text-accent-foreground;
+}
+.ui-button--secondary {
+  @apply bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80;
+}
+.ui-button--ghost {
+  @apply hover:bg-accent hover:text-accent-foreground;
+}
+.ui-button--link {
+  @apply text-primary underline-offset-4 hover:underline;
+}
+/* Size classes for Button */
+.ui-button--default-size {
+  @apply h-9 px-4 py-2;
+}
+.ui-button--sm {
+  @apply h-8 rounded-md gap-1.5 px-3;
+}
+.ui-button--lg {
+  @apply h-10 rounded-md px-6;
+}
+.ui-button--icon {
+  @apply w-9 h-9;
+}
+
+/*============================================
+Card
+============================================*/
+.ui-card {
+  @apply bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm;
+}
+.ui-card-header {
+  @apply flex flex-col gap-1.5 px-6;
+}
+.ui-card-title {
+  @apply leading-none font-semibold;
+}
+.ui-card-description {
+  @apply text-muted-foreground text-sm;
+}
+.ui-card-content {
+  @apply px-6;
+}
+.ui-card-footer {
+  @apply flex items-center px-6;
+}
+
+/*============================================
+Checkbox
+============================================*/
+.ui-checkbox {
+  @apply peer border-input data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground data-[state=checked]:border-primary;
+  @apply focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive;
+  @apply w-4 h-4 shrink-0 rounded-[4px] border shadow-xs transition-shadow outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50;
+}
+.ui-checkbox-indicator {
+  @apply flex items-center justify-center text-current transition-none;
+}
+
+/*============================================
+Dropdown Menu
+============================================*/
+.ui-dropdown-menu-content {
+  @apply bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95;
+  @apply data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2;
+  @apply z-50 min-w-[8rem] overflow-hidden rounded-md border p-1 shadow-md;
+}
+.ui-dropdown-menu-item {
+  @apply focus:bg-accent focus:text-accent-foreground relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none;
+  @apply data-[disabled]:pointer-events-none data-[disabled]:opacity-50;
+}
+.ui-dropdown-menu-checkbox-item {
+  @apply focus:bg-accent focus:text-accent-foreground relative flex cursor-default items-center gap-2 rounded-sm py-1.5 pr-2 pl-8 text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50;
+  @apply [&_svg]:pointer-events-none [&_svg]:shrink-0;
+}
+.ui-dropdown-menu-radio-item {
+  @apply focus:bg-accent focus:text-accent-foreground relative flex cursor-default items-center gap-2 rounded-sm py-1.5 pr-2 pl-8 text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50;
+  @apply [&_svg]:pointer-events-none [&_svg]:shrink-0;
+}
+.ui-dropdown-menu-separator {
+  @apply bg-border -mx-1 my-1 h-px;
+}
+.ui-dropdown-menu-label {
+  @apply px-2 py-1.5 text-sm font-medium;
+}
+.ui-dropdown-menu-shortcut {
+  @apply text-muted-foreground ml-auto text-xs tracking-widest;
+}
+.ui-dropdown-menu-sub-content {
+  @apply bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95;
+  @apply data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2;
+  @apply z-50 min-w-[8rem] overflow-hidden rounded-md border p-1 shadow-lg;
+}
+
+/*============================================
+Input
+============================================*/
+.ui-input {
+  @apply border-input file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground;
+  @apply flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none;
+  @apply file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium;
+  @apply disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm;
+  @apply focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px];
+  @apply aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive;
+}
+
+/*============================================
+Label
+============================================*/
+.ui-label {
+  @apply flex items-center gap-2 text-sm leading-none font-medium select-none;
+  @apply group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50;
+}
+
+/*============================================
+Pagination
+============================================*/
+.ui-pagination {
+  @apply mx-auto flex w-full justify-center;
+}
+.ui-pagination-content {
+  @apply flex flex-row items-center gap-1;
+}
+.ui-pagination-ellipsis {
+  @apply flex w-9 h-9 items-center justify-center;
+}
+
+/*============================================
+Select
+============================================*/
+.ui-select-trigger {
+  @apply border-input data-[placeholder]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive;
+  @apply flex h-9 w-full items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none;
+  @apply disabled:cursor-not-allowed disabled:opacity-50;
+  @apply [&_svg:not([class*='text-'])]:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4;
+}
+.ui-select-content {
+  @apply bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95;
+  @apply data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2;
+  @apply relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-md border shadow-md;
+}
+.ui-select-label {
+  @apply px-2 py-1.5 text-sm font-medium;
+}
+.ui-select-item {
+  @apply focus:bg-accent focus:text-accent-foreground relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none;
+  @apply data-[disabled]:pointer-events-none data-[disabled]:opacity-50;
+  @apply [&_svg:not([class*='text-'])]:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4;
+}
+.ui-select-separator {
+  @apply bg-border pointer-events-none -mx-1 my-1 h-px;
+}
+.ui-select-scroll-button {
+  @apply flex cursor-default items-center justify-center py-1;
+}
+
+/*============================================
+Sheet
+============================================*/
+.ui-sheet-overlay {
+  @apply data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/80;
+}
+.ui-sheet-content {
+  @apply bg-background data-[state=open]:animate-in data-[state=closed]:animate-out fixed z-50 flex flex-col gap-4 shadow-lg transition ease-in-out;
+}
+.ui-sheet-close {
+  @apply ring-offset-background focus:ring-ring data-[state=open]:bg-secondary absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none;
+}
+.ui-sheet-header {
+  @apply flex flex-col gap-1.5 p-4;
+}
+.ui-sheet-footer {
+  @apply mt-auto flex flex-col gap-2 p-4;
+}
+.ui-sheet-title {
+  @apply text-foreground font-semibold;
+}
+.ui-sheet-description {
+  @apply text-muted-foreground text-sm;
+}
+/* The main container wrapping the entire user table */
+.user-table {
+  @apply bg-[#1a1d29]/80 backdrop-blur-sm border border-gray-800/60 rounded-xl overflow-hidden shadow-lg;
+}
+
+/* The top section with table title and sort/search controls */
+.user-table-header {
+  @apply p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-800/60;
+}
+
+/* Heading: 'Recent Members', etc. */
+.user-table-header-title {
+  @apply text-lg font-schabo tracking-wide text-white/90;
+}
+
+/* Container around the search bar and sort dropdown */
+.user-table-header-controls {
+  @apply flex items-center gap-2 w-full sm:w-auto;
+}
+
+/* A relative wrapper for the search input icon + input itself */
+.user-table-search-wrapper {
+  @apply relative flex-grow sm:flex-grow-0;
+}
+
+/* Search icon overlaid in the input */
+.user-table-search-icon {
+  @apply absolute left-2 top-2.5 h-4 w-4 text-gray-400;
+}
+
+/* The actual search input (Tailwind form control) */
+.user-table-search-input {
+  @apply pl-8 w-full sm:w-64 bg-[#0c0e14]/80 border-gray-700/50 focus-visible:border-gray-600 rounded-lg;
+}
+
+/* The 'Sort' button in the header area */
+.user-table-sort-trigger {
+  @apply gap-1 border-gray-700/50 bg-[#0c0e14]/80 hover:bg-[#1e2235]/80 hover:text-white;
+}
+
+/* The scroll container for the table if it overflows horizontally */
+.user-table-scroller {
+  @apply overflow-x-auto;
+}
+
+/* The table heading row */
+.user-table-thead {
+  @apply border-b border-gray-800/60 text-xs text-gray-400 bg-[#12141e]/40;
+}
+
+/* A shared heading cell style. The .user-table-th-md or .user-table-th-lg
+   can add 'hidden md:table-cell' or 'hidden lg:table-cell' if needed. */
+.user-table-th {
+  @apply text-left p-4 font-medium;
+}
+
+/* Body row styling (hover, border, pointer) */
+.user-table-row {
+  @apply border-b border-gray-800/40 hover:bg-[#1e2235]/40 transition-colors cursor-pointer;
+}
+
+/* A simple table cell style. 
+   We'll make variants like .user-table-td-md for hidden on mobile, etc. */
+.user-table-td {
+  @apply p-4 text-sm text-gray-300;
+}
+
+/* The cell that contains name + avatar */
+.user-table-name-cell {
+  @apply p-4;
+}
+
+/* The user’s name in bold, subdued color */
+.user-table-name {
+  @apply font-medium text-white/90;
+}
+
+/* The small ID or secondary text under the name */
+.user-table-id {
+  @apply text-xs text-gray-400;
+}
+
+/* The cell that contains roles */
+.user-table-roles-cell {
+  @apply p-4;
+}
+
+/* The container for role badges within a cell */
+.user-table-roles-container {
+  @apply flex flex-wrap items-center gap-2;
+}
+
+/* The style for each role badge (outline variant, small text) */
+.user-table-role-badge {
+  @apply bg-[#12141e]/80 text-xs py-0.5 border-gray-700/50 hover:border-gray-600 text-white;
+}
+
+/* The small plus-button to add a new role */
+.user-table-role-add {
+  @apply h-6 w-6 hover:bg-gray-700/50 hover:text-white;
+}
+
+/* The last column with user actions (Bell, etc.) */
+.user-table-actions {
+  @apply p-4;
+}
+
+/* The container for the action buttons */
+.user-table-actions-container {
+  @apply flex items-center gap-2;
+}
+
+/* Ghost action buttons in the table (Bell, UserPlus, MoreVertical) */
+.user-table-action-btn {
+  @apply h-8 w-8 hover:bg-gray-700/50 hover:text-white;
+}
+
+/* The dropdown content for these row actions */
+.user-table-dropdown {
+  @apply bg-[#1a1d29] border-gray-800/60 text-white shadow-lg;
+}
+
+/* The dropdown menu item style */
+.user-table-dropdown-item {
+  @apply hover:bg-[#1e2235]/80 focus:bg-[#1e2235]/80 text-gray-300 focus:text-white;
+}
+
+/* The expanded row (once clicked) */
+.user-table-expanded-row {
+  @apply bg-[#1a1d29]/60;
+}
+
+/* The expanded row cell containing extra details */
+.user-table-expanded-cell {
+  @apply p-4;
+}
+
+/* A box used for user details, roles, or description */
+.user-table-detail-box {
+  @apply bg-[#12141e]/40 p-3 rounded-lg border border-gray-800/40;
+}
+
+/* Title inside these detail boxes */
+.user-table-section-title {
+  @apply text-white font-medium mb-2;
+}
+
+/* A label style for 'Joined Stellar Devs:', etc. */
+.user-table-label {
+  @apply text-gray-400;
+}
+
+/* The bottom area with pagination & items-per-page select */
+.user-table-footer {
+  @apply p-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-800/60 bg-[#12141e]/40;
+}
+
+/* A small text snippet showing how many members are shown */
+.user-table-showing {
+  @apply flex items-center gap-2 text-sm text-gray-300;
+}
+
+/* The select used for # members per page */
+.user-table-page-select-trigger {
+  @apply w-16 h-8 bg-[#0c0e14]/80 border-gray-700/50 focus:border-gray-600 text-white;
+}
+
+/* The items inside that dropdown */
+.user-table-page-select-content {
+  @apply bg-[#1a1d29] border-gray-800/60 text-white shadow-lg;
+}
+
+/* The pages themselves (1,2,3...). Usually we rely on buttonVariants but you can
+   define your own here if you want to unify them. */
+.user-table-page-link {
+  @apply hover:bg-gray-700/50 hover:text-white border-gray-700/50;
+}
+
+/* The active page styling (when isActive = true) */
+.user-table-page-link-active {
+  @apply bg-gray-700 border-gray-600 text-white;
+}
+
+/* The Ellipsis '...' link styling */
+.user-table-page-ellipsis {
+  @apply text-gray-400;
+}
+/* sidebar.css
+-------------------------------------------------------------------------
+Centralizes repeated TailwindCSS styles from the Sidebar component
+-------------------------------------------------------------------------
+*/
+
+/* Main sidebar container */
+.sidebar {
+  @apply w-64 bg-[#1a1d29]/80 border-r border-gray-800/60 p-4 hidden md:block;
+}
+
+/* Title above filters */
+.sidebar-title {
+  @apply text-lg font-schabo tracking-wide text-white/90 mb-4;
+}
+
+/* Search wrapper + icon + input */
+.search-wrapper {
+  @apply mb-6;
+  position: relative;
+}
+
+.search-icon {
+  @apply absolute left-2 top-2.5 h-4 w-4 text-gray-400;
+}
+
+.search-input {
+  @apply pl-8 bg-[#0c0e14]/80 border-gray-700/50 focus-visible:border-gray-600 rounded-lg;
+}
+
+/* Role heading + list + item grouping */
+.role-heading {
+  @apply text-sm font-medium text-gray-400 uppercase tracking-wider;
+}
+
+.role-list {
+  @apply space-y-3;
+}
+
+.role-item {
+  @apply flex items-center space-x-2;
+}
+
+/* Role checkbox + label */
+.role-checkbox {
+  @apply border-gray-800/60 data-[state=checked]:bg-[#1e2235] data-[state=checked]:text-white;
+}
+
+.role-label {
+  @apply text-sm cursor-pointer flex items-center gap-2;
+}
+
+/* Circle indicator for color-coded roles */
+.role-circle {
+  @apply w-2 h-2 rounded-full;
+}
+/* rolestats.css */
+
+/* Overall grid container */
+.role-stats-grid {
+  @apply grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6;
+}
+
+/* Base card styling */
+.role-stats-card {
+  @apply border rounded-xl p-4 flex items-center space-x-4 cursor-pointer transition-colors shadow-md;
+}
+
+/* Inactive state (i.e., not selected) */
+.role-stats-card-inactive {
+  @apply border-gray-800/60 bg-[#1a1d29]/80 hover:bg-[#1e2235]/80;
+}
+
+/* Close (X) button in top-right corner */
+.role-stats-card-close {
+  @apply absolute -top-2 -right-2 rounded-full bg-gray-800/60 p-0.5 hover:bg-gray-700/60;
+}
+
+/* Name text (defaults) */
+.role-stats-name {
+  @apply text-sm font-medium text-white/90;
+}
+
+/* Count text (defaults) */
+.role-stats-count {
+  @apply text-xl font-bold text-gray-400;
+}
+/* "@/css/navbar.css" */
+
+/* The main navbar wrapper */
+
+.navbar {
+  @apply bg-[#1a1d29]/80 backdrop-blur-sm border-b border-gray-800/60 py-4 px-6 mb-6;
+}
+
+/* The container for layout and spacing */
+.navbar-container {
+  @apply container mx-auto flex justify-between items-center;
+}
+
+/* The site title (e.g., 'SCF Roles') */
+.navbar-title {
+  @apply text-xl font-schabo tracking-wide text-white/90;
+}
+
+/* Desktop menu container, hidden on smaller screens */
+.navbar-desktop-menu {
+  @apply hidden md:flex items-center space-x-4;
+}
+
+/* Generic link styling for the nav (e.g. 'Members', 'Metrics') */
+.navbar-link {
+  @apply text-white/80 hover:text-white transition-colors;
+}
+
+/* Button used for user login (yellow) */
+.navbar-login-button {
+  @apply bg-yellow-400 hover:bg-yellow-300 text-black;
+}
+
+/* Dropdown trigger for a logged-in user’s profile */
+.navbar-user-button {
+  @apply p-0 h-auto hover:bg-transparent;
+}
+
+/* Container for user avatar + name */
+.navbar-user-wrapper {
+  @apply flex items-center gap-2;
+}
+
+/* Avatar styling for user (smaller) */
+.navbar-avatar {
+  @apply h-8 w-8 border border-gray-700/50;
+}
+
+/* Fallback styling if the avatar image is missing */
+.navbar-avatar-fallback {
+  @apply bg-[#1e2235] text-white;
+}
+
+/* Container for user’s text info (name, Discord username) */
+.navbar-user-info {
+  @apply flex flex-col items-start text-sm;
+}
+
+/* The chevron icon next to user's name (down arrow) */
+.navbar-user-chevron {
+  @apply h-4 w-4 text-gray-300 ml-1;
+}
+
+/* Dropdown menu content for user profile actions */
+.navbar-dropdown-content {
+  @apply w-56 bg-[#1a1d29] border-gray-800/60 text-white shadow-lg;
+}
+
+/* Header within the dropdown (the 'Signed in as ...' area) */
+.navbar-dropdown-header {
+  @apply px-2 py-1.5 text-sm font-medium text-gray-300 border-b border-gray-800/60;
+}
+
+/* Each dropdown item (Profile, Settings, Logout) */
+.navbar-dropdown-item {
+  @apply hover:bg-[#1e2235]/80 focus:bg-[#1e2235]/80 text-gray-300 focus:text-white cursor-pointer;
+}
+
+/* The thin separator line in the dropdown */
+.navbar-dropdown-separator {
+  @apply bg-gray-800/60;
+}
+
+/* Mobile-only menu trigger button */
+.navbar-mobile-trigger {
+  @apply md:hidden;
+}
+
+/* The side drawer content area for mobile menu */
+.navbar-sheet-content {
+  @apply w-[300px] sm:w-[400px] bg-[#1a1d29]/95 border-gray-800/60;
+}
+
+/* Title styling in the sheet content (the 'Menu' header) */
+.navbar-sheet-title {
+  @apply text-white font-schabo;
+}
+
+/* The container that holds the mobile menu links or user info */
+.navbar-sheet-menu {
+  @apply flex flex-col space-y-4 mt-4;
+}
+
+/* The user section in the mobile sheet, separated by a border */
+.navbar-sheet-user-section {
+  @apply border-t border-gray-800/60 pt-4 mt-2;
+}
+
+/* Row with avatar + user name inside the mobile sheet */
+.navbar-sheet-user-row {
+  @apply flex items-center gap-3 mb-4;
+}
+
+/* Slightly larger avatar for the mobile sheet */
+.navbar-avatar-large {
+  @apply h-10 w-10 border border-gray-700/50;
+}
+
+/* The fallback styling for the larger avatar */
+.navbar-avatar-fallback-large {
+  @apply bg-[#1e2235] text-white;
+}
+
+/* The user info text in the mobile sheet (name + smaller text) */
+.navbar-user-full-info {
+  @apply flex flex-col;
+}
+
+/* Outline button in the sheet (Profile, Settings, Logout) */
+.navbar-sheet-button {
+  @apply w-full justify-start gap-2 border-gray-700/50 bg-[#0c0e14]/80 hover:bg-[#1e2235]/80 hover:text-white;
+}
+/* header.css */
+
+.header {
+  @apply bg-[#1a1d29]/80 border-b border-gray-800/60 py-4 px-6;
+}
+
+.header-title {
+  @apply text-3xl font-schabo tracking-wide;
+}
+
+}

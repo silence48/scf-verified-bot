@@ -15,7 +15,7 @@ export function Footer() {
                         Community Fund
                     </a>
                     <a
-                        href="https://discord.gg/communityfund"
+                        href="https://discord.gg/communityfundf"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="footer-link-icon"

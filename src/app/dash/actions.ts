@@ -10,14 +10,23 @@ import { getAllMembersForGuild, getRoleCounts } from "@/discord-bot/db";
 export async function refreshGuildFromDiscord(guildId: string): Promise<void> {
   const client = await getClient();
   let guild: Guild | undefined = client.guilds.cache.get(guildId);
-
+  console.log(`in refreshGuildFromDiscord with guild ${guild?.name}`)
+  
   if (!guild) {
     guild = await client.guilds.fetch(guildId);
   }
 
   // Force the sync (reads from Discord, upserts into DB)
+  console.log(`[refreshGuildFromDiscord] syncRoles starting`);
+  console.time('syncRoles');
   await syncRoles(guild);
+  console.timeEnd('syncRoles');
+  console.log(`[refreshGuildFromDiscord] syncRoles done`)
+  console.log(`[refreshGuildFromDiscord] syncMembers starting`);
+  console.time('syncMembers');
   await syncMembers(guild);
+  console.timeEnd('syncMembers');
+  console.log(`[refreshGuildFromDiscord] syncMembers done`)
 }
 
 /** Load from DB the role stats + full member list for that guild. */
@@ -40,7 +49,7 @@ export async function loadGuildData(guildId: string): Promise<{
     joinedStellarDevelopers?: string;
   }[];
 }> {
-  console.log('in load guild data');
+  console.log(`[loadGuildData] with guildId ${guildId}`)
   const counts = await getRoleCounts(guildId);
   const dbMembers = await getAllMembersForGuild(guildId);
 

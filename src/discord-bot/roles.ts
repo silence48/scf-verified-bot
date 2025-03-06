@@ -6,7 +6,6 @@ import {
   upsertRole,
   upsertMember,
   insertUserRole,
-  // etc. if you use the "executeBatch" approach
 } from "./db";
 import { BOT_READONLY_MODE } from "./constants";
 

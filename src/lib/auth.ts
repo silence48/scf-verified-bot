@@ -2,7 +2,9 @@ import NextAuth, { NextAuthConfig } from "next-auth";
 import Discord from "next-auth/providers/discord";
 import type { DiscordProfile } from "next-auth/providers/discord";
 import "next-auth/jwt";
+import { Guild, ThreadChannel } from "discord.js";
 
+ThreadChannel
 /**
  * We'll define a minimal user shape that includes 'id' (Discord ID)
  * plus optional fields for name, email, etc.

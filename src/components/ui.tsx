@@ -230,7 +230,7 @@ export function Checkbox({
     return (
         <CheckboxPrimitive.Root
             data-slot="checkbox"
-            className={cn("ui-checkbox", className)}
+            className={cn("peer ui-checkbox", className)}
             {...props}
         >
             <CheckboxPrimitive.Indicator
@@ -468,7 +468,7 @@ export function Label({
     return (
         <LabelPrimitive.Root
             data-slot="label"
-            className={cn("ui-label", className)}
+            className={cn("peer-disabled:cursor-not-allowed peer-disabled:opacity-50 ui-label", className)}
             {...props}
         />
     );

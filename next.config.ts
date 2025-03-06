@@ -32,6 +32,10 @@ const nextConfig: NextConfig = {
 
   
 webpack(config, { isServer }) {
+  config.stats = 'verbose';
+  config.infrastructureLogging = {
+    level: 'verbose',
+  };
   config.devtool = 'source-map';
         config.module.rules.push({
           test: /\.node/,
