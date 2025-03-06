@@ -1,6 +1,8 @@
 "use client";
 
-import "@/css/ui.css";
+//import "@/css/ui.css";
+//import "@/app/globals.css";
+
 import * as AvatarPrimitive from "@radix-ui/react-avatar";
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";

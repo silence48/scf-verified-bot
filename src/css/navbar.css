@@ -1,10 +1,7 @@
 /* "@/css/navbar.css" */
 
 /* The main navbar wrapper */
-@import "tailwindcss";
 
-@reference "../app/globals.css";
-@layer components {
 .navbar {
     @apply bg-[#1a1d29]/80 backdrop-blur-sm border-b border-gray-800/60 py-4 px-6 mb-6;
   }
@@ -133,4 +130,3 @@
   .navbar-sheet-button {
     @apply w-full justify-start gap-2 border-gray-700/50 bg-[#0c0e14]/80 hover:bg-[#1e2235]/80 hover:text-white;
   }
-}

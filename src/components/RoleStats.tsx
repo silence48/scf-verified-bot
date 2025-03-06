@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import { X } from "lucide-react";
-import "@/css/rolestats.css";
+
 
 interface RoleStatsProps {
   activeFilters: string[];

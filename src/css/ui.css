@@ -1,7 +1,3 @@
-@import "tailwindcss";
-
-@reference "../app/globals.css";
-@layer components {
 /*============================================
 Avatar
 ============================================*/
@@ -234,5 +230,4 @@ Sheet
 }
 .ui-sheet-description {
   @apply text-muted-foreground text-sm;
-}
 }

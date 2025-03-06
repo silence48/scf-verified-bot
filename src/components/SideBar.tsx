@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { Search } from "lucide-react";
 import { Input, Label,Checkbox } from "@/components/ui";
-import "@/css/sidebar.css";
+//import "@/css/sidebar.css";
+//import "@/app/globals.css";
+
 
 export function Sidebar() {
   const [searchTerm, setSearchTerm] = useState("");

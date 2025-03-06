@@ -22,6 +22,7 @@ export async function refreshGuildFromDiscord(guildId: string): Promise<void> {
 
 /** Load from DB the role stats + full member list for that guild. */
 export async function loadGuildData(guildId: string): Promise<{
+  
   roleStats: {
     verified: number;
     pathfinder: number;
@@ -39,6 +40,7 @@ export async function loadGuildData(guildId: string): Promise<{
     joinedStellarDevelopers?: string;
   }[];
 }> {
+  console.log('in load guild data');
   const counts = await getRoleCounts(guildId);
   const dbMembers = await getAllMembersForGuild(guildId);
 

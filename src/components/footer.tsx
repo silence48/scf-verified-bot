@@ -1,5 +1,5 @@
 import { MessageSquare, TwitterIcon } from "lucide-react";
-import "@/css/footer.css";
+//import "@/app/globals.css";
 
 export function Footer() {
     return (

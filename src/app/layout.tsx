@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import "@radix-ui/themes/styles.css";
 import { Theme } from "@radix-ui/themes";
+import "@/app/globals.css"
 
 export const metadata: Metadata = {
   title: "SCF Tiers Admin",

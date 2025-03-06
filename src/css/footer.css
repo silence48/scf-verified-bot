@@ -4,10 +4,7 @@ TailwindCSS file centralizing repeated Footer styles.
 Replace all the inline utilities with these classes.
 --------------------------------------------------------------------------------
 */
-@import "tailwindcss";
 
-@reference "../app/globals.css";
-@layer components {
 
 /* Footer container element */
 .footer {
@@ -42,5 +39,4 @@ Replace all the inline utilities with these classes.
 /* Small text at the bottom right */
 .footer-copyright {
   @apply text-sm text-gray-500;
-}
 }

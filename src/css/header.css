@@ -1,8 +1,5 @@
 /* header.css */
-@import "tailwindcss";
 
-@reference "../app/globals.css";
-@layer components {
 .header {
     @apply bg-[#1a1d29]/80 border-b border-gray-800/60 py-4 px-6;
   }
@@ -10,4 +7,3 @@
   .header-title {
     @apply text-3xl font-schabo tracking-wide;
   }
-}

@@ -1,8 +1,4 @@
-@import "tailwindcss";
-
-@reference "../app/globals.css";
-@layer components {
-  /* The main container wrapping the entire user table */
+/* The main container wrapping the entire user table */
 .user-table {
     @apply bg-[#1a1d29]/80 backdrop-blur-sm border border-gray-800/60 rounded-xl overflow-hidden shadow-lg;
   }
@@ -189,4 +185,3 @@
   .user-table-page-ellipsis {
     @apply text-gray-400;
   }
-}

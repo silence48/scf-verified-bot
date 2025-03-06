@@ -37,6 +37,7 @@ export default function MembersDashboardClient({
   roleStats,
   members,
 }: MembersDashboardClientProps) {
+  console.log('in member dash client');
   // local filter state:
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
@@ -53,6 +54,7 @@ export default function MembersDashboardClient({
   // Action to forcibly re-sync from Discord => DB, then refresh the page
   async function handleFullRefresh() {
     try {
+      
       await refreshGuildFromDiscord(guildId);
       // after the server action completes, re-run the server component
       router.refresh(); 
@@ -69,7 +71,7 @@ export default function MembersDashboardClient({
         </h2>
         <button
           onClick={handleFullRefresh}
-          className="px-3 py-1 bg-blue-700 text-sm rounded"
+          className="px-3 py-1 bg-blue-700 text-sm rounded-sm"
         >
           Refresh from Discord
         </button>

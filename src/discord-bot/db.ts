@@ -2,6 +2,7 @@
 // src/discord-bot/db.ts
 import sqlite3 from "sqlite3";
 import { open, Database } from "sqlite";
+import { BOT_READONLY_MODE } from "./constants";
 
 sqlite3.verbose();
 
@@ -21,7 +22,9 @@ async function getDatabase(): Promise<
     driver: sqlite3.Database,
   });
   // Optionally run migrations
-  await db.migrate({ migrationsPath: "./migrations" });
+  if (!BOT_READONLY_MODE) {
+    await db.migrate({ migrationsPath: "./migrations" });
+  }
   _db = db;
   return db;
 }

@@ -67,9 +67,10 @@ export async function syncRoles(guild: Guild): Promise<void> {
   try {
     const roles = await guild.roles.fetch();
     logger(`syncRoles: Fetched roles for guild ${guild.name}`);
-
-    for (const role of roles.values()) {
-      await upsertRole(role.id, role.name, guild.id);
+    if (!BOT_READONLY_MODE) {
+      for (const role of roles.values()) {
+        await upsertRole(role.id, role.name, guild.id);
+      }
     }
   } catch (err) {
     logger(`Error in syncRoles: ${String(err)}`);
@@ -91,32 +92,33 @@ export async function syncMembers(guild: Guild): Promise<void> {
       "SCF Navigator",
       "SCF Pilot",
     ];
+    if (!BOT_READONLY_MODE) {
+      for (const member of members.values()) {
+        // If not read-only, fix user’s SCF roles if multiple
 
-    for (const member of members.values()) {
-      // If not read-only, fix user’s SCF roles if multiple
-      if (!BOT_READONLY_MODE) {
         const scfRoles = member.roles.cache.filter((r) =>
           scfTierRoles.includes(r.name)
         );
         if (scfRoles.size > 1) {
           await fixUserRoles(member);
         }
-      }
 
-      // Upsert this member
-      // If you want to store multiple guild IDs for each member, do so in a CSV
-      const guildIds = guild.id;
-      await upsertMember(
-        member.id,
-        member.user.username,
-        member.user.discriminator,
-        guildIds
-      );
 
-      // For each SCF role assigned, insert into user_roles if not present
-      for (const role of member.roles.cache.values()) {
-        if (role.name.startsWith("SCF")) {
-          await insertUserRole(member.id, role.id, guild.id);
+        // Upsert this member
+        // If you want to store multiple guild IDs for each member, do so in a CSV
+        const guildIds = guild.id;
+        await upsertMember(
+          member.id,
+          member.user.username,
+          member.user.discriminator,
+          guildIds
+        );
+
+        // For each SCF role assigned, insert into user_roles if not present
+        for (const role of member.roles.cache.values()) {
+          if (role.name.startsWith("SCF")) {
+            await insertUserRole(member.id, role.id, guild.id);
+          }
         }
       }
     }

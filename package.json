@@ -12,7 +12,6 @@
     "@next/bundle-analyzer": "^15.2.1",
     "@radix-ui/themes": "^3.2.0",
     "@stellar/stellar-sdk": "^13.1.0",
-    "@tailwindcss/postcss": "^4.0.9",
     "bufferutil": "^4.0.9",
     "class-variance-authority": "^0.7.1",
     "discord.js": "^14.17.3",
@@ -31,12 +30,13 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4.0.10",
     "@types/node": "^20",
     "@types/react": "19.0.3",
     "@types/react-dom": "19.0.3",
     "eslint": "^9",
-    "tailwindcss": "^3.4.16",
     "eslint-config-next": "15.2.1",
+    "tailwindcss": "^4.0.10",
     "typescript": "^5"
   },
   "overrides": {

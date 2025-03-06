@@ -32,7 +32,9 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui";
-import "@/css/usertable.css";
+//import "@/css/usertable.css";
+//import "@/app/globals.css";
+
 
 function getRoleDotColor(roleName: string): string {
   switch (roleName) {

@@ -19,7 +19,9 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui";
-import "@/css/navbar.css";
+//import "@/css/navbar.css";
+//import "@/app/globals.css";
+
 
 export function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);

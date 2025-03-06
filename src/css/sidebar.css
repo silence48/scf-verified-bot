@@ -3,10 +3,7 @@
 Centralizes repeated TailwindCSS styles from the Sidebar component
 -------------------------------------------------------------------------
 */
-@import "tailwindcss";
 
-@reference "../app/globals.css";
-@layer components {
 /* Main sidebar container */
 .sidebar {
     @apply w-64 bg-[#1a1d29]/80 border-r border-gray-800/60 p-4 hidden md:block;
@@ -57,4 +54,3 @@ Centralizes repeated TailwindCSS styles from the Sidebar component
   .role-circle {
     @apply w-2 h-2 rounded-full;
   }
-}

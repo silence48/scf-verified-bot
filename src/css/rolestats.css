@@ -1,9 +1,5 @@
 /* rolestats.css */
 
-@import "tailwindcss";
-
-@reference "../app/globals.css";
-@layer components {
 /* Overall grid container */
 .role-stats-grid {
     @apply grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6;
@@ -33,4 +29,3 @@
   .role-stats-count {
     @apply text-xl font-bold text-gray-400;
   }
-}
