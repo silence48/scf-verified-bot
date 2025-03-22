@@ -5,7 +5,9 @@ import { getClient } from "@/discord-bot/client";
 export async function GET(_req: Request, { params }: { params: Promise<{ guildId: string }> }
 ) {
   try {
+    console.log("[guild/guilidid] getting the discord client instance");
     const client = await getClient();
+    
     const { guildId }= await params;
     const guild = client.guilds.cache.get(guildId);
     if (!guild) {

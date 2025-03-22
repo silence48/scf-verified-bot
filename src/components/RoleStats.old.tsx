@@ -62,7 +62,7 @@ export function RoleStats({ activeFilters, onFilterToggle }: RoleStatsProps) {
             className={
               isActive
                 ? `role-stats-card ${stat.bgColor} ${stat.borderColor} ${stat.color}`
-                : `role-stats-card role-stats-card-inactive`
+                : "role-stats-card role-stats-card-inactive"
             }
           >
             <div className="relative">

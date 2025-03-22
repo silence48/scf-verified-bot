@@ -1,9 +1,9 @@
 // src/discord-bot/commands.ts
 //'use server';
 import { REST, Routes, SlashCommandBuilder } from "discord.js";
-import type { Guild, ChatInputCommandInteraction } from "discord.js";
+import type { Guild, ChatInputCommandInteraction, Client } from "discord.js";
 import { logger } from "./logger";
-import { getGuildMemberUsernames } from "./db";
+import { getGuildMemberUsernames } from "./mongo-db";
 import { DISCORD_BOT_TOKEN } from "./constants";
 
 /** The slash commands to register (applicationGuildCommands). */
@@ -38,28 +38,30 @@ export async function getSlashCommands() {
  */
 export async function registerSlashCommands(
   clientId: string,
-  guild: Guild
+  guild: Guild,
+  client: Client
 ): Promise<void> {
   if (!DISCORD_BOT_TOKEN) {
-    logger("No bot token available; cannot register slash commands.");
+    logger("No bot token available; cannot register slash commands.", client);
     return;
   }
   const rest = new REST({ version: "10" }).setToken(DISCORD_BOT_TOKEN);
   try {
-    logger(`Registering (/) commands for guild: ${guild.name}`);
+    logger(`Registering (/) commands for guild: ${guild.name}`, client);
     await rest.put(Routes.applicationGuildCommands(clientId, guild.id), {
       body: await getSlashCommands(),
     });
-    logger("Successfully registered slash commands.");
+    logger("Successfully registered slash commands.", client);
   } catch (error) {
-    logger(`Error registering slash commands: ${String(error)}`);
+    logger(`Error registering slash commands: ${String(error)}`, client);
     console.error(error);
   }
 }
 
 /** The "getverified" slash command: provide a link button. */
 export async function processGetVerifiedCommand(
-  interaction: ChatInputCommandInteraction
+  interaction: ChatInputCommandInteraction,
+  client: Client
 ) {
   try {
     const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = await import(
@@ -80,7 +82,7 @@ export async function processGetVerifiedCommand(
     });
   } catch (err) {
     if (err instanceof Error) {
-      logger(`Error in processGetVerifiedCommand: ${err.message}`);
+      logger(`Error in processGetVerifiedCommand: ${err.message}`, client);
     }
     console.error(err);
   }
@@ -88,7 +90,8 @@ export async function processGetVerifiedCommand(
 
 /** The "listmembers" slash command: fetch from DB, chunk results. */
 export async function processListMembersCommand(
-  interaction: ChatInputCommandInteraction
+  interaction: ChatInputCommandInteraction,
+  client: Client
 ) {
   try {
     if (!interaction.guild) {
@@ -139,7 +142,7 @@ export async function processListMembersCommand(
     }
   } catch (err) {
     if (err instanceof Error) {
-      logger(`Error in processListMembersCommand: ${err.message}`);
+      logger(`Error in processListMembersCommand: ${err.message}`, client);
     }
     console.error(err);
   }

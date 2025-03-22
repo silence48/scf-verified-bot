@@ -1,6 +1,7 @@
 //'use server';
 //import { type User } from "discord.js";
 //import { getClient } from "./client";
+import { Client } from "discord.js";
 import { BOT_IS_LOGGED_IN, ADMIN_USER_ID } from "./constants";
 
 /**
@@ -16,14 +17,14 @@ export async function splitIntoChunks(text: string, chunkSize: number): Promise<
 /**
  * Logs a message. If the bot is logged in, try DMing the admin user; otherwise logs to console.
  */
-export async function logger(message: string): Promise<void> {
+export async function logger(message: string, client: Client): Promise<void> {
   const chunkSize = 1999;
   const chunks = await splitIntoChunks(message, chunkSize);
 
   if (BOT_IS_LOGGED_IN.value) {
-    const dc = await import("./client");
-    const { getClient } = dc;
-    const client =await getClient();
+    //const dc = await import("./client");
+    //const { getClient } = dc;
+    //const client =await getClient(`logger: ${message}`);
     try {
       const adminUser = await client.users.fetch(ADMIN_USER_ID);
       for (const c of chunks) {
@@ -55,11 +56,11 @@ export async function sendDM(message: string, userId: string): Promise<void> {
     try {
         const dc = await import("./client");
         const { getClient } = dc;
-        const client =await getClient();      const user = await client.users.fetch(userId);
+        const client =await getClient(`sendDm ${message} ${userId}`);      const user = await client.users.fetch(userId);
       for (const c of chunks) {
         await user.send(c);
       }
-      await logger(`Sent DM to user ${userId}: ${message}`);
+      await logger(`Sent DM to user ${userId}: ${message}`, client);
     } catch (err) {
       console.error("Error sending DM:", err);
     }

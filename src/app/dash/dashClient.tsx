@@ -2,11 +2,11 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { RoleStats } from "@/components/RoleStats";
 import { UserTable } from "@/components/UserTable";
 import { Footer } from "@/components/footer";
-import { refreshGuildFromDiscord } from "./actions";
+import { MemberInfo } from "@/discord-bot/types";
+import { RoleFilter, Sidebar } from "@/components/SideBar";
 
 interface MembersDashboardClientProps {
   guildId: string;
@@ -16,51 +16,34 @@ interface MembersDashboardClientProps {
     navigator: number;
     pilot: number;
   };
-  members: Array<{
-    discordId: string;
-    name: string;
-    avatar: string;
-    memberSince: string;
-    joinedDiscord: string;
-    roles: Array<{ name: string; obtained: string }>;
-    profileDescription: string;
-    joinedStellarDevelopers?: string;
-  }>;
+  members: MemberInfo[];
+  roleFilters: RoleFilter[];
+
 }
 
 /**
  * A client component receiving data from the server parent.
- * Manages ephemeral filters, calls server actions, etc.
+ * Manages ephemeral filters, etc.
  */
 export default function MembersDashboardClient({
   guildId,
   roleStats,
   members,
+  roleFilters,
 }: MembersDashboardClientProps) {
-  console.log('in member dash client');
+  console.log("in member dash client");
+
   // local filter state:
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  // Clear all filters
+  function clearFilters() {
+    setActiveFilters([]);
+  }
 
-  // Next.js 13 client router to force a re-fetch of the server component
-  const router = useRouter();
-
-  // Filter toggling
   function onFilterToggle(role: string) {
     setActiveFilters((prev) =>
       prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
     );
-  }
-
-  // Action to forcibly re-sync from Discord => DB, then refresh the page
-  async function handleFullRefresh() {
-    try {
-      
-      await refreshGuildFromDiscord(guildId);
-      // after the server action completes, re-run the server component
-      router.refresh(); 
-    } catch (err) {
-      console.error("Error refreshing from Discord:", err);
-    }
   }
 
   return (
@@ -69,36 +52,33 @@ export default function MembersDashboardClient({
         <h2 className="text-2xl font-schabo tracking-wide mb-4">
           Members Overview
         </h2>
+        {/* Removed the "Refresh from Discord" server action button */}
         <button
-          onClick={handleFullRefresh}
-          className="px-3 py-1 bg-blue-700 text-sm rounded-sm"
-        >
-          Refresh from Discord
+          onClick={clearFilters}
+          className="bg-gray-200 text-gray-700 px-3 py-1 rounded hover:bg-gray-300">
+          Clear Filters
         </button>
       </div>
-
+      <Sidebar
+      roleFilters={roleFilters}
+      activeFilters={activeFilters}
+      onFilterToggle={onFilterToggle}
+      />
       {/* Role Stats (client side) */}
-      {/*
-<RoleStats
+      <RoleStats
         activeFilters={activeFilters}
-        onFilterToggleAction={onFilterToggle} // local ephemeral toggler
+        onFilterToggleAction={onFilterToggle}
         verifiedCount={roleStats.verified}
         pathfinderCount={roleStats.pathfinder}
         navigatorCount={roleStats.navigator}
         pilotCount={roleStats.pilot}
       />
 
-      */}
-      
-
-      {/* Members Table (client side) */}
-      {/* 
       <UserTable
         activeFilters={activeFilters}
         onFilterToggleAction={onFilterToggle}
         members={members}
       />
-      */}
 
       <Footer />
     </div>

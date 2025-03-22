@@ -1,7 +1,6 @@
 import dotenv from "dotenv";
 import withBundleAnalyzer from '@next/bundle-analyzer'
 import path from 'path';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import  { type NextConfig } from 'next';
 // Load environment variables
 dotenv.config();
@@ -9,16 +8,30 @@ dotenv.config();
 /*
 // Apply Plausible proxy and retain your existing Next.js config
 const nextConfig = withPlausibleProxy({
-  customDomain: "https://hoops-analytics.hoops.finance" // Plausible instance
+  customDomain: "https://" // Plausible instance
   // subdirectory: "plausible", // Optional, to customize the script URL
   //scriptName: "plausible-script" // Optional, customize the script name if needed
 })({
 */
 /** @type {NextConfig} */
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'api.stellar.quest',
+        pathname: '/badge/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'assets.rpciege.com',
+      },
+    ],
+  },
   env: {
     NEXT_PUBLIC_RECAPTCHA_SITE_KEY: process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY,
   },
+  serverExternalPackages: ['sodium-native', '@stellar/stellar-sdk'],
   productionBrowserSourceMaps: true,
   staticPageGenerationTimeout: 600,
   experimental: {
@@ -33,9 +46,9 @@ const nextConfig: NextConfig = {
   
 webpack(config, { isServer }) {
   config.stats = 'verbose';
-  config.infrastructureLogging = {
-    level: 'verbose',
-  };
+  //config.infrastructureLogging = {
+    //level: 'verbose',
+  // };
   config.devtool = 'source-map';
         config.module.rules.push({
           test: /\.node/,

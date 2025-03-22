@@ -6,7 +6,8 @@ export default async function HomePage() {
   if (session?.user) {
     redirect("/dashboard");
   }
+  redirect("/dboard");
 
-  redirect("/api/auth/signin");
+ // redirect("/api/auth/signin");
   return null;
 }

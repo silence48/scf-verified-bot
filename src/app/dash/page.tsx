@@ -2,23 +2,24 @@
 import { loadGuildData } from "./actions";
 import MembersDashboardClient from "./dashClient";
 
-const GUILD_ID = "897514728459468821";
+//export const revalidate = 3600; // revalidate every hour, for example
 
-/**
- * A SERVER component. Called for every request or on re-validation, etc.
- * We fetch the data from the DB and pass it to a client component for ephemeral state.
- */
 export default async function MembersPage() {
-  // 1) Fetch the fresh data from the DB
-  //    If you want to run a 'refreshGuildFromDiscord' here, you can do so too.
-  const data = await loadGuildData(GUILD_ID);
+  // Possibly call your refresh logic right here
+  //  so that each time the page is requested (or revalidated),
+  //  we do the Discord sync first:
+  //await refreshGuildFromDiscord("897514728459468821" );
 
-  // 2) Return a client component that handles local filters, etc.
+  // Then load the data (which is presumably up to date)
+  const data = await loadGuildData("897514728459468821");
+  //console.log(JSON.stringify(data))
+
   return (
     <MembersDashboardClient
-      guildId={GUILD_ID}
+      guildId="897514728459468821"
       roleStats={data.roleStats}
       members={data.members}
+      roleFilters={[]}
     />
   );
 }

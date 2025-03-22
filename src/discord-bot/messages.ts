@@ -1,14 +1,15 @@
 // src/discord-bot/messages.ts
 //'use server';
-import { Message } from "discord.js";
+import { Client, Message } from "discord.js";
 import { logger } from "./logger";
-import { getExactGuildMemberUsernames } from "@/discord-bot/db";
+import { getExactGuildMemberUsernames } from "@/discord-bot/mongo-db";
 
 /**
  * Primary message handler for the "messageCreate" event.
  */
 export async function handleMessageCreateEvent(
-  message: Message
+  message: Message,
+  client: Client
 ): Promise<void> {
   try {
     // Ignore non-text messages or empty content
@@ -36,7 +37,7 @@ export async function handleMessageCreateEvent(
     }
   } catch (err) {
     if (err instanceof Error) {
-      logger(`Error in handleMessageCreateEvent: ${err.message}`);
+      logger(`Error in handleMessageCreateEvent: ${err.message}`, client);
       console.error(err);
     } else {
       console.error("Unknown error in handleMessageCreateEvent:", err);

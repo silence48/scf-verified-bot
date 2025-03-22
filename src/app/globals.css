@@ -1,8 +1,5 @@
 @import 'tailwindcss';
 
-/* @source '../**/*.css'; */
-@source "@/app/**/*.{html,js,jsx,ts,tsx}";
-
 @theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -11,6 +8,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --font-schabo: var(--font-schabo);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
@@ -47,14 +45,6 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-/*
-  The default border color has changed to currentColor in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
-
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
-*/
 @layer base {
   *,
   ::after,
@@ -69,7 +59,6 @@
   :root {
     --font-sans: var(--font-geist-sans);
     --font-mono: var(--font-geist-mono);
-
     --background: oklch(1 0 0);
     --foreground: oklch(0.145 0 0);
     --card: oklch(1 0 0);
@@ -146,9 +135,7 @@
   }
 }
 
-
 @layer base {
-  /* Apply SCHABO font to all h1 and h2 elements */
   h1, h2 {
     font-family: var(--font-schabo);
     text-transform: uppercase;
@@ -218,6 +205,7 @@
   }
 }
 
+
 @utility bg-muted {
   background-color: hsl(var(--muted));
 }
@@ -226,11 +214,8 @@
 }
 
 
-
-
-
 @layer components {
-  
+
 /* Footer container element */
 .footer {
   @apply mt-12 py-6 border-t border-gray-800/60;
@@ -265,8 +250,9 @@
 .footer-copyright {
   @apply text-sm text-gray-500;
 }
+
 /*============================================
-Avatar
+  Avatar
 ============================================*/
 .ui-avatar {
   @apply relative flex w-8 h-8 shrink-0 overflow-hidden rounded-full;
@@ -279,12 +265,12 @@ Avatar
 }
 
 /*============================================
-Badge
+  Badge
 ============================================*/
 .ui-badge {
   @apply inline-flex items-center justify-center rounded-md border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 gap-1 transition-[color,box-shadow] overflow-hidden;
   @apply [&>svg]:size-3 [&>svg]:pointer-events-none;
-  @apply focus-visible:border-ring focus-visible:ring-ring focus-visible:ring-black/50 focus-visible:ring-3;
+  @apply focus-visible:border-ring focus-visible:ring-ring focus-visible:ring-3;
   @apply aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive;
 }
 /* Variant classes (e.g. .ui-badge--default, .ui-badge--secondary, etc.) */
@@ -301,9 +287,7 @@ Badge
   @apply text-foreground;
 }
 
-/*============================================
-Button
-============================================*/
+/* Button */
 .ui-button-base {
   @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-[color,box-shadow] disabled:pointer-events-none disabled:opacity-50 shrink-0 outline-none;
   @apply [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4;
@@ -344,7 +328,7 @@ Button
 }
 
 /*============================================
-Card
+  Card
 ============================================*/
 .ui-card {
   @apply bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm;
@@ -366,10 +350,10 @@ Card
 }
 
 /*============================================
-Checkbox
+  Checkbox
 ============================================*/
 .ui-checkbox {
-  @apply peer border-input data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground data-[state=checked]:border-primary;
+  @apply border-input data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground data-[state=checked]:border-primary;
   @apply focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive;
   @apply w-4 h-4 shrink-0 rounded-[4px] border shadow-xs transition-shadow outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50;
 }
@@ -378,7 +362,7 @@ Checkbox
 }
 
 /*============================================
-Dropdown Menu
+  Dropdown Menu
 ============================================*/
 .ui-dropdown-menu-content {
   @apply bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95;
@@ -413,7 +397,7 @@ Dropdown Menu
 }
 
 /*============================================
-Input
+  Input
 ============================================*/
 .ui-input {
   @apply border-input file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground;
@@ -425,15 +409,15 @@ Input
 }
 
 /*============================================
-Label
+  Label
 ============================================*/
 .ui-label {
   @apply flex items-center gap-2 text-sm leading-none font-medium select-none;
-  @apply group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50;
+  @apply group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 ;
 }
 
 /*============================================
-Pagination
+  Pagination
 ============================================*/
 .ui-pagination {
   @apply mx-auto flex w-full justify-center;
@@ -446,7 +430,7 @@ Pagination
 }
 
 /*============================================
-Select
+  Select
 ============================================*/
 .ui-select-trigger {
   @apply border-input data-[placeholder]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive;
@@ -475,7 +459,7 @@ Select
 }
 
 /*============================================
-Sheet
+  Sheet
 ============================================*/
 .ui-sheet-overlay {
   @apply data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/80;
@@ -498,6 +482,7 @@ Sheet
 .ui-sheet-description {
   @apply text-muted-foreground text-sm;
 }
+
 /* The main container wrapping the entire user table */
 .user-table {
   @apply bg-[#1a1d29]/80 backdrop-blur-sm border border-gray-800/60 rounded-xl overflow-hidden shadow-lg;
@@ -549,7 +534,7 @@ Sheet
 }
 
 /* A shared heading cell style. The .user-table-th-md or .user-table-th-lg
-   can add 'hidden md:table-cell' or 'hidden lg:table-cell' if needed. */
+    can add 'hidden md:table-cell' or 'hidden lg:table-cell' if needed. */
 .user-table-th {
   @apply text-left p-4 font-medium;
 }
@@ -560,7 +545,7 @@ Sheet
 }
 
 /* A simple table cell style. 
-   We'll make variants like .user-table-td-md for hidden on mobile, etc. */
+    We'll make variants like .user-table-td-md for hidden on mobile, etc. */
 .user-table-td {
   @apply p-4 text-sm text-gray-300;
 }
@@ -670,8 +655,7 @@ Sheet
   @apply bg-[#1a1d29] border-gray-800/60 text-white shadow-lg;
 }
 
-/* The pages themselves (1,2,3...). Usually we rely on buttonVariants but you can
-   define your own here if you want to unify them. */
+/* The pages themselves*/*/
 .user-table-page-link {
   @apply hover:bg-gray-700/50 hover:text-white border-gray-700/50;
 }
@@ -685,6 +669,7 @@ Sheet
 .user-table-page-ellipsis {
   @apply text-gray-400;
 }
+
 /* sidebar.css
 -------------------------------------------------------------------------
 Centralizes repeated TailwindCSS styles from the Sidebar component
@@ -741,6 +726,7 @@ Centralizes repeated TailwindCSS styles from the Sidebar component
 .role-circle {
   @apply w-2 h-2 rounded-full;
 }
+
 /* rolestats.css */
 
 /* Overall grid container */
@@ -772,10 +758,10 @@ Centralizes repeated TailwindCSS styles from the Sidebar component
 .role-stats-count {
   @apply text-xl font-bold text-gray-400;
 }
+
 /* "@/css/navbar.css" */
 
 /* The main navbar wrapper */
-
 .navbar {
   @apply bg-[#1a1d29]/80 backdrop-blur-sm border-b border-gray-800/60 py-4 px-6 mb-6;
 }
@@ -904,8 +890,8 @@ Centralizes repeated TailwindCSS styles from the Sidebar component
 .navbar-sheet-button {
   @apply w-full justify-start gap-2 border-gray-700/50 bg-[#0c0e14]/80 hover:bg-[#1e2235]/80 hover:text-white;
 }
-/* header.css */
 
+/* header.css */
 .header {
   @apply bg-[#1a1d29]/80 border-b border-gray-800/60 py-4 px-6;
 }
@@ -913,5 +899,91 @@ Centralizes repeated TailwindCSS styles from the Sidebar component
 .header-title {
   @apply text-3xl font-schabo tracking-wide;
 }
-
 }
+
+/* ------------------------------------------------------------------
+   Animations Section
+   Add keyframes & utility classes for fade/zoom/slide, etc.
+------------------------------------------------------------------ */
+/* Keyframes */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+@keyframes zoomIn95 {
+  from { transform: scale(0.95); }
+  to   { transform: scale(1); }
+}
+@keyframes zoomOut95 {
+  from { transform: scale(1); }
+  to   { transform: scale(0.95); }
+}
+
+@keyframes slideInFromTop2 {
+  from { transform: translateY(-0.5rem); }
+  to   { transform: translateY(0); }
+}
+@keyframes slideInFromBottom2 {
+  from { transform: translateY(0.5rem); }
+  to   { transform: translateY(0); }
+}
+@keyframes slideInFromLeft2 {
+  from { transform: translateX(-0.5rem); }
+  to   { transform: translateX(0); }
+}
+@keyframes slideInFromRight2 {
+  from { transform: translateX(0.5rem); }
+  to   { transform: translateX(0); }
+}
+
+/* animate-in / animate-out base classes */
+@keyframes animateIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes animateOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+@utility animate-in {
+  animation: animateIn 150ms forwards;
+}
+@utility animate-out {
+  animation: animateOut 150ms forwards;
+}
+
+/* fade-in-0 / fade-out-0 */
+@utility fade-in-0 {
+  animation: fadeIn 150ms forwards;
+}
+@utility fade-out-0 {
+  animation: fadeOut 150ms forwards;
+}
+
+/* zoom-in-95 / zoom-out-95 */
+@utility zoom-in-95 {
+  animation: zoomIn95 150ms forwards;
+}
+@utility zoom-out-95 {
+  animation: zoomOut95 150ms forwards;
+}
+
+/* slide-in-from-top-2, etc. */
+@utility slide-in-from-top-2 {
+  animation: slideInFromTop2 150ms forwards;
+}
+@utility slide-in-from-bottom-2 {
+  animation: slideInFromBottom2 150ms forwards;
+}
+@utility slide-in-from-left-2 {
+  animation: slideInFromLeft2 150ms forwards;
+}
+@utility slide-in-from-right-2 {
+  animation: slideInFromRight2 150ms forwards;
+}
+

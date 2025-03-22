@@ -11,6 +11,7 @@ import {
   ButtonStyle,
   EmbedBuilder,
   GuildMember,
+  Client,
 } from "discord.js";
 import {
   insertVote,
@@ -21,11 +22,12 @@ import {
   insertNewVotingThread,
   getOpenVotingThreads,
   getThreadVoteCount,
-} from "./db";
+} from "./mongo-db";
 import { logger } from "./logger";
 import { updateUserRole } from "./roles";
-import { voteCounts } from "./constants";
+import { BOT_READONLY_MODE } from "./constants";
 
+export const voteCounts: Map<string, Map<string, boolean>> = new Map();
 
 
 /** Check if user can vote for the specified roleName. */
@@ -62,7 +64,8 @@ export async function validateVoterRole(
 export async function recordVote(
   interaction: ButtonInteraction,
   nomineeId: string,
-  roleName: string
+  roleName: string,
+  client: Client
 ): Promise<boolean> {
   if (!interaction.channel || !(interaction.channel instanceof ThreadChannel)) {
     await interaction.reply({
@@ -100,7 +103,8 @@ export async function recordVote(
     threadId,
     nomineeId,
     roleName,
-    newCount
+    newCount,
+    client
   );
   return true;
 }
@@ -111,7 +115,8 @@ export async function updateVoteCountAndCheckRoleAssignment(
   threadId: string,
   nomineeId: string,
   roleName: string,
-  currentVoteCount: number
+  currentVoteCount: number,
+  client: Client
 ): Promise<void> {
   if (!interaction.guild) {
     await interaction.reply({
@@ -132,13 +137,14 @@ export async function updateVoteCountAndCheckRoleAssignment(
   if (Date.now() - creationTime.getTime() > 5 * dayInMs) {
     // Expired
     if (interaction.channel instanceof ThreadChannel) {
+      await updateThreadVoteCount(interaction.channel, currentVoteCount, client);
       await interaction.channel.setLocked(true);
       await interaction.channel.setArchived(true);
     }
     await markVotingThreadClosed(threadId);
     await interaction.reply({
       content:
-        "This voting thread has expired (5 days). The user must wait 30 days to try again.",
+        "This voting thread has expired (5 days). The user must wait and try again.",
       ephemeral: false,
     });
     return;
@@ -149,12 +155,12 @@ export async function updateVoteCountAndCheckRoleAssignment(
 
   // Update thread name
   if (interaction.channel instanceof ThreadChannel) {
-    await updateThreadVoteCount(interaction.channel, currentVoteCount);
+    await updateThreadVoteCount(interaction.channel, currentVoteCount, client);
   }
 
   // Check vote thresholds
-  const neededNav = 3;
-  const neededPilot = 5;
+  const neededNav = 10;
+  const neededPilot = 7;
   const needed = roleName === "SCF Navigator" ? neededNav : neededPilot;
   if (currentVoteCount < needed) {
     await interaction.reply({
@@ -165,10 +171,11 @@ export async function updateVoteCountAndCheckRoleAssignment(
   }
 
   // Enough votes => try to assign role
-  const roleAssigned = await updateUserRole(
+  const roleAssigned =  BOT_READONLY_MODE ? false : await updateUserRole(
     interaction.guild,
     nomineeId,
-    roleName
+    roleName,
+    client
   );
   if (roleAssigned) {
     await interaction.reply({
@@ -191,18 +198,19 @@ export async function updateVoteCountAndCheckRoleAssignment(
 /** Updates a thread's name to show the vote count. */
 export async function updateThreadVoteCount(
   thread: ThreadChannel,
-  currentVoteCount: number
+  currentVoteCount: number,
+  client: Client
 ): Promise<void> {
   try {
     if (!thread.name) {
-      logger("Thread has no name set");
+      logger("Thread has no name set", client);
       return;
     }
     const baseName = thread.name.split("[")[0].trim();
     await thread.edit({ name: `${baseName} [Votes: ${currentVoteCount}]` });
   } catch (err) {
     if (err instanceof Error) {
-      logger(`Error in updateThreadVoteCount: ${err.message}`);
+      logger(`Error in updateThreadVoteCount: ${err.message}`, client);
     }
     console.error(err);
   }
@@ -213,7 +221,8 @@ export async function createVotingThread(
   interaction: CommandInteraction,
   nominee: GuildMember,
   nominator: GuildMember,
-  roleName: string
+  roleName: string,
+  client: Client
 ): Promise<ThreadChannel | null> {
   try {
     if (!(interaction.channel instanceof TextChannel)) {
@@ -257,7 +266,7 @@ export async function createVotingThread(
     await insertNewVotingThread(thread.id, nominator.id, nominee.id, roleName);
     return thread;
   } catch (err) {
-    logger(`Error in createVotingThread: ${String(err)}`);
+    logger(`Error in createVotingThread: ${String(err)}`, client);
     console.error(err);
     return null;
   }
@@ -265,7 +274,8 @@ export async function createVotingThread(
 
 /** The /nominate slash command handler. */
 export async function processNominateCommand(
-  interaction: ChatInputCommandInteraction
+  interaction: ChatInputCommandInteraction,
+  client: Client
 ): Promise<void> {
   try {
     if (!interaction.guild) {
@@ -293,7 +303,7 @@ export async function processNominateCommand(
       return;
     }
     if (nominator.id === nominee.id) {
-      logger(`${nominator.id} tried to nominate themselves.`);
+      logger(`${nominator.id} tried to nominate themselves.`, client);
       await interaction.reply({
         content: "You cannot nominate yourself.",
         ephemeral: true,
@@ -329,9 +339,9 @@ export async function processNominateCommand(
       return;
     }
 
-    await createVotingThread(interaction, nominee, nominator, role);
+    await createVotingThread(interaction, nominee, nominator, role, client);
   } catch (err) {
-    logger(`Error in processNominateCommand: ${String(err)}`);
+    logger(`Error in processNominateCommand: ${String(err)}`, client);
     console.error(err);
   }
 }
@@ -364,7 +374,8 @@ function canNominatorAssignRole(nominator: GuildMember, role: string): boolean {
 
 /** The /updatevote slash command to refresh the displayed vote count in the thread. */
 export async function processUpdateVoteCommand(
-  interaction: CommandInteraction
+  interaction: CommandInteraction,
+  client: Client
 ) {
   try {
     if (!interaction.channel || !interaction.channel.isThread()) {
@@ -384,21 +395,22 @@ export async function processUpdateVoteCommand(
       return;
     }
     if (interaction.channel instanceof ThreadChannel) {
-      await updateThreadVoteCount(interaction.channel, currentCount);
+      await updateThreadVoteCount(interaction.channel, currentCount, client);
     }
     await interaction.reply({
       content: `Vote count updated to ${currentCount}.`,
       ephemeral: true,
     });
   } catch (err) {
-    logger(`Error in processUpdateVoteCommand: ${String(err)}`);
+    logger(`Error in processUpdateVoteCommand: ${String(err)}`, client);
     console.error(err);
   }
 }
 
 /** The /listactivevotes slash command: list "OPEN" threads from DB that are also still active in Discord. */
 export async function processListActiveVotesCommand(
-  interaction: CommandInteraction
+  interaction: CommandInteraction,
+  client: Client
 ): Promise<void> {
   try {
     if (!interaction.guild) {
@@ -477,7 +489,7 @@ export async function processListActiveVotesCommand(
       await sendEmbeds("Pilot Nominations", pilotVotes);
     }
   } catch (err) {
-    logger(`Error in processListActiveVotesCommand: ${String(err)}`);
+    logger(`Error in processListActiveVotesCommand: ${String(err)}`, client);
     console.error(err);
   }
 }

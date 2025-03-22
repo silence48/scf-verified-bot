@@ -1,19 +1,19 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-"use client"
+"use client";
 
-import { useState } from "react"
-import { RoleStats } from "@/components/RoleStats"
-import { UserTable } from "@/components/UserTable"
-import { Footer } from "@/components/footer"
+import { useState } from "react";
+import { RoleStats } from "@/components/RoleStats";
+import { UserTable } from "@/components/UserTable";
+import { Footer } from "@/components/footer";
 
 export default function MembersPage() {
-  const [activeFilters, setActiveFilters] = useState<string[]>([])
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
   const handleFilterToggle = (role: string) => {
     setActiveFilters((prev) => 
       prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
-    )
-  }
+    );
+  };
 
   return (
     <div className="container mx-auto px-4 pb-6">
@@ -35,6 +35,6 @@ export default function MembersPage() {
       
       <Footer />
     </div>
-  )
+  );
 }
 

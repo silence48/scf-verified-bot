@@ -24,18 +24,10 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
 } from "@/components/ui";
-//import "@/css/usertable.css";
-//import "@/app/globals.css";
-
-
+import { MemberInfo } from "@/discord-bot/types";
+// If you already have a custom Pagination component, you can use that instead.
+  
 function getRoleDotColor(roleName: string): string {
   switch (roleName) {
     case "Navigator":
@@ -51,24 +43,12 @@ function getRoleDotColor(roleName: string): string {
   }
 }
 
-interface UserMember {
-  discordId: string;
-  name: string;
-  avatar: string;
-  memberSince: string;
-  joinedDiscord: string;
-  roles: Array<{
-    name: string;
-    obtained: string;
-  }>;
-  joinedStellarDevelopers?: string;
-  profileDescription?: string;
-}
+
 
 interface UserTableProps {
   activeFilters: string[];
   onFilterToggleAction: (role: string) => void;
-  members: UserMember[];
+  members: MemberInfo[];
 }
 
 type SortField = "name" | "memberSince" | "joinedDiscord" | "role";
@@ -79,37 +59,41 @@ export function UserTable({
   onFilterToggleAction,
   members,
 }: UserTableProps) {
+  // Local client state for search, sorting, expansion, pagination, etc.
   const [searchTerm, setSearchTerm] = useState("");
-  const [perPage, setPerPage] = useState("12");
+  const [perPage, setPerPage] = useState("12"); // string from the <Select>
+  const [currentPage, setCurrentPage] = useState(0); // zero-based page index
+
   const [sortField, setSortField] = useState<SortField>("memberSince");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
   const [expandedRows, setExpandedRows] = useState<string[]>([]);
 
+  // Expand/Collapse row
   const toggleRowExpansion = (userId: string) => {
     setExpandedRows((prev) =>
       prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
     );
   };
 
-  // Filter by active role filters
-  const filteredUsers = members.filter(
+  // 1) Filter by active role filters
+  const filteredByRole = members.filter(
     (user) =>
       activeFilters.length === 0 ||
       user.roles.some((role) => activeFilters.includes(role.name))
   );
 
-  // search filter
-  const searchFiltered = filteredUsers.filter((user) => {
-    const combined = (user.name + " " + user.discordId).toLowerCase();
+  // 2) Filter by search
+  const searchFiltered = filteredByRole.filter((user) => {
+    const combined = JSON.stringify(user).toLowerCase();
     return combined.includes(searchTerm.toLowerCase());
   });
 
-  // Sorting logic
+  // 3) Sort
   const sortedUsers = [...searchFiltered].sort((a, b) => {
     const multiplier = sortOrder === "asc" ? 1 : -1;
     switch (sortField) {
       case "name":
-        return multiplier * a.name.localeCompare(b.name);
+        return multiplier * a.username.localeCompare(b.username);
       case "memberSince":
         return (
           multiplier *
@@ -123,12 +107,25 @@ export function UserTable({
             new Date(b.joinedDiscord).getTime())
         );
       case "role":
-        return multiplier * a.roles[0].name.localeCompare(b.roles[0].name);
+        // If a user has no roles, watch out for .roles[0] being undefined
+        const aRole = a.roles[0]?.name ?? "";
+        const bRole = b.roles[0]?.name ?? "";
+        return multiplier * aRole.localeCompare(bRole);
       default:
         return 0;
     }
   });
 
+  // 4) Paginate: only slice out a chunk we want to render
+  const pageSize = parseInt(perPage, 10) || 12; // fallback to 12 if parse fails
+  const startIndex = currentPage * pageSize;
+  const endIndex = startIndex + pageSize;
+  const displayedUsers = sortedUsers.slice(startIndex, endIndex);
+
+  // 5) Number of pages total
+  const totalPages = Math.ceil(sortedUsers.length / pageSize);
+
+  // Sorting fields
   const handleSort = (field: SortField) => {
     if (field === sortField) {
       setSortOrder((cur) => (cur === "asc" ? "desc" : "asc"));
@@ -144,6 +141,7 @@ export function UserTable({
       <div className="user-table-header">
         <h2 className="user-table-header-title">Recent Members</h2>
         <div className="user-table-header-controls">
+          {/* Search Bar */}
           <div className="user-table-search-wrapper">
             <Search className="user-table-search-icon" />
             <Input
@@ -154,6 +152,7 @@ export function UserTable({
             />
           </div>
 
+          {/* Sort Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="user-table-sort-trigger">
@@ -194,6 +193,7 @@ export function UserTable({
         </div>
       </div>
 
+      {/* Table */}
       <div className="user-table-scroller">
         <table className="w-full">
           <thead>
@@ -206,7 +206,7 @@ export function UserTable({
             </tr>
           </thead>
           <tbody>
-            {sortedUsers.map((user) => (
+            {displayedUsers.map((user) => (
               <React.Fragment key={user.discordId}>
                 <tr
                   className="user-table-row"
@@ -215,24 +215,31 @@ export function UserTable({
                   <td className="user-table-name-cell">
                     <div className="flex items-center gap-2">
                       <Avatar>
-                        <AvatarImage src={user.avatar} alt={user.name} />
+                      <AvatarImage src={user.avatar || undefined} alt={user.username} />
                         <AvatarFallback>
-                          {user.name.substring(0, 2)}
+                          {
+                            (() => {
+                              try {
+                                return user.username ? user.username.substring(0, 2).toUpperCase() : "??";
+                              } catch (error) {
+                                console.error(`Error generating avatar fallback for user: ${user}`, error);
+                                return "??";
+                              }
+                            })()
+                          }
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="user-table-name">{user.name}</div>
-                        <div className="user-table-discordId">
-                          {user.discordId}
-                        </div>
+                        <div className="user-table-name">{user.username}</div>
+                        <div className="user-table-discordId">{user.discordId}</div>
                       </div>
                     </div>
                   </td>
                   <td className="user-table-td hidden md:table-cell">
-                    {user.memberSince}
+                    {new Date(Number(user.memberSince)).toLocaleDateString()}
                   </td>
                   <td className="user-table-td hidden lg:table-cell">
-                    {user.joinedDiscord}
+                    {new Date(Number(user.joinedDiscord)).toLocaleDateString()}
                   </td>
                   <td className="user-table-td">
                     <div className="user-table-roles-container">
@@ -282,7 +289,6 @@ export function UserTable({
                       >
                         <UserPlus className="h-4 w-4" />
                       </Button>
-
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button
@@ -294,7 +300,10 @@ export function UserTable({
                             <MoreVertical className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="user-table-dropdown">
+                        <DropdownMenuContent
+                          align="end"
+                          className="user-table-dropdown"
+                        >
                           <DropdownMenuItem className="user-table-dropdown-item">
                             View Profile
                           </DropdownMenuItem>
@@ -331,22 +340,19 @@ export function UserTable({
                               <span className="user-table-label">
                                 Joined Stellar Developers:
                               </span>{" "}
-                              {user.joinedStellarDevelopers ?? "N/A"}
+                              {new Date(Number(user.joinedStellarDevelopers)).toLocaleDateString() }
                             </p>
                             <p>
                               <span className="user-table-label">Member Since:</span>{" "}
-                              {user.memberSince}
+                              {new Date(Number(user.memberSince)).toLocaleDateString()}
                             </p>
                             <p>
                               <span className="user-table-label">Joined Discord:</span>{" "}
-                              {user.joinedDiscord}
+                              {new Date(Number(user.joinedDiscord)).toLocaleDateString()}
                             </p>
                           </div>
-
                           <div className="user-table-detail-box">
-                            <h3 className="user-table-section-title">
-                              Role History
-                            </h3>
+                            <h3 className="user-table-section-title">Role History</h3>
                             <ul className="space-y-1">
                               {user.roles.map((role, idx2) => (
                                 <li key={idx2} className="flex items-center gap-2">
@@ -357,7 +363,7 @@ export function UserTable({
                                   {role.obtained && (
                                     <span className="user-table-label">
                                       {" "}
-                                      Obtained on {role.obtained}
+                                      Obtained on {new Date(Number(role.obtained)).toLocaleDateString()}
                                     </span>
                                   )}
                                 </li>
@@ -375,11 +381,17 @@ export function UserTable({
         </table>
       </div>
 
-      {/* Footer with pagination & select */}
+      {/* Footer with pagination controls */}
       <div className="user-table-footer">
-        <div className="user-table-showing">
-          <span>Showing</span>
-          <Select value={perPage} onValueChange={setPerPage}>
+        <div className="user-table-showing flex items-center gap-2 text-sm">
+          <span>Showing page {currentPage + 1} of {totalPages || 1}</span>
+
+          {/* Page size select */}
+          <Select value={perPage} onValueChange={(val) => {
+            setPerPage(val);
+            // Reset to page 0 when changing page size
+            setCurrentPage(0);
+          }}>
             <SelectTrigger className="user-table-page-select-trigger">
               <SelectValue placeholder="12" />
             </SelectTrigger>
@@ -398,54 +410,32 @@ export function UserTable({
               </SelectItem>
             </SelectContent>
           </Select>
-          <span>members of {sortedUsers.length}</span>
+
+          <span>({sortedUsers.length} total filtered)</span>
         </div>
 
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious href="#" className="user-table-page-link" />
-            </PaginationItem>
-
-            <PaginationItem>
-              <PaginationLink
-                href="#"
-                isActive
-                className="user-table-page-link-active"
-              >
-                1
-              </PaginationLink>
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationLink href="#" className="user-table-page-link">
-                2
-              </PaginationLink>
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationLink href="#" className="user-table-page-link">
-                3
-              </PaginationLink>
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationLink href="#" className="user-table-page-link">
-                4
-              </PaginationLink>
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationLink href="#" className="user-table-page-link">
-                5
-              </PaginationLink>
-            </PaginationItem>
-
-            <PaginationItem>
-              <PaginationEllipsis className="user-table-page-ellipsis" />
-            </PaginationItem>
-
-            <PaginationItem>
-              <PaginationNext href="#" className="user-table-page-link" />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
+        {/* Example "Next/Prev" buttons */}
+        <div className="flex items-center gap-2 text-sm mt-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+            disabled={currentPage <= 0}
+          >
+            Prev
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage((p) => {
+              const next = p + 1;
+              return next < totalPages ? next : p;
+            })}
+            disabled={currentPage >= totalPages - 1}
+          >
+            Next
+          </Button>
+        </div>
       </div>
     </div>
   );

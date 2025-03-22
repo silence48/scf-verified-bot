@@ -22,7 +22,7 @@ export function RoleStats({
 }: RoleStatsProps) {
   const stats = [
     {
-      name: "Verified",
+      name: "SCF Verified",
       count: verifiedCount,
       iconSrc: "/verified.png",
       color: "text-emerald-400",
@@ -31,7 +31,7 @@ export function RoleStats({
       countColor: "text-emerald-300",
     },
     {
-      name: "Pathfinder",
+      name: "SCF Pathfinder",
       count: pathfinderCount,
       iconSrc: "/pathfinder.png",
       color: "text-blue-400",
@@ -40,7 +40,7 @@ export function RoleStats({
       countColor: "text-blue-300",
     },
     {
-      name: "Navigator",
+      name: "SCF Navigator",
       count: navigatorCount,
       iconSrc: "/navigator.png",
       color: "text-indigo-400",
@@ -49,7 +49,7 @@ export function RoleStats({
       countColor: "text-indigo-300",
     },
     {
-      name: "Pilot",
+      name: "SCF Pilot",
       count: pilotCount,
       iconSrc: "/pilot.png",
       color: "text-purple-400",
@@ -70,7 +70,7 @@ export function RoleStats({
             className={
               isActive
                 ? `role-stats-card ${stat.bgColor} ${stat.borderColor} ${stat.color}`
-                : `role-stats-card role-stats-card-inactive`
+                : "role-stats-card role-stats-card-inactive"
             }
           >
             <div className="relative">

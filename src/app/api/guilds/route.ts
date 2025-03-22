@@ -6,6 +6,7 @@ import { getClient } from "@/discord-bot/client";
 export async function GET() {
   try {
     // The client should be connected & have a cache
+    console.log(`[guilds] getting the discord client instance`);
     const client = await getClient();
     const guilds = client.guilds.cache.map((g) => ({
       id: g.id,

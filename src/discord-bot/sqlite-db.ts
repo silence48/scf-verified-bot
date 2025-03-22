@@ -334,6 +334,7 @@ export async function getRoleCounts(guildId: string): Promise<{
  */
 export interface MemberRoleInfo {
   name: string;
+  shortname: string;
   obtained: string;  // 'role_assigned_at'
 }
 
@@ -388,7 +389,8 @@ export async function getAllMembersForGuild(guildId: string): Promise<MemberInfo
 
     // Convert them to typed array
     const mappedRoles: MemberRoleInfo[] = userRoles.map((r) => ({
-      name: r.role_name.replace("SCF ", ""), // example short name 
+      name: r.role_name,
+      shortname: r.role_name.replace("SCF ", ""),
       obtained: r.role_assigned_at,
     }));
 

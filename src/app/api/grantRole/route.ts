@@ -20,6 +20,7 @@ export async function POST(request: Request) {
     }
 
     // Ensure the bot is started
+    console.log("[grantRole] getting the discord client instance");
     const client = await getClient();
 
     // Attempt to get the guild from cache or fetch
@@ -32,7 +33,7 @@ export async function POST(request: Request) {
       }
     }
 
-    const result = await grantRoleWithChecks(guild, userId, roleName);
+    const result = await grantRoleWithChecks(guild, userId, roleName, client);
     if (!result.success) {
       const status = result.statusCode || 500;
       return NextResponse.json({ error: result.error }, { status });
