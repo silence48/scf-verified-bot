@@ -1,18 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  createRole,
-  updateRole,
-  deleteRole,
-  nominateForRole,
-  createVotingThread,
-  getAllRoles,
-} from "@/actions/roles";
-import type { TierRole as Role, RoleTier } from "@/types/roles";
-import type { BadgeAsset as Badge } from "@/discord-bot/types";
-import { getAllBadges } from "@/actions/badges";
 import { AlertCircle, Plus, Search } from "lucide-react";
+
+import { createRole, updateRole, deleteRole, nominateForRole, createVotingThread, getAllRoles } from "@/actions/roles";
+import type { TierRole as Role, RoleTier } from "@/types/roles";
+import { ClientBadge, getBadgesForClient } from "@/actions/badges";
 import { Button } from "@/components/ui";
 import { RoleCard } from "./components/role-card";
 import { RoleForm } from "./components/role-form";
@@ -22,7 +15,7 @@ import { ConfirmationModal } from "@/components/ConfirmationModal";
 // Main component
 export default function ManageRolesClient() {
   const [roles, setRoles] = useState<Role[]>([]);
-  const [badges, setBadges] = useState<Badge[]>([]);
+  const [badges, setBadges] = useState<ClientBadge[]>([]);
   const [searchText, setSearchText] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,8 +25,8 @@ export default function ManageRolesClient() {
   const [nominatingRole, setNominatingRole] = useState<Role | null>(null);
 
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
-    isOpen: boolean
-    roleId: string | null
+    isOpen: boolean;
+    roleId: string | null;
   }>({ isOpen: false, roleId: null });
 
   // Fetch roles and badges on component mount
@@ -46,7 +39,7 @@ export default function ManageRolesClient() {
         const rolesData = await getAllRoles();
 
         // Fetch badges
-        const badgesData = await getAllBadges();
+        const badgesData = await getBadgesForClient();
 
         setRoles(rolesData);
         setBadges(badgesData);
@@ -62,14 +55,27 @@ export default function ManageRolesClient() {
   }, []);
 
   // Filter roles based on search text
-  const filteredRoles = roles.filter(
-    (role) =>
-      role.roleName.toLowerCase().includes(searchText.toLowerCase()) ||
-      role.description.toLowerCase().includes(searchText.toLowerCase()) ||
-      role.tier.toLowerCase().includes(searchText.toLowerCase()),
-  );
+  const filteredRoles = roles.filter((role) => {
+    try {
+      // Apply text search
+      const matchesSearch =
+        role.roleName.toLowerCase().includes(searchText.toLowerCase()) ||
+        (role.description && role.description.toLowerCase()).includes(searchText.toLowerCase()) ||
+        (role.tier && role.tier.toLowerCase().includes(searchText.toLowerCase()));
+
+      /*
+        const matchesFilter = 
+          activeFilters.length === 0 || 
+          (role.tier && activeFilters.includes(role.tier));
+        */
+      return matchesSearch; // && matchesFilter;
+    } catch (error) {
+      console.log(error);
+    }
+  });
 
   // Group roles by tier
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const groupedRoles = filteredRoles.reduce(
     (acc: Record<RoleTier, Role[]>, role) => {
       if (!acc[role.tier]) {
@@ -80,9 +86,12 @@ export default function ManageRolesClient() {
     },
     {} as Record<RoleTier, Role[]>,
   );
+  const tierOrder: string[] = ["SCF Verified", "SCF Pathfinder", "SCF Navigator", "SCF Pilot"];
+  const tieredRoles = filteredRoles.filter((r) => tierOrder.includes(r.roleName)).sort((a, b) => tierOrder.indexOf(a.roleName) - tierOrder.indexOf(b.roleName));
 
-  // Sort tiers in specific order
-  const tierOrder: RoleTier[] = ["SCF Pilot", "SCF Navigator", "SCF Pathfinder", "SCF Verified"];
+  const scfOtherRoles = filteredRoles.filter((r) => r.roleName.startsWith("SCF ") && !tierOrder.includes(r.roleName));
+
+  const unmanagedRoles = filteredRoles.filter((r) => !r.roleName.startsWith("SCF "));
 
   // Handle role creation
   const handleCreateRole = async (role: Role) => {
@@ -161,7 +170,7 @@ export default function ManageRolesClient() {
 
   return (
     <div className="dark container mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <h1 className="page-title">Manage Roles</h1>
 
         <Button
@@ -185,13 +194,7 @@ export default function ManageRolesClient() {
 
       <div className="search-input-wrapper">
         <Search className="search-input-icon" />
-        <input
-          type="text"
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          placeholder="Search roles..."
-          className="search-input"
-        />
+        <input type="text" value={searchText} onChange={(e) => setSearchText(e.target.value)} placeholder="Search roles..." className="search-input" />
       </div>
 
       {isLoading ? (
@@ -200,6 +203,7 @@ export default function ManageRolesClient() {
         </div>
       ) : (
         <div className="space-y-8">
+          {/*
           {tierOrder.map((tier) => {
             if (!groupedRoles[tier] || groupedRoles[tier].length === 0) return null;
 
@@ -228,13 +232,51 @@ export default function ManageRolesClient() {
                 </div>
               </div>
             );
-          })}
+          })}*/}
+          <div className="space-y-8">
+            <div>
+              <h2 className="section-title">Tier Roles</h2>
+              <div className="mt-4 grid gap-4">
+                {tieredRoles.map((role) => (
+                  <RoleCard key={role._id} role={role} badges={badges} onEdit={setEditingRole} onDelete={(roleId) => setDeleteConfirmation({ isOpen: true, roleId })} />
+                ))}
+              </div>
+            </div>
+
+            {/* SCF Roles (non-tier) */}
+            <div className="mt-8">
+              <h2 className="section-title">Other SCF Roles</h2>
+              {scfOtherRoles.length === 0 ? (
+                <p className="mt-2 text-sm text-gray-400">No other SCF roles found.</p>
+              ) : (
+                <div className="mt-4 grid gap-4">
+                  {scfOtherRoles.map((role) => (
+                    <RoleCard key={role._id} role={role} badges={badges} onEdit={setEditingRole} onDelete={(roleId) => setDeleteConfirmation({ isOpen: true, roleId })} />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Unmanaged Roles */}
+            <div className="mt-8">
+              <h2 className="section-title">Unmanaged Roles</h2>
+              {unmanagedRoles.length === 0 ? (
+                <p className="mt-2 text-sm text-gray-400">No unmanaged roles found.</p>
+              ) : (
+                <div className="mt-4 grid gap-4">
+                  {unmanagedRoles.map((role) => (
+                    <RoleCard key={role._id} role={role} badges={badges} onEdit={setEditingRole} onDelete={(roleId) => setDeleteConfirmation({ isOpen: true, roleId })} />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
 
       {/* Role form modal */}
       {(isFormOpen || editingRole) && (
-        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <RoleForm
             role={editingRole || undefined}
             badges={badges}
@@ -250,7 +292,7 @@ export default function ManageRolesClient() {
       {/* Nomination form modal */}
       {nominatingRole && (
         <div className="modal-container">
-          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto">
             <NominationForm role={nominatingRole} onSubmit={handleNominate} onCancel={() => setNominatingRole(null)} />
           </div>
         </div>
@@ -271,4 +313,3 @@ export default function ManageRolesClient() {
     </div>
   );
 }
-

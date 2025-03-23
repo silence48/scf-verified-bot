@@ -1,7 +1,6 @@
 import dotenv from "dotenv";
-import withBundleAnalyzer from '@next/bundle-analyzer'
-import path from 'path';
-import  { type NextConfig } from 'next';
+import withBundleAnalyzer from "@next/bundle-analyzer";
+import  { type NextConfig } from "next";
 // Load environment variables
 dotenv.config();
 
@@ -18,22 +17,22 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'api.stellar.quest',
-        pathname: '/badge/**',
+        protocol: "https",
+        hostname: "api.stellar.quest",
+        pathname: "/badge/**",
       },
       {
-        protocol: 'https',
-        hostname: 'assets.rpciege.com',
+        protocol: "https",
+        hostname: "assets.rpciege.com",
       },
     ],
   },
   env: {
     NEXT_PUBLIC_RECAPTCHA_SITE_KEY: process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY,
   },
-  serverExternalPackages: ['sodium-native', '@stellar/stellar-sdk'],
-  productionBrowserSourceMaps: true,
-  staticPageGenerationTimeout: 600,
+  serverExternalPackages: ["sodium-native", "@stellar/stellar-sdk"],
+  productionBrowserSourceMaps: false,
+  staticPageGenerationTimeout: 6000,
   experimental: {
     ppr: "incremental", 
     optimizePackageImports: [],
@@ -43,18 +42,27 @@ const nextConfig: NextConfig = {
     parallelServerCompiles: false,
   },
 
-  
-webpack(config, { isServer }) {
-  config.stats = 'verbose';
+webpack(config, options/* { isServer }*/ ) {
+  config.stats = "verbose";
   //config.infrastructureLogging = {
     //level: 'verbose',
   // };
-  config.devtool = 'source-map';
-        config.module.rules.push({
-          test: /\.node/,
-          use: 'node-loader'
-        })
-     
+  config.ignoreWarnings = [
+    {
+      module: /@discordjs\/ws/,
+      message: /the request of a dependency is an expression/,
+    },
+  ];
+  config.module.rules.push({
+    test: /\.node/,
+    use: "node-loader"
+  });
+  if (!options.dev){
+    config.devtool = options.isServer ? false : "source-map";
+       
+  }
+  
+     /*
   if (isServer) {
     interface DevtoolModuleFilenameTemplateInfo {
       absoluteResourcePath: string;
@@ -77,15 +85,17 @@ webpack(config, { isServer }) {
     // fallback can just show the resource path
     config.output.devtoolFallbackModuleFilenameTemplate = "[resource-path]?[hash]";
   }
-
+*/
   return config;
-},};
+},
+
+};
 
 // Export the Next.js configuration
 // Wrap your config with the analyzer plugin:
 
 export default withBundleAnalyzer({
-  enabled: process.env.ANALYZE === 'true',
+  enabled: process.env.ANALYZE === "true",
   openAnalyzer: true,
   // optional: openAnalyzer: false,
 })(nextConfig);

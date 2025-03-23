@@ -52,3 +52,5 @@ src/discord-bot/old/
 !src/discord-bot/old/old-short.ts
 analyze
 *.old
+outputlog.log
+*.log

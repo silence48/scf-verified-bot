@@ -1,6 +1,63 @@
 import { SCFUser } from "@/discord-bot/types";
 import { ObjectId, Document } from "mongodb";
 
+export interface AppMetaDoc {
+  /**
+   * Unique identifier for the meta entry. 
+   * e.g. "tier_roles_initialized" or "migrations_info"
+   */
+  _id: string;
+
+  /**
+   * Overall category or subtype of this meta doc
+   * (optional, useful if you store different functionalities or flags).
+   */
+  type?: string;
+
+  /**
+   * Timestamp of when this meta doc was created.
+   */
+  createdAt?: Date;
+
+  /**
+   * Timestamp of when this meta doc was last updated.
+   */
+  updatedAt?: Date;
+
+  /**
+   * General date field (or alternative name) for specific usage,
+   * e.g. marking an initialization time, etc.
+   */
+  date?: Date;
+
+  /**
+   * Optional container for migration tracking info, e.g. version info.
+   */
+  migrations?: {
+    version: number;
+    lastRun: Date;
+    notes?: string;
+  };
+
+  /**
+   * Optional container for caching-related flags.
+   */
+  caching?: {
+    lastCacheUpdate?: Date;
+    cacheDurationMs?: number;
+  };
+
+  /**
+   * Optional watchers or any other needed sub-fields.
+   */
+  watchers?: string[];
+  
+  /**
+   * You can add more fields as needed for specific logic.
+   */
+  [key: string]: unknown;
+}
+
 /**
  * This is the overall structure returned by the loadGuildData function.
  * It contains counts for roles and arrays for members, badges, votes, and nomination threads.

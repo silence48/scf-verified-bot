@@ -7,7 +7,7 @@ import { BadgeAsset } from "@/types/discord-bot";
 import Image from "next/image";
 
 interface BadgeSelectorProps {
-  badges: BadgeAsset[];
+  badges: (Omit<BadgeAsset, "_id"> & { _id: string })[];
   selectedBadgeIds: string[];
   setSelectedBadgeIds: (ids: string[]) => void;
 }

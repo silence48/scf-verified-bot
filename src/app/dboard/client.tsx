@@ -3,7 +3,7 @@
 import type React from "react";
 
 import { useState, useEffect } from "react";
-import type { MemberInfo, PrecomputedBadge } from "@/types/discord-bot";
+import type { LoadGuildData, MemberInfo, PrecomputedBadge } from "@/types/discord-bot";
 import type { TierRole } from "@/types/roles";
 import { loadGuildData } from "@/actions/guild";
 import { getAllRoles } from "@/actions/roles";
@@ -119,12 +119,12 @@ function MemberCard({
 
 // TierRole card component
 
-function DashboardRoleCard({ role }: { role: TierRole }) {
+function DashboardRoleCard({ role }: { role: TierRole; }) {
   return (
     <Link href="/manageroles" className="block no-underline text-inherit">
       <div className="card-container transition-all h-full flex flex-col hover:translate-y-[-2px] hover:shadow-lg">
         <div className="flex items-center gap-3 mb-3">
-          <div className={`badge-dot badge-${role.tier.toLowerCase()}`} />
+          <div className={`badge-dot badge-${role.tier?.toLowerCase() || "default"}`} />
           <div>
             <h3 className="card-title">{role.roleName}</h3>
             <span className="text-xs bg-[#12141e]/40 text-gray-400 px-2 py-0.5 rounded-full">
@@ -172,8 +172,7 @@ function DashboardRoleCard({ role }: { role: TierRole }) {
                         {req.type === "SocialVerification" && "Verify social account"}
                         {req.type === "StellarAccount" && "Verify Stellar address"}
                         {req.type === "BadgeCount" &&
-                          `${req.minCount} badges from ${
-                            req.badgeCategory || "any category"
+                          `${req.minCount} badges from ${req.badgeCategory || "any category"
                           }`}
                         {req.type === "ConcurrentRole" &&
                           `Have ${req.concurrentRoleName} role`}
@@ -182,10 +181,8 @@ function DashboardRoleCard({ role }: { role: TierRole }) {
                         {req.type === "Nomination" &&
                           `Get nominated and receive ${req.nominationRequiredCount} upvotes`}
                         {req.type === "CommunityVote" &&
-                          `Participate in ${
-                            req.participationRounds
-                          } Community Vote round${
-                            req.participationRounds !== 1 ? "s" : ""
+                          `Participate in ${req.participationRounds
+                          } Community Vote round${req.participationRounds !== 1 ? "s" : ""
                           }`}
                       </li>
                     ))}
@@ -222,9 +219,13 @@ function StatsCard({
     </div>
   );
 }
-
+type DashboardClientProps = {
+  initialGuildData: LoadGuildData;
+  initialRoles: TierRole[];
+};
 // Main component
-export default function DashboardClient(initialGuildData: LoadGuildData, initialRoles) {
+export default function DashboardClient({ initialGuildData, initialRoles }: DashboardClientProps) {
+  const [members, setMembers] = useState<MemberInfo[]>(initialGuildData.members);
   const [recentMembers, setRecentMembers] = useState<MemberInfo[]>([]);
   const [userBadges, setUserBadges] = useState<PrecomputedBadge[]>(initialGuildData.userbadges);
   const [roles, setRoles] = useState<TierRole[]>(initialRoles);
@@ -237,14 +238,31 @@ export default function DashboardClient(initialGuildData: LoadGuildData, initial
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setIsLoading(true);
+        let guildData;
+        let rolesData;
+        // Only load data if we do't have it already from props
+        if (!initialGuildData || !initialRoles) {
+          setIsLoading(true);
 
-        // Get guild data
-        const guildId = "897514728459468821"; // Same as used in users/page.tsx
-        const guildData = await loadGuildData(guildId);
+          // Get guild data
+          const guildId = "897514728459468821"; // Same as used in users/page.tsx
+          guildData = await loadGuildData(guildId);
+          rolesData = await getAllRoles();
+
+          setMembers(guildData.members);
+          setUserBadges(guildData.userbadges);
+          setRoles(rolesData);
+        } else {
+          guildData = initialGuildData;
+          rolesData = initialRoles;
+          setMembers(initialGuildData.members);
+          setUserBadges(initialGuildData.userbadges);
+          setRoles(initialRoles);
+          setIsLoading(false);
+        }
         console.log(`fetched ${guildData.members.length}`);
         // Get all roles
-        const rolesData = await getAllRoles();
+        //const rolesData = await getAllRoles();
 
         setMembers(guildData.members);
         setUserBadges(guildData.userbadges);
@@ -285,7 +303,7 @@ export default function DashboardClient(initialGuildData: LoadGuildData, initial
     };
 
     fetchData();
-  }, []);
+  }, [initialGuildData, initialRoles]);
 
   // Handle filter toggle
   const handleFilterToggle = (role: string) => {
@@ -302,11 +320,25 @@ export default function DashboardClient(initialGuildData: LoadGuildData, initial
   );
 
   const filteredRoles = roles.filter(
-    (role) =>
-      (activeFilters.length === 0 || activeFilters.includes(role.tier)) &&
-      (role.roleName.toLowerCase().includes(searchText.toLowerCase()) ||
-        role.description.toLowerCase().includes(searchText.toLowerCase()) ||
-        role.tier.toLowerCase().includes(searchText.toLowerCase())),
+    (role) => {
+      // Only include roles that start with "SCF "
+      if (!role.roleName.startsWith("SCF ")) {
+        return false;
+      }
+
+      // Apply text search - FIXED SAFELY HANDLING UNDEFINED PROPERTIES
+      const matchesSearch =
+        role.roleName.toLowerCase().includes(searchText.toLowerCase()) ||
+        (role.description ? role.description.toLowerCase().includes(searchText.toLowerCase()) : false) ||
+        (role.tier ? role.tier.toLowerCase().includes(searchText.toLowerCase()) : false);
+
+      // Apply role tier filters
+      const matchesFilter =
+        activeFilters.length === 0 ||
+        (role.tier && activeFilters.includes(role.tier));
+
+      return matchesSearch && matchesFilter;
+    }
   );
 
   // Calculate stats
@@ -324,10 +356,10 @@ export default function DashboardClient(initialGuildData: LoadGuildData, initial
     }
     return count;
   }, 0);
-  
+
   // Calculate average badges per member with badges
   const membersWithBadges = userBadges.filter(badge => badge.discordId && memberDiscordIds.has(badge.discordId)).length;
-  const averageBadgesPerMember = membersWithBadges > 0 
+  const averageBadgesPerMember = membersWithBadges > 0
     ? Math.round((badgesForMembers / membersWithBadges) * 10) / 10
     : 0;
 
@@ -369,126 +401,126 @@ export default function DashboardClient(initialGuildData: LoadGuildData, initial
       ) : (
         <div className="space-y-8">
           {/* TierRole Stats */}
-          <RoleStats roles={roles} activeFilters={activeFilters} onFilterToggle={handleFilterToggle} />
-{/* Stats */}
-<div>
-<div className="mb-4">
-  <h2 className="section-title">Community Stats</h2>
-</div>
+          <RoleStats roles={filteredRoles} activeFilters={activeFilters} onFilterToggle={handleFilterToggle} />
+          {/* Stats */}
+          <div>
+            <div className="mb-4">
+              <h2 className="section-title">Community Stats</h2>
+            </div>
 
-{/* First row of stats */}
-<div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-  <StatsCard title="Total Users" value={totalMembers} icon={<UserIcon className="text-blue-400 h-5 w-5" />} />
-  <StatsCard
-  title="Total Roles"
-  value={totalRoles}
-  icon={
-    <svg
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="text-indigo-400"
-    >
-    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-    <circle cx="9" cy="7" r="4"></circle>
-    <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-    </svg>
-  }
-  />
-  <StatsCard
-  title="Total Badges"
-  value={totalBadges}
-  icon={
-    <svg
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="text-purple-400"
-    >
-    <path d="M12 15l-2 5l9-9l-9-9l2 5l-9 9l9-9"></path>
-    </svg>
-  }
-  />
-</div>
+            {/* First row of stats */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+              <StatsCard title="Total Users" value={totalMembers} icon={<UserIcon className="text-blue-400 h-5 w-5" />} />
+              <StatsCard
+                title="Total Roles"
+                value={totalRoles}
+                icon={
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-indigo-400"
+                  >
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                  </svg>
+                }
+              />
+              <StatsCard
+                title="Total Badges"
+                value={totalBadges}
+                icon={
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-purple-400"
+                  >
+                    <path d="M12 15l-2 5l9-9l-9-9l2 5l-9 9l9-9"></path>
+                  </svg>
+                }
+              />
+            </div>
 
-{/* Second row of stats */}
-<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-  <StatsCard
-  title="Unique Wallets"
-  value={uniquePublicKeys}
-  icon={
-    <svg
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="text-green-400"
-    >
-    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-    <line x1="2" y1="10" x2="22" y2="10"></line>
-    </svg>
-  }
-  />
-  <StatsCard
-  title="Members with Badges"
-  value={membersWithBadges}
-  icon={
-    <svg
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="text-amber-400"
-    >
-    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-    <circle cx="9" cy="7" r="4"></circle>
-    <path d="M23 21v-2a4 4 0 0 0-2-3.5"></path>
-    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-    <circle cx="19" cy="15" r="2"></circle>
-    </svg>
-  }
-  />
-  <StatsCard
-  title="Avg. Badges per User"
-  value={averageBadgesPerMember}
-  icon={
-    <svg
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="text-cyan-400"
-    >
-    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-    </svg>
-  }
-  />
-</div>
-</div>
+            {/* Second row of stats */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <StatsCard
+                title="Unique Wallets"
+                value={uniquePublicKeys}
+                icon={
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-green-400"
+                  >
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                    <line x1="2" y1="10" x2="22" y2="10"></line>
+                  </svg>
+                }
+              />
+              <StatsCard
+                title="Members with Badges"
+                value={membersWithBadges}
+                icon={
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-amber-400"
+                  >
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-2-3.5"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    <circle cx="19" cy="15" r="2"></circle>
+                  </svg>
+                }
+              />
+              <StatsCard
+                title="Avg. Badges per User"
+                value={averageBadgesPerMember}
+                icon={
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-cyan-400"
+                  >
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                  </svg>
+                }
+              />
+            </div>
+          </div>
 
 
 
@@ -509,14 +541,17 @@ export default function DashboardClient(initialGuildData: LoadGuildData, initial
             {/* Show filtered recent members if search/filter is active, otherwise show all recent members */}
             {searchText || activeFilters.length > 0 ? (
               filteredMembers.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {filteredMembers.slice(0, 4).map((member) => (
-                    <MemberCard
-                      key={member.discordId}
-                      member={member}
-                      precomputedBadge={findPrecomputedBadge(member.discordId)}
-                    />
-                  ))}
+                <div className="overflow-x-auto pb-4 custom-scrollbar">
+                  <div className="flex gap-4 min-w-full" style={{ width: "max-content" }}>
+                    {filteredMembers.slice(0, 8).map((member) => (
+                      <div key={member.discordId} className="min-w-[280px] w-[280px]">
+                        <MemberCard
+                          member={member}
+                          precomputedBadge={findPrecomputedBadge(member.discordId)}
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <div className="bg-[#1a1d29]/80 border border-gray-800/60 rounded-lg p-6 text-center">
@@ -525,14 +560,17 @@ export default function DashboardClient(initialGuildData: LoadGuildData, initial
               )
             ) : (
               recentMembers.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {recentMembers.map((member) => (
-                    <MemberCard
-                      key={member.discordId}
-                      member={member}
-                      precomputedBadge={findPrecomputedBadge(member.discordId)}
-                    />
-                  ))}
+                <div className="overflow-x-auto pb-4 custom-scrollbar">
+                  <div className="flex gap-4 min-w-full" style={{ width: "max-content" }}>
+                    {recentMembers.map((member) => (
+                      <div key={member.discordId} className="min-w-[280px] w-[280px]">
+                        <MemberCard
+                          member={member}
+                          precomputedBadge={findPrecomputedBadge(member.discordId)}
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <div className="bg-[#1a1d29]/80 border border-gray-800/60 rounded-lg p-6 text-center">
@@ -552,10 +590,14 @@ export default function DashboardClient(initialGuildData: LoadGuildData, initial
             </div>
 
             {filteredRoles.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {filteredRoles.slice(0, 4).map((role) => (
-                  <DashboardRoleCard key={role._id} role={role} />
-                ))}
+              <div className="overflow-x-auto pb-4 custom-scrollbar">
+                <div className="flex gap-4 min-w-full" style={{ width: "max-content" }}>
+                  {filteredRoles.slice(0, 8).map((role) => (
+                    <div key={role._id} className="min-w-[280px] w-[280px]">
+                      <DashboardRoleCard role={role} />
+                    </div>
+                  ))}
+                </div>
               </div>
             ) : (
               <div className="bg-[#1a1d29]/80 border border-gray-800/60 rounded-lg p-6 text-center">

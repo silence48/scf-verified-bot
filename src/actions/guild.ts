@@ -4,53 +4,54 @@ import { getClient } from "@/discord-bot/client";
 import { getMongoDatabase, getRoleCounts } from "@/discord-bot/mongo-db";
 import { getAllPrecomputedBadges } from "@/lib/BadgeWatcher";
 import { getAllMembersAgg } from "@/lib/MemberWatcher";
-import type { LoadGuildData, RoleStats, MemberInfo, NominationThread, NominationVote, PrecomputedBadge } from "@/types/discord-bot";
+import type { LoadGuildData, MemberInfo, NominationThread, NominationVote, PrecomputedBadge } from "@/types/discord-bot";
+import { checkAndInitializeTierRoles } from "./roles";
 
 export async function getAllVotes(): Promise<NominationVote[]> {
-    try {
-        const db = await getMongoDatabase();
-        const nomination_votes = await db.collection<NominationVote>("nomination_votes").find().toArray();
-        return nomination_votes;
-    } catch (error) {
-        throw new Error(`Failed to fetch nomination votes ${error}`);
-    }
-};
+  try {
+    const db = await getMongoDatabase();
+    const nomination_votes = await db.collection<NominationVote>("nomination_votes").find().toArray();
+    return nomination_votes;
+  } catch (error) {
+    throw new Error(`Failed to fetch nomination votes ${error}`);
+  }
+}
 
 export async function getAllNominations(): Promise<NominationThread[]> {
-    try {
-        const db = await getMongoDatabase();
-        const nomination_threads = await db.collection<NominationThread>("nomination_threads").find().toArray();
-        return nomination_threads;
-    } catch (error) {
-        throw new Error(`Failed to fetch nomination threads ${error}`);
-    }
-};
-
-export async function roleStats() {
-
+  try {
+    const db = await getMongoDatabase();
+    const nomination_threads = await db.collection<NominationThread>("nomination_threads").find().toArray();
+    return nomination_threads;
+  } catch (error) {
+    throw new Error(`Failed to fetch nomination threads ${error}`);
+  }
 }
+
+export async function roleStats() {}
 export async function loadGuildData(guildId: string): Promise<LoadGuildData> {
-    console.log(`[loadGuildData] Loading data for guild ${guildId}`);
-     const client = await getClient(`[loadGuildData] for ${guildId}`);
-      const guild = await client.guilds.fetch(guildId);
-      const roles = await guild.roles.fetch();
-    const counts = await getRoleCounts(guild);
- 
-    const members: MemberInfo[] = await getAllMembersAgg(guildId);
-    const userbadges: PrecomputedBadge[] = await getAllPrecomputedBadges();
+  console.log(`[loadGuildData] Loading data for guild ${guildId}`);
+  console.log(`[loadGuildData] Initializing TierRoles if globalThis.tierRolesInitialized is falsey ${globalThis.tierRolesInitialized}`);
+  if (!globalThis.tierRolesInitialized) {
+    await checkAndInitializeTierRoles();
+  }
+  const client = await getClient(`[loadGuildData] for ${guildId}`);
+  const guild = await client.guilds.fetch(guildId);
+  // const roles = await guild.roles.fetch();
+  const counts = await getRoleCounts(guild);
 
-    const uservotes: NominationVote[] = await getAllVotes();
-      const threads: NominationThread[] = await getAllNominations();
-return {
-        roleStats: counts,
-        members,
-        userbadges,
-        uservotes,
-        threads,
-    };
+  const members: MemberInfo[] = await getAllMembersAgg(guildId);
+  const userbadges: PrecomputedBadge[] = await getAllPrecomputedBadges();
+
+  const uservotes: NominationVote[] = await getAllVotes();
+  const threads: NominationThread[] = await getAllNominations();
+  return {
+    roleStats: counts,
+    members,
+    userbadges,
+    uservotes,
+    threads,
+  };
 }
-
-
 
 /*
 [
@@ -164,8 +165,6 @@ const badge2: Badge ={
   "lastMarkUrlHolders": "/explorer/public/asset/SQ0503-GATRDOIZ24ZOQR2VILU4ZED3NTMZCWSW3KI47QXT7LFZIGTIXFBTYCAA/holders?order=desc&limit=200&cursor=AAAAAAAAAAEAjxB5"
 };
 */
-
-
 
 /*
   // Mock process responses

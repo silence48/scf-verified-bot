@@ -6,11 +6,12 @@ import { ChevronDown, ChevronUp, Edit, Trash } from "lucide-react";
 import { Button } from "@/components/ui";
 import { NominationModal } from "./nomination-modal";
 import { BadgeAsset } from "@/types/discord-bot";
+import { ClientBadge } from "@/actions/badges"; 
 import Image from "next/image";
 
 interface RoleCardProps {
   role: TierRole
-  badges: BadgeAsset[]
+  badges: ClientBadge[]
   onEdit: (role: TierRole) => void
   onDelete: (roleId: string) => void
 }

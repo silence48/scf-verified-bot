@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import type { TierRole } from "@/types/roles";
+import { fetchRoleCounts } from "@/actions/roles";
 
 interface RoleStatsProps {
   roles: TierRole[]
@@ -9,14 +11,19 @@ interface RoleStatsProps {
 }
 
 export function RoleStats({ roles, activeFilters, onFilterToggle }: RoleStatsProps) {
-  // Count roles by tier
-  const roleCounts = roles.reduce((acc: Record<string, number>, role) => {
-    if (!acc[role.tier]) {
-      acc[role.tier] = 0;
+  const [roleCounts, setRoleCounts] = useState<Record<string, number>>({});
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    async function loadCounts() {
+      setLoading(true);
+      const counts = await fetchRoleCounts(roles);
+      setRoleCounts(counts);
+      setLoading(false);
     }
-    acc[role.tier]++;
-    return acc;
-  }, {});
+    
+    loadCounts();
+  }, [roles]);
 
   const getTierColor = (tier: string) => {
     switch (tier) {
@@ -48,47 +55,75 @@ export function RoleStats({ roles, activeFilters, onFilterToggle }: RoleStatsPro
     }
   };
 
-  return (
-    <div className="role-stats-grid">
-      {Object.entries(roleCounts).map(([tier, count]) => (
-        <div
-          key={tier}
-          className={`role-stats-card relative ${
-            activeFilters.includes(tier) ? getTierColor(tier) : "role-stats-card-inactive"
-          } ${activeFilters.includes(tier) ? "border-2" : "border"}`}
-          onClick={() => onFilterToggle(tier)}
-        >
-          {activeFilters.includes(tier) && (
-            <button
-              className="role-stats-card-close"
-              onClick={(e) => {
-                e.stopPropagation();
-                onFilterToggle(tier);
-              }}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
-          )}
-          <div className="flex-1">
-            <div className="role-stats-name">{tier}</div>
-            <div className={`role-stats-count ${getTierTextColor(tier)}`}>{count}</div>
-          </div>
+  const getTierIconColor = (tier: string) => {
+    switch (tier) {
+      case "Verified":
+        return "text-emerald-400/25";
+      case "Pathfinder":
+        return "text-blue-400/25";
+      case "Navigator":
+        return "text-indigo-400/25";
+      case "Pilot":
+        return "text-purple-400/25";
+      default:
+        return "text-gray-400/25";
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="p-4 bg-[#1a1d29]/80 border border-gray-800/60 rounded-xl text-center">
+        <div className="animate-pulse flex justify-center space-x-6 my-2">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-16 w-52 bg-gray-800/50 rounded-lg"></div>
+          ))}
         </div>
-      ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 custom-scrollbar overflow-x-auto pb-4">
+      {Object.entries(roleCounts).map(([tier, count]) => {
+        const isActive = activeFilters.includes(tier);
+        
+        return (
+          <div
+            key={tier}
+            onClick={() => onFilterToggle(tier)}
+            className={`
+              relative flex items-center p-4 h-24 rounded-xl shadow-sm transition-all duration-200
+              ${isActive 
+                ? `${getTierColor(tier)} border-2 shadow-lg transform -translate-y-0.5` 
+                : "bg-[#1a1d29]/80 border border-gray-800/60 hover:bg-[#1e2235]/80 hover:border-gray-700"}
+              cursor-pointer min-w-[200px]
+            `}
+          >
+            {/* Background icon for visual interest */}
+            <div className="absolute right-3 bottom-1 opacity-30 pointer-events-none">
+              <svg
+                className={`w-12 h-12 ${getTierIconColor(tier)}`}
+                fill="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path d="M12 1v3m0 16v3M4.2 4.2l2.1 2.1m11.4 11.4l2.1 2.1M1 12h3m16 0h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" />
+              </svg>
+            </div>
+            
+            <div className="flex-1 z-10">
+              <div className={`text-sm font-medium ${isActive ? getTierTextColor(tier) : "text-gray-300"} mb-1`}>
+                {tier}
+              </div>
+              <div className={`text-2xl font-bold ${isActive ? getTierTextColor(tier) : "text-white"}`}>
+                {count.toLocaleString()}
+              </div>
+              <div className="text-xs text-gray-400">
+                {count === 1 ? "member" : "members"}
+              </div>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
-

@@ -1,6 +1,7 @@
 "use server";
 import { getMongoDatabase } from "@/discord-bot/mongo-db";
 import type { BadgeAsset } from "@/types/discord-bot";
+import { ObjectId } from "mongodb";
 //import { ObjectId } from "mongodb";
 
 export async function getBadges(): Promise<BadgeAsset[]> {
@@ -41,7 +42,7 @@ export async function updateBadge(badgeId: string, updatedData: Partial<BadgeAss
   ) as Partial<EditableBadgeFields>;
 
   await db.collection<BadgeAsset>("badges").updateOne(
-    { _id: badgeId }, 
+    { _id: new ObjectId(badgeId) }, 
     { $set: filteredData }, 
     { upsert: true }
   );

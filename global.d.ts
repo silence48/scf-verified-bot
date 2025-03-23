@@ -19,6 +19,7 @@ declare global {
       badgeWatcherRunning: boolean;
       refreshScheduledBadges: boolean;
       migrationran: boolean;
+      tierRolesInitialized: boolean;
     }
   }
 
@@ -34,6 +35,7 @@ declare global {
   var badgeWatcherRunning: boolean;
   var refreshScheduledBadges: boolean;
   var migrationran: boolean;
+  var tierRolesInitialized: boolean;
 }
 
 export {};

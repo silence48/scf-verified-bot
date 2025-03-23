@@ -3,7 +3,7 @@
 import { getBadgesForDiscordId } from "@/app/api/verifyPathfinder/utils";
 import { getMongoDatabase } from "@/discord-bot/mongo-db";
 import { SCFUser } from "@/discord-bot/types";
-import { BadgeAsset, MemberInfo, NominationRequirementVerification, NominationThread, NominationVote, NominationVoteResult, PrecomputedBadge } from "@/types/discord-bot";
+import { AppMetaDoc, BadgeAsset, MemberInfo, NominationRequirementVerification, NominationThread, NominationVote, NominationVoteResult, PrecomputedBadge } from "@/types/discord-bot";
 import type {
   TierRole,
   RoleTier,
@@ -17,14 +17,63 @@ import type {
   VerificationType,
   RequirementGroup,
 } from "@/types/roles";
-import { GuildMember } from "discord.js";
 import * as fs from "fs/promises";
 import { Db } from "mongodb";
+
+// Function to get counts for each role
+export async function fetchRoleCounts(roles: TierRole[]) {
+  try {
+    const db = await getMongoDatabase();
+    const userRolesColl = db.collection("user_roles");
+    const results: Record<string, number> = {};
+    
+    for (const role of roles) {
+      if (!role.tier) continue;
+      
+      // Use the role's _id to find matching user roles
+      const count = await userRolesColl.countDocuments({ roleId: role._id });
+      
+      // Group by tier name
+      if (!results[role.tier]) {
+        results[role.tier] = 0;
+      }
+      results[role.tier] += count;
+    }
+    
+    return results;
+  } catch (err) {
+    console.error("[fetchRoleCounts] Error:", err);
+    return {};
+  }
+}
+
+
+/** Checks if tier roles have been initialized; initializes them if not. */
+export async function checkAndInitializeTierRoles() {
+  const db = await getMongoDatabase();
+  const metaColl = db.collection<AppMetaDoc> ("app_meta");  
+  if (!globalThis.tierRolesInitialized) {
+  const initialized = await metaColl.findOne({ _id: "tier_roles_initialized" });
+    if (initialized){
+      console.log("[checkAndInitializeTierRoles] Already initialized, skipping.");
+      globalThis.tierRolesInitialized = true;
+      return;
+    }
+  }
+
+  console.log("[checkAndInitializeTierRoles] No init doc found, initializing...");
+  await initializeTierRoles();
+
+  // updae the app meta to not overwrite them later.
+  await metaColl.insertOne({ _id: "tier_roles_initialized", date: new Date(), });
+  globalThis.tierRolesInitialized = true;
+  console.log("[checkAndInitializeTierRoles] Done initializing Tier Roles.");
+}
 
 export async function initializeTierRoles(): Promise<void> {
   const db = await getMongoDatabase();
   const existingRoles = await db.collection<TierRole>("guild_roles").find().toArray();
-
+  console.log(`[initializeTierRoles] - ${Date.now()} - found ${existingRoles.length} roles.`);
   const now = new Date();
   // Example definitions for the four tier roles
   const tierRoles: TierRole[] = [
@@ -242,12 +291,13 @@ export async function upsertTierRole(role: TierRole): Promise<void> {
   );
 }
 
-// Update the mock roles to include requirementGroups
+
 export async function getAllRoles(): Promise<TierRole[]> {
   const db = await getMongoDatabase();
   const existingRoles = await db.collection<TierRole>("guild_roles").find().toArray(); 
   return existingRoles; 
 }
+
 
 // Mock function to create a new role
 export async function createRole(role: TierRole): Promise<TierRole> {
@@ -490,10 +540,11 @@ export async function getUniqueBadgeCategories(db: Db): Promise<string[]> {
   // Get unique categories using Set
   const categories = new Set<string>();
   
-  badges.forEach(badge => {
-    const category = getBadgeCategory(badge);
+  // Use for...of loop for proper async handling
+  for (const badge of badges) {
+    const category = await getBadgeCategory(badge);
     categories.add(category);
-  });
+  }
   
   return Array.from(categories).sort();
 }
@@ -519,13 +570,14 @@ async function checkBadgeCountRequirement(
     const categoryCounts: { [category: string]: number } = {};
     
     // Count badges by category
-    precomputed.badges.forEach(badge => {
-      const category = getBadgeCategory(badge);
+    // Use a for...of loop instead of forEach to handle async operations
+    for (const badge of precomputed.badges) {
+      const category = await getBadgeCategory(badge);
       if (!categoryCounts[category]) {
-        categoryCounts[category] = 0;
+      categoryCounts[category] = 0;
       }
       categoryCounts[category]++;
-    });
+    }
     const result = {
       // this met boolean is whether all the precomputed.badges.length is greater than the mincount.
       met: precomputed.badges.length >= minCount,

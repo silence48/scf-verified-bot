@@ -15,10 +15,11 @@ import { X, Plus, Trash, Info } from "lucide-react";
 import { Button } from "@/components/ui";
 import { BadgeSelector } from "./badge-selector";
 import { BadgeAsset } from "@/types/discord-bot";
+import { ClientBadge } from "@/actions/badges"; 
 
 interface RoleFormProps {
   role?: TierRole
-  badges: BadgeAsset[]
+  badges: ClientBadge[]
   onSave: (role: TierRole) => void
   onCancel: () => void
 }

@@ -4,16 +4,26 @@ import type { BadgeAsset as Badge, BadgeAsset } from "@/types/discord-bot";
 
 // function to get all badges
 export async function getAllBadges(): Promise<Badge[]> {
-      const db = await getMongoDatabase();
+    const db = await getMongoDatabase();
     const assets = await db.collection<BadgeAsset>("badges").find().toArray();
     return assets;
 }
 
-// function to get badges for a user
-export async function getUserBadges(userId: string): Promise<Badge[]> {
-  console.log(`Getting badges for user: ${userId}`);
-  const allBadges = await getAllBadges();
-  return allBadges.filter((_, index) => index % 2 === 0);
+/**
+ * Gets all badges and ensures they're serializable for the frontend
+ * by converting MongoDB ObjectIds to strings
+ */
+export interface ClientBadge extends Omit<Badge, "_id"> {
+    _id: string,
+}
+export async function getBadgesForClient(): Promise<ClientBadge[]> {
+    const badges = await getAllBadges();
+    
+    // Convert any ObjectId to string to make it serializable
+    return badges.map(badge => ({
+        ...badge,
+        _id: badge._id.toString(), // Convert ObjectId to string
+    }));
 }
 
 // function to get badge categories
