@@ -5,7 +5,7 @@ import { getMongoDatabase } from "@/discord-bot/mongo-db";
 import { MemberInfo, UserDoc } from "@/discord-bot/types";
 
 // TTL for an in-memory cache (if you wish to add caching later)
-const CACHE_TTL = 60 * 60 * 1000; // 1 hour
+const _CACHE_TTL = 60 * 60 * 1000; // 1 hour
 
 // Use globalThis to not deal with this stuff in dev mode.
 if (globalThis.membersWatcherRunning === undefined) {

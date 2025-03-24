@@ -9,7 +9,7 @@ interface CacheEntry<T> {
 
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds
 const guildDataCache: { [guildId: string]: CacheEntry<ReturnType<typeof loadGuildData>> } = {};
-const memberInfoCache: { [guildId: string]: CacheEntry<ReturnType<typeof syncMembersFromDiscord>> } = {};
+const _memberInfoCache: { [guildId: string]: CacheEntry<ReturnType<typeof syncMembersFromDiscord>> } = {};
 
 /**
  * Get cached data if available and not expired.

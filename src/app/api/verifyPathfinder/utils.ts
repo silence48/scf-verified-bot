@@ -12,7 +12,8 @@ export async function extractRoleName(message: string): Promise<string> {
 }
 
 export async function assignRole(member: GuildMember, role: TierRole, client: Client) {
-  const guild = await client.guilds.fetch(GUILD_ID);
+  const _guild = await client.guilds.fetch(GUILD_ID);
+  console.log("supposed to assign a role");
 }
 
 export async function getMember(client: Client, discordId: string): Promise<{ guild: Guild; member: GuildMember }> {

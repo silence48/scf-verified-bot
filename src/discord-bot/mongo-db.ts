@@ -28,8 +28,8 @@ $mul = multiply a field by a specified value.
 $rename = rename a field in a document.
 */
 
-const API_KEY = process.env.SXX_API_KEY;
-const BASE_URL = "https://api.stellar.expert";
+const _API_KEY = process.env.SXX_API_KEY;
+const _BASE_URL = "https://api.stellar.expert";
 let mongoClient: MongoClient | null = null;
 let mongoDb: Db | null = null;
 const DB_NAME = process.env.NEW_DB_NAME || "scfroles-test";
@@ -726,7 +726,9 @@ export async function assetHoldersForBadge(db: Db, asset: SqAsset): Promise<Badg
   let allHolders: Badge[] = [];
   const assetData = await db.collection('badges').findOne({ code: asset.code, issuer: asset.issuer });
 
-  let nextUrl: string | null = assetData?.lastMarkUrlHolders ? `${BASE_URL}${assetData.lastMarkUrlHolders}` : `${BASE_URL}/explorer/public/asset/${asset.code}-${asset.issuer}/holders?order=desc&limit=200`;
+  let nextUrl: string | null = assetData?.lastMarkUrlHolders ?
+    `${BASE_URL}${assetData.lastMarkUrlHolders}` :
+    `${BASE_URL}/explorer/public/asset/${asset.code}-${asset.issuer}/holders?order=desc&limit=200`;
   // cursor isnt working properly so lets just get them all for now.
   //nextUrl = `${BASE_URL}/explorer/public/asset/${asset.code}-${asset.issuer}/holders?order=desc&limit=200`;
   let badgeIndex = 1;

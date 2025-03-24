@@ -12,6 +12,7 @@ interface UsersClientProps {
 
 export default function UsersClient({ guildData }: UsersClientProps) {
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams();
 

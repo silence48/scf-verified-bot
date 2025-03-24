@@ -20,6 +20,7 @@ interface RoleManagementModalProps {
 
 export function RoleManagementModal({ userId, username, userRoles, onClose }: RoleManagementModalProps) {
   const [roles, setRoles] = useState<TierRole[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [badges, setBadges] = useState<BadgeAsset[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

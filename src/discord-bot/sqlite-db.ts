@@ -72,9 +72,9 @@ export async function upsertMember(memberId: string, username: string, discrimin
 /** Insert user_roles row if it doesn't exist yet. */
 export async function insertUserRole(userId: string, roleId: string, guildId: string): Promise<void> {
   const db = await getDatabase();
-  const existing = await db.get<{ role_assigned_at: string }>(`SELECT role_assigned_at FROM user_roles WHERE user_id = ? AND role_id = ? AND guild_id = ?`, [userId, roleId, guildId]);
+  const existing = await db.get<{ role_assigned_at: string }>("SELECT role_assigned_at FROM user_roles WHERE user_id = ? AND role_id = ? AND guild_id = ?", [userId, roleId, guildId]);
   if (!existing) {
-    await db.run(`INSERT INTO user_roles (user_id, role_id, guild_id, role_assigned_at) VALUES (?, ?, ?, ?)`, userId, roleId, guildId, new Date().toISOString());
+    await db.run("INSERT INTO user_roles (user_id, role_id, guild_id, role_assigned_at) VALUES (?, ?, ?, ?)", userId, roleId, guildId, new Date().toISOString());
   }
 }
 
@@ -157,13 +157,13 @@ export async function getVotingThreadCreatedAt(threadId: string): Promise<Date |
 /** Mark a thread as CLOSED in the DB */
 export async function markVotingThreadClosed(threadId: string): Promise<void> {
   const db = await getDatabase();
-  await db.run(`UPDATE voting_threads SET status = 'CLOSED' WHERE thread_id = ?`, threadId);
+  await db.run("UPDATE voting_threads SET status = 'CLOSED' WHERE thread_id = ?", threadId);
 }
 
 /** Increment the vote_count in DB for a thread */
 export async function incrementThreadVoteCount(threadId: string): Promise<void> {
   const db = await getDatabase();
-  await db.run(`UPDATE voting_threads SET vote_count = vote_count + 1 WHERE thread_id = ?`, threadId);
+  await db.run("UPDATE voting_threads SET vote_count = vote_count + 1 WHERE thread_id = ?", threadId);
 }
 
 /** Return the vote_count for a thread */

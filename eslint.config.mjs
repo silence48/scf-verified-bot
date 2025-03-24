@@ -16,6 +16,10 @@ const eslintConfig = [
       semi: ["error", "always"],
       quotes: ["error", "double"],
       "max-len": ["error", { code: 200 }],
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+      ],
     },
   },
 ];

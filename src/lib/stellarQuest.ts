@@ -252,7 +252,7 @@ export async function fetchTransactions(db: Db, holders: Badge[]) {
     const assetFilters: string[] = [];
     const accountFilters: string[] = [];
 
-    chunk.forEach(([asset, owners]) => {
+    chunk.forEach(([asset, _owners]) => {
       assetFilters.push(`asset[]=${asset}-2`);
       //owners.forEach(owner => {
       accountFilters.push(`account[]=${asset.split("-")[1]}`);

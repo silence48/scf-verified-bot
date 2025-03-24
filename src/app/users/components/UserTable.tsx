@@ -24,6 +24,7 @@ interface UserTableProps {
 type SortField = "name" | "memberSince" | "joinedDiscord" | "role";
 type SortOrder = "asc" | "desc";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function UserTable({ activeFilters, onFilterToggleAction, members, userbadges, uservotes, threads, initialExpandedUser }: UserTableProps) {
   // Local client state for search, sorting, expansion, pagination, etc.
   const [searchTerm, setSearchTerm] = useState("");

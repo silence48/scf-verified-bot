@@ -1,13 +1,12 @@
 "use server";
 
-import { getBadgesForDiscordId } from "@/app/api/verifyPathfinder/utils";
+// import { getBadgesForDiscordId } from "@/app/api/verifyPathfinder/utils";
 import { getMongoDatabase } from "@/discord-bot/mongo-db";
 import { SCFUser } from "@/discord-bot/types";
 import { AppMetaDoc, BadgeAsset, MemberInfo, NominationRequirementVerification, NominationThread, NominationVote, NominationVoteResult, PrecomputedBadge } from "@/types/discord-bot";
 import type {
   TierRole,
   RoleTier,
-  RoleRequirement,
   RoleEligibilityResult,
   RoleActionResult,
   NominationEligibilityResult,
@@ -236,7 +235,7 @@ export async function initializeTierRoles(): Promise<void> {
  * Writes the given data to a file named outputlog.log
  * @param data The data to write to the file
  */
-async function printFile(data: unknown): Promise<void> {
+export async function printFile(data: unknown): Promise<void> {
   try {
     const content = typeof data === "string" ? data : JSON.stringify(data, null, 2);
 
@@ -485,7 +484,7 @@ export async function getBadgeForPubKey(publicKey: string, db: Db): Promise<null
 /**
  * Extracts category from a badge code by splitting at the first number
  */
-function extractCategoryFromCode(code: string): string {
+export async function extractCategoryFromCode(code: string): Promise<string> {
   // Find the index of the first digit in the code
   const firstDigitIndex = code.search(/\d/);
   if (firstDigitIndex === -1) return code; // No digits found, return the whole code
@@ -503,7 +502,7 @@ export async function getBadgeCategory(badge: { category_broad?: string; code?: 
 
   // Fall back to extracting from code if available
   if (badge.code) {
-    return extractCategoryFromCode(badge.code);
+    return await extractCategoryFromCode(badge.code);
   }
 
   // If neither is available
@@ -532,7 +531,7 @@ export async function getUniqueBadgeCategories(db: Db): Promise<string[]> {
 /**
  * Helper: Checks if the user's badge count meets a minimum for a specific category.
  */
-async function checkBadgeCountRequirement(userId: string, minCount: number, db: Db): Promise<{ met: boolean; categoryCounts: { [category: string]: number } }> {
+export async function checkBadgeCountRequirement(userId: string, minCount: number, db: Db): Promise<{ met: boolean; categoryCounts: { [category: string]: number } }> {
   const precomputed = await db.collection<PrecomputedBadge>("precomputed_badges").findOne({ discordId: userId });
 
   if (!precomputed?.badges?.length) {
@@ -572,7 +571,7 @@ async function checkBadgeCountRequirement(userId: string, minCount: number, db: 
 /**
  * Helper: Check if user has a Stellar account
  */
-async function checkStellarAccountRequirement(member: MemberInfo, db: Db): Promise<boolean> {
+export async function checkStellarAccountRequirement(member: MemberInfo, db: Db): Promise<boolean> {
   const scf_user = await db.collection<SCFUser>("SCF_Users").findOne({ discordId: member.discordId });
   if (scf_user) {
     return !!scf_user.publicKey;
@@ -583,7 +582,7 @@ async function checkStellarAccountRequirement(member: MemberInfo, db: Db): Promi
 /**
  * Helper: Simple Discord requirement
  */
-async function checkDiscordRequirement(member: MemberInfo): Promise<boolean> {
+export async function checkDiscordRequirement(member: MemberInfo): Promise<boolean> {
   return !!member.discordId;
 }
 
@@ -670,7 +669,7 @@ export async function checkNominationRequirement(role: TierRole, userId: string)
 /**
  * Checks if a user meets the requirements for an existing role
  */
-async function checkExistingRoleRequirement(userId: string, existingRole: string, db: Db): Promise<boolean> {
+export async function checkExistingRoleRequirement(userId: string, existingRole: string, db: Db): Promise<boolean> {
   // Get the member to check their roles
   const member = await db.collection<MemberInfo>("members").findOne({ discordId: userId });
   if (!member?.roles) return false;
@@ -682,13 +681,14 @@ async function checkExistingRoleRequirement(userId: string, existingRole: string
 /**
  * Checks if a user meets community vote requirements
  */
-async function checkCommunityVoteRequirement(member: MemberInfo, participationRounds: number, db: Db): Promise<boolean> {
+export async function checkCommunityVoteRequirement(member: MemberInfo, participationRounds: number, db: Db): Promise<boolean> {
+  console.log(`pretending to check vote requirement for ${member} ${participationRounds}, ${db}`);
   // We need a way to fetch this data from an api and put it in the database for now just return true.
   return true;
 }
 
 //checks if a member has some role.
-async function checkConcurrentRoleRequirement(member: MemberInfo, concurrentRole: string): Promise<{ met: boolean; reason: string }> {
+export async function checkConcurrentRoleRequirement(member: MemberInfo, concurrentRole: string): Promise<{ met: boolean; reason: string }> {
   // Get the member to check their roles
   const role = member.roles.find((r) => r.name === concurrentRole);
   const met = role === undefined ? false : true;
@@ -697,7 +697,7 @@ async function checkConcurrentRoleRequirement(member: MemberInfo, concurrentRole
 /**
  * Evaluates all requirements in a group based on group mode (ALL or ANY)
  */
-async function evaluateRequirementGroup(group: RequirementGroup, member: MemberInfo, role: TierRole, db: Db): Promise<RequirementGroupResult> {
+export async function evaluateRequirementGroup(group: RequirementGroup, member: MemberInfo, role: TierRole, db: Db): Promise<RequirementGroupResult> {
   const reqResults = [];
   let metCount = 0;
 
@@ -732,7 +732,9 @@ async function evaluateRequirementGroup(group: RequirementGroup, member: MemberI
           reason = cRoleResult.reason;
           break;
         case "ExistingRole":
-          // in theory this one should actually be checking if they perviously earned some role but effectively this is the same thing.  The difference is this one would usually be removed when they earn the next one while concurrent stays. (they can have both at once.) however since we already check to make sure they only have one tier role in the other function it is fine.
+          // in theory this one should actually be checking if they perviously earned some role but effectively this is the same thing.
+          // The difference is this one would usually be removed when they earn the next one while concurrent stays. 
+          // (they can have both at once.) however since we already check to make sure they only have one tier role in the other function it is fine.
           if (!req.existingRole) throw new Error("ExistingRole requirement missing existingRole");
           const eRoleResult = await checkConcurrentRoleRequirement(member, req.existingRole);
           met = eRoleResult.met;
@@ -832,7 +834,8 @@ export async function getHighestEligibleRole(userId: string): Promise<{ role: Ti
   const currentRole = member.roles.find((role) => role.name === sortedRoles[0].roleName);
   console.log(`the current user ${member.username} currentRole is ${currentRole}`);
 
-  // each memberInfo document has an array of "roles" which is basically showing when they earned previous roles already.  For this reason we need to only check for the next role than the user has not already earned.
+  // each memberInfo document has an array of "roles" which is basically showing when they earned previous roles already. 
+  // For this reason we need to only check for the next role than the user has not already earned.
   const existingroles = member.roles;
   // Filter out roles the user already has
   const filteredRoles = sortedRoles.filter((role) => !existingroles.some((r) => r.name === role.roleName));

@@ -5,7 +5,6 @@ import type { TierRole, RequirementGroup } from "@/types/roles";
 import { ChevronDown, ChevronUp, Edit, Trash } from "lucide-react";
 import { Button } from "@/components/ui";
 import { NominationModal } from "./nomination-modal";
-import { BadgeAsset } from "@/types/discord-bot";
 import { ClientBadge } from "@/actions/badges";
 import Image from "next/image";
 

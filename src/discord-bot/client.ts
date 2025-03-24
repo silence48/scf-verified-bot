@@ -13,7 +13,9 @@ export interface BaseUser {
   username: string;
   discriminator: string;
   guildIds: string[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   discordProfile: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   user: any;
   createdAt: Date;
   updatedAt: Date;

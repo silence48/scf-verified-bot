@@ -4,7 +4,7 @@ import { Badge, BadgeHolder, fetchWithRetry } from "../stellarQuest";
 import { sleep } from "../utils";
 import { parseTomlFiles } from "../tomlParser";
 
-const API_KEY = process.env.SXX_API_KEY;
+const _API_KEY = process.env.SXX_API_KEY;
 const BASE_URL = "https://api.stellar.expert";
 
 export async function fetchAndUpdateAssetHolders(db: Db, asset: SqAsset) {

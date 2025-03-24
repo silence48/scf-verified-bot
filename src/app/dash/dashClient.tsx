@@ -24,6 +24,7 @@ interface MembersDashboardClientProps {
  * A client component receiving data from the server parent.
  * Manages ephemeral filters, etc.
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function MembersDashboardClient({ guildId, roleStats, members, roleFilters }: MembersDashboardClientProps) {
   console.log("in member dash client");
 

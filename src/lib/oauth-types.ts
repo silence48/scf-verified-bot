@@ -73,7 +73,7 @@ export interface OAuth2Config<Profile> extends CommonProviderOptions {
  * The shape for "user config" you would pass
  * to the provider function (e.g., your `clientId`, `clientSecret`, etc.).
  */
-export interface OAuthUserConfig<Profile> {
+export interface OAuthUserConfig<_Profile> {
   /** Your OAuth client ID. */
   clientId: string;
   /** Your OAuth client secret. */
