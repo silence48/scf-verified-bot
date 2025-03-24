@@ -22,7 +22,6 @@ import {
 //import "@/css/navbar.css";
 //import "@/app/globals.css";
 
-
 export function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -56,36 +55,21 @@ export function Navbar() {
                 <Button variant="ghost" className="navbar-user-button">
                   <div className="navbar-user-wrapper">
                     <Avatar className="navbar-avatar">
-                      <AvatarImage
-                        src={mockUser.avatar}
-                        alt={mockUser.name}
-                      />
-                      <AvatarFallback className="navbar-avatar-fallback">
-                        {mockUser.name.substring(0, 2)}
-                      </AvatarFallback>
+                      <AvatarImage src={mockUser.avatar} alt={mockUser.name} />
+                      <AvatarFallback className="navbar-avatar-fallback">{mockUser.name.substring(0, 2)}</AvatarFallback>
                     </Avatar>
                     <div className="navbar-user-info">
-                      <span className="font-medium text-white">
-                        {mockUser.name}
-                      </span>
-                      <span className="text-xs text-gray-300">
-                        {mockUser.discordUsername}
-                      </span>
+                      <span className="font-medium text-white">{mockUser.name}</span>
+                      <span className="text-xs text-gray-300">{mockUser.discordUsername}</span>
                     </div>
                     <ChevronDown className="navbar-user-chevron" />
                   </div>
                 </Button>
               </DropdownMenuTrigger>
 
-              <DropdownMenuContent
-                align="end"
-                className="navbar-dropdown-content"
-              >
+              <DropdownMenuContent align="end" className="navbar-dropdown-content">
                 <div className="navbar-dropdown-header">
-                  Signed in as{" "}
-                  <span className="text-white">
-                    {mockUser.discordUsername}
-                  </span>
+                  Signed in as <span className="text-white">{mockUser.discordUsername}</span>
                 </div>
                 <DropdownMenuItem className="navbar-dropdown-item">
                   <User className="mr-2 h-4 w-4" />
@@ -96,10 +80,7 @@ export function Navbar() {
                   <span>Settings</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="navbar-dropdown-separator" />
-                <DropdownMenuItem
-                  className="navbar-dropdown-item"
-                  onClick={handleLogout}
-                >
+                <DropdownMenuItem className="navbar-dropdown-item" onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Logout</span>
                 </DropdownMenuItem>
@@ -122,9 +103,7 @@ export function Navbar() {
 
           <SheetContent side="right" className="navbar-sheet-content">
             <SheetHeader>
-              <SheetTitle className="navbar-sheet-title">
-                Menu
-              </SheetTitle>
+              <SheetTitle className="navbar-sheet-title">Menu</SheetTitle>
             </SheetHeader>
 
             <div className="navbar-sheet-menu">
@@ -139,21 +118,12 @@ export function Navbar() {
                 <div className="navbar-sheet-user-section">
                   <div className="navbar-sheet-user-row">
                     <Avatar className="navbar-avatar-large">
-                      <AvatarImage
-                        src={mockUser.avatar}
-                        alt={mockUser.name}
-                      />
-                      <AvatarFallback className="navbar-avatar-fallback-large">
-                        {mockUser.name.substring(0, 2)}
-                      </AvatarFallback>
+                      <AvatarImage src={mockUser.avatar} alt={mockUser.name} />
+                      <AvatarFallback className="navbar-avatar-fallback-large">{mockUser.name.substring(0, 2)}</AvatarFallback>
                     </Avatar>
                     <div className="navbar-user-full-info">
-                      <span className="font-medium text-white">
-                        {mockUser.name}
-                      </span>
-                      <span className="text-xs text-gray-300">
-                        {mockUser.discordUsername}
-                      </span>
+                      <span className="font-medium text-white">{mockUser.name}</span>
+                      <span className="text-xs text-gray-300">{mockUser.discordUsername}</span>
                     </div>
                   </div>
 
@@ -167,20 +137,13 @@ export function Navbar() {
                     Settings
                   </Button>
 
-                  <Button
-                    variant="outline"
-                    className="navbar-sheet-button mt-2"
-                    onClick={handleLogout}
-                  >
+                  <Button variant="outline" className="navbar-sheet-button mt-2" onClick={handleLogout}>
                     <LogOut className="h-4 w-4" />
                     Logout
                   </Button>
                 </div>
               ) : (
-                <Button
-                  className="navbar-login-button w-full"
-                  onClick={handleLogin}
-                >
+                <Button className="navbar-login-button w-full" onClick={handleLogin}>
                   Login
                 </Button>
               )}

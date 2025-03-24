@@ -56,8 +56,8 @@ export async function refreshMembersMaterializedView(guildId: string): Promise<v
       $match: {
         guildIds: { $in: [guildId] },
         user: { $exists: true, $ne: null },
-        discordProfile: { $exists: true, $ne: null }
-      }
+        discordProfile: { $exists: true, $ne: null },
+      },
     },
     {
       $lookup: {
@@ -67,16 +67,13 @@ export async function refreshMembersMaterializedView(guildId: string): Promise<v
           {
             $match: {
               $expr: {
-                $and: [
-                  { $eq: ["$userId", "$$uid"] },
-                  { $eq: ["$guildId", guildId] }
-                ]
-              }
-            }
-          }
+                $and: [{ $eq: ["$userId", "$$uid"] }, { $eq: ["$guildId", guildId] }],
+              },
+            },
+          },
         ],
-        as: "userRoles"
-      }
+        as: "userRoles",
+      },
     },
     { $unwind: { path: "$userRoles", preserveNullAndEmptyArrays: true } },
     {
@@ -84,8 +81,8 @@ export async function refreshMembersMaterializedView(guildId: string): Promise<v
         from: "guild_roles",
         localField: "userRoles.roleId",
         foreignField: "_id",
-        as: "roleDoc"
-      }
+        as: "roleDoc",
+      },
     },
     { $unwind: { path: "$roleDoc", preserveNullAndEmptyArrays: true } },
     {
@@ -100,36 +97,27 @@ export async function refreshMembersMaterializedView(guildId: string): Promise<v
               {
                 name: "$roleDoc.roleName",
                 shortname: {
-                  $cond: [
-                    { $eq: [{ $substrCP: ["$roleDoc.roleName", 0, 4] }, "SCF "] },
-                    { $substrCP: ["$roleDoc.roleName", 4, { $strLenCP: "$roleDoc.roleName" }] },
-                    "$roleDoc.roleName"
-                  ]
+                  $cond: [{ $eq: [{ $substrCP: ["$roleDoc.roleName", 0, 4] }, "SCF "] }, { $substrCP: ["$roleDoc.roleName", 4, { $strLenCP: "$roleDoc.roleName" }] }, "$roleDoc.roleName"],
                 },
-                obtained: "$userRoles.roleAssignedAt"
+                obtained: "$userRoles.roleAssignedAt",
               },
-              "$$REMOVE"
-            ]
-          }
-        }
-      }
+              "$$REMOVE",
+            ],
+          },
+        },
+      },
     },
     {
       $addFields: {
         username: {
-          $cond: [
-            { $eq: [{ $toInt: "$user.discriminator" }, 0] },
-            "$user.username",
-            { $concat: ["$user.username", "#", "$user.discriminator"] }
-          ]
+          $cond: [{ $eq: [{ $toInt: "$user.discriminator" }, 0] }, "$user.username", { $concat: ["$user.username", "#", "$user.discriminator"] }],
         },
         memberSince: { $min: "$mappedRoles.obtained" },
         joinedDiscord: { $toDate: "$user.createdTimestamp" },
         joinedStellarDevelopers: { $ifNull: ["$discordProfile.joinedAt", "$user.createdTimestamp"] },
         avatar: "$discordProfile.displayAvatarURL",
         profileDescription: "",
-
-      }
+      },
     },
     {
       $project: {
@@ -141,8 +129,8 @@ export async function refreshMembersMaterializedView(guildId: string): Promise<v
         profileDescription: 1,
         joinedStellarDevelopers: 1,
         avatar: 1,
-        guildId: { $literal: guildId } // Embed guildId for querying.
-      }
+        guildId: { $literal: guildId }, // Embed guildId for querying.
+      },
     },
     // Merge the aggregation results into the materialized_members collection.
     {
@@ -150,9 +138,9 @@ export async function refreshMembersMaterializedView(guildId: string): Promise<v
         into: "materialized_members",
         on: "discordId",
         whenMatched: "replace",
-        whenNotMatched: "insert"
-      }
-    }
+        whenNotMatched: "insert",
+      },
+    },
   ];
 
   // Execute the aggregation pipeline.
@@ -168,7 +156,8 @@ export async function startMembersWatcher(guildId: string): Promise<void> {
   console.log("[startMembersWatcher] getting members watcher");
   if (globalThis.membersWatcherRunning) {
     console.log("[startMembersWatcher] already running");
-    return; }// Already running.
+    return;
+  } // Already running.
   globalThis.membersWatcherRunning = true;
 
   const db = await getMongoDatabase();
@@ -187,17 +176,12 @@ export async function startMembersWatcher(guildId: string): Promise<void> {
   const collectionsToWatch = ["users", "user_roles", "guild_roles"];
 
   collectionsToWatch.forEach((collectionName) => {
-    const changeStream = db.collection(collectionName).watch(
-      [{ $match: { operationType: { $in: ["insert", "update", "delete"] } } }],
-      { collation: { locale: "en", strength: 1 } }
-    );
+    const changeStream = db.collection(collectionName).watch([{ $match: { operationType: { $in: ["insert", "update", "delete"] } } }], { collation: { locale: "en", strength: 1 } });
 
     changeStream.on("change", () => {
       if (!globalThis.refreshScheduledMembers) {
         globalThis.refreshScheduledMembers = true;
-        console.log(
-          `Change detected in ${collectionName} for guild ${guildId}, scheduling materialized view refresh...`
-        );
+        console.log(`Change detected in ${collectionName} for guild ${guildId}, scheduling materialized view refresh...`);
         setTimeout(async () => {
           await refreshMembersMaterializedView(guildId);
           console.log(`Materialized members view for guild ${guildId} updated.`);

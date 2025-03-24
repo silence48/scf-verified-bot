@@ -24,10 +24,7 @@ export interface TokenSet {
  * Callback that transforms the raw OAuth profile + tokens
  * into the `User` object shape you want NextAuth to store.
  */
-export type ProfileCallback<Profile> = (
-  profile: Profile,
-  tokens: TokenSet
-) => Awaitable<User>;
+export type ProfileCallback<Profile> = (profile: Profile, tokens: TokenSet) => Awaitable<User>;
 
 /**
  * Minimal set of shared provider options (id, name, etc.).

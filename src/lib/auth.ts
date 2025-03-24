@@ -18,7 +18,6 @@ export interface DiscordUser {
 }
 
 const authConfig: NextAuthConfig = {
-
   providers: [
     Discord({
       clientId: process.env.AUTH_DISCORD_ID ?? "",
@@ -26,10 +25,10 @@ const authConfig: NextAuthConfig = {
       // We define a custom profile callback to ensure we have "id" as a string
       profile(profile: DiscordProfile) {
         // Return an object that has the shape of our DiscordUser
-        
+
         return {
           discordId: profile.id,
-          ...profile
+          ...profile,
         };
       },
     }),
@@ -47,7 +46,7 @@ const authConfig: NextAuthConfig = {
     jwt({ token, user }) {
       if (user) {
         // User is coming from the Discord OAuth profile
-        token.user = user as  DiscordProfile & {
+        token.user = user as DiscordProfile & {
           discordId: string;
         };
       }
@@ -66,7 +65,7 @@ const authConfig: NextAuthConfig = {
           discordId: token.user.discordId,
           email: token.user.email ?? "",
           emailVerified: token.user.verified ? new Date(Date.now()) : null,
-          };
+        };
       }
       return session;
     },
@@ -92,6 +91,5 @@ declare module "next-auth/jwt" {
     user?: DiscordProfile & {
       discordId: string;
     };
-    
   }
 }

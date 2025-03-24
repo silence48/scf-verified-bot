@@ -18,19 +18,13 @@ interface MembersDashboardClientProps {
   };
   members: MemberInfo[];
   roleFilters: RoleFilter[];
-
 }
 
 /**
  * A client component receiving data from the server parent.
  * Manages ephemeral filters, etc.
  */
-export default function MembersDashboardClient({
-  guildId,
-  roleStats,
-  members,
-  roleFilters,
-}: MembersDashboardClientProps) {
+export default function MembersDashboardClient({ guildId, roleStats, members, roleFilters }: MembersDashboardClientProps) {
   console.log("in member dash client");
 
   // local filter state:
@@ -41,29 +35,19 @@ export default function MembersDashboardClient({
   }
 
   function onFilterToggle(role: string) {
-    setActiveFilters((prev) =>
-      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
-    );
+    setActiveFilters((prev) => (prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]));
   }
 
   return (
     <div className="container mx-auto px-4 pb-6">
-      <div className="flex items-center justify-between my-4">
-        <h2 className="text-2xl font-schabo tracking-wide mb-4">
-          Members Overview
-        </h2>
+      <div className="my-4 flex items-center justify-between">
+        <h2 className="mb-4 font-schabo text-2xl tracking-wide">Members Overview</h2>
         {/* Removed the "Refresh from Discord" server action button */}
-        <button
-          onClick={clearFilters}
-          className="bg-gray-200 text-gray-700 px-3 py-1 rounded hover:bg-gray-300">
+        <button onClick={clearFilters} className="rounded bg-gray-200 px-3 py-1 text-gray-700 hover:bg-gray-300">
           Clear Filters
         </button>
       </div>
-      <Sidebar
-      roleFilters={roleFilters}
-      activeFilters={activeFilters}
-      onFilterToggle={onFilterToggle}
-      />
+      <Sidebar roleFilters={roleFilters} activeFilters={activeFilters} onFilterToggle={onFilterToggle} />
       {/* Role Stats (client side) */}
       <RoleStats
         activeFilters={activeFilters}
@@ -74,11 +58,7 @@ export default function MembersDashboardClient({
         pilotCount={roleStats.pilot}
       />
 
-      <UserTable
-        activeFilters={activeFilters}
-        onFilterToggleAction={onFilterToggle}
-        members={members}
-      />
+      <UserTable activeFilters={activeFilters} onFilterToggleAction={onFilterToggle} members={members} />
 
       <Footer />
     </div>

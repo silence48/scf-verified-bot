@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Search } from "lucide-react";
-import { Input, Label,Checkbox } from "@/components/ui";
+import { Input, Label, Checkbox } from "@/components/ui";
 //import "@/css/sidebar.css";
 //import "@/app/globals.css";
 
@@ -20,7 +20,7 @@ interface SidebarProps {
 
 export function Sidebar({ roleFilters, activeFilters, onFilterToggle }: SidebarProps) {
   const [searchTerm, setSearchTerm] = useState("");
-/*
+  /*
   const roles = [
     { id: "verified", label: "Verified", color: "bg-emerald-500/20 text-emerald-400" },
     { id: "pathfinder", label: "Pathfinder", color: "bg-blue-500/20 text-blue-400" },
@@ -31,19 +31,13 @@ export function Sidebar({ roleFilters, activeFilters, onFilterToggle }: SidebarP
     { id: "stellar-developer", label: "Stellar Developer", color: "bg-pink-500/20 text-pink-400" },
   ];*/
 
- 
   return (
     <aside className="sidebar">
       <h2 className="sidebar-title">Filters</h2>
 
       <div className="search-wrapper">
         <Search className="search-icon" />
-        <Input
-          placeholder="Search users..."
-          className="search-input"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+        <Input placeholder="Search users..." className="search-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
       </div>
 
       <div className="space-y-4">
@@ -51,12 +45,7 @@ export function Sidebar({ roleFilters, activeFilters, onFilterToggle }: SidebarP
         <div className="role-list">
           {roleFilters.map((role) => (
             <div key={role.id} className="role-item">
-              <Checkbox
-                id={role.id}
-                className="role-checkbox"
-                checked={activeFilters.includes(role.name)}
-                onChange={() => onFilterToggle(role.name)}
-              />
+              <Checkbox id={role.id} className="role-checkbox" checked={activeFilters.includes(role.name)} onChange={() => onFilterToggle(role.name)} />
               <Label htmlFor={role.id} className="role-label">
                 <span className="role-circle" style={{ backgroundColor: role.color }}></span>
                 {role.name}

@@ -23,14 +23,14 @@ export default async function DashboardPage() {
     return <div style={{ padding: 40 }}>Unauthorized</div>;
   }
 
-// -- Node-only logic: call discord.js on the server
-const guilds = await getGuilds();
+  // -- Node-only logic: call discord.js on the server
+  const guilds = await getGuilds();
 
-// Pass this plain data to the client component
-return (
-  <div style={{ padding: "2rem" }}>
-    <h2>Dashboard</h2>
-    <DashboardClient guilds={guilds} />
-  </div>
-);
+  // Pass this plain data to the client component
+  return (
+    <div style={{ padding: "2rem" }}>
+      <h2>Dashboard</h2>
+      <DashboardClient guilds={guilds} />
+    </div>
+  );
 }

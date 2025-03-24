@@ -5,15 +5,14 @@ Replace all the inline utilities with these classes.
 --------------------------------------------------------------------------------
 */
 
-
 /* Footer container element */
 .footer {
-  @apply mt-12 py-6 border-t border-gray-800/60;
+  @apply mt-12 border-t border-gray-800/60 py-6;
 }
 
 /* Inner .container */
 .footer-inner {
-  @apply container flex flex-col sm:flex-row items-center justify-between gap-4;
+  @apply container flex flex-col items-center justify-between gap-4 sm:flex-row;
 }
 
 /* Link group container */
@@ -23,12 +22,12 @@ Replace all the inline utilities with these classes.
 
 /* Shared link style (gray text w/ hover) */
 .footer-link {
-  @apply text-gray-400 hover:text-white transition-colors;
+  @apply text-gray-400 transition-colors hover:text-white;
 }
 
 /* Link style with icons + text side by side */
 .footer-link-icon {
-  @apply text-gray-400 hover:text-white transition-colors flex items-center gap-2;
+  @apply flex items-center gap-2 text-gray-400 transition-colors hover:text-white;
 }
 
 /* Icon size */

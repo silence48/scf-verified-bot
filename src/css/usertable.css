@@ -1,187 +1,187 @@
 /* The main container wrapping the entire user table */
 .user-table {
-    @apply bg-[#1a1d29]/80 backdrop-blur-sm border border-gray-800/60 rounded-xl overflow-hidden shadow-lg;
-  }
-  
-  /* The top section with table title and sort/search controls */
-  .user-table-header {
-    @apply p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-800/60;
-  }
-  
-  /* Heading: 'Recent Members', etc. */
-  .user-table-header-title {
-    @apply text-lg font-schabo tracking-wide text-white/90;
-  }
-  
-  /* Container around the search bar and sort dropdown */
-  .user-table-header-controls {
-    @apply flex items-center gap-2 w-full sm:w-auto;
-  }
-  
-  /* A relative wrapper for the search input icon + input itself */
-  .user-table-search-wrapper {
-    @apply relative flex-grow sm:flex-grow-0;
-  }
-  
-  /* Search icon overlaid in the input */
-  .user-table-search-icon {
-    @apply absolute left-2 top-2.5 h-4 w-4 text-gray-400;
-  }
-  
-  /* The actual search input (Tailwind form control) */
-  .user-table-search-input {
-    @apply pl-8 w-full sm:w-64 bg-[#0c0e14]/80 border-gray-700/50 focus-visible:border-gray-600 rounded-lg;
-  }
-  
-  /* The 'Sort' button in the header area */
-  .user-table-sort-trigger {
-    @apply gap-1 border-gray-700/50 bg-[#0c0e14]/80 hover:bg-[#1e2235]/80 hover:text-white;
-  }
-  
-  /* The scroll container for the table if it overflows horizontally */
-  .user-table-scroller {
-    @apply overflow-x-auto;
-  }
-  
-  /* The table heading row */
-  .user-table-thead {
-    @apply border-b border-gray-800/60 text-xs text-gray-400 bg-[#12141e]/40;
-  }
-  
-  /* A shared heading cell style. The .user-table-th-md or .user-table-th-lg
+  @apply overflow-hidden rounded-xl border border-gray-800/60 bg-[#1a1d29]/80 shadow-lg backdrop-blur-sm;
+}
+
+/* The top section with table title and sort/search controls */
+.user-table-header {
+  @apply flex flex-col items-start justify-between gap-4 border-b border-gray-800/60 p-4 sm:flex-row sm:items-center;
+}
+
+/* Heading: 'Recent Members', etc. */
+.user-table-header-title {
+  @apply font-schabo text-lg tracking-wide text-white/90;
+}
+
+/* Container around the search bar and sort dropdown */
+.user-table-header-controls {
+  @apply flex w-full items-center gap-2 sm:w-auto;
+}
+
+/* A relative wrapper for the search input icon + input itself */
+.user-table-search-wrapper {
+  @apply relative flex-grow sm:flex-grow-0;
+}
+
+/* Search icon overlaid in the input */
+.user-table-search-icon {
+  @apply absolute top-2.5 left-2 h-4 w-4 text-gray-400;
+}
+
+/* The actual search input (Tailwind form control) */
+.user-table-search-input {
+  @apply w-full rounded-lg border-gray-700/50 bg-[#0c0e14]/80 pl-8 focus-visible:border-gray-600 sm:w-64;
+}
+
+/* The 'Sort' button in the header area */
+.user-table-sort-trigger {
+  @apply gap-1 border-gray-700/50 bg-[#0c0e14]/80 hover:bg-[#1e2235]/80 hover:text-white;
+}
+
+/* The scroll container for the table if it overflows horizontally */
+.user-table-scroller {
+  @apply overflow-x-auto;
+}
+
+/* The table heading row */
+.user-table-thead {
+  @apply border-b border-gray-800/60 bg-[#12141e]/40 text-xs text-gray-400;
+}
+
+/* A shared heading cell style. The .user-table-th-md or .user-table-th-lg
      can add 'hidden md:table-cell' or 'hidden lg:table-cell' if needed. */
-  .user-table-th {
-    @apply text-left p-4 font-medium;
-  }
-  
-  /* Body row styling (hover, border, pointer) */
-  .user-table-row {
-    @apply border-b border-gray-800/40 hover:bg-[#1e2235]/40 transition-colors cursor-pointer;
-  }
-  
-  /* A simple table cell style. 
+.user-table-th {
+  @apply p-4 text-left font-medium;
+}
+
+/* Body row styling (hover, border, pointer) */
+.user-table-row {
+  @apply cursor-pointer border-b border-gray-800/40 transition-colors hover:bg-[#1e2235]/40;
+}
+
+/* A simple table cell style. 
      We'll make variants like .user-table-td-md for hidden on mobile, etc. */
-  .user-table-td {
-    @apply p-4 text-sm text-gray-300;
-  }
-  
-  /* The cell that contains name + avatar */
-  .user-table-name-cell {
-    @apply p-4;
-  }
-  
-  /* The user’s name in bold, subdued color */
-  .user-table-name {
-    @apply font-medium text-white/90;
-  }
-  
-  /* The small ID or secondary text under the name */
-  .user-table-id {
-    @apply text-xs text-gray-400;
-  }
-  
-  /* The cell that contains roles */
-  .user-table-roles-cell {
-    @apply p-4;
-  }
-  
-  /* The container for role badges within a cell */
-  .user-table-roles-container {
-    @apply flex flex-wrap items-center gap-2;
-  }
-  
-  /* The style for each role badge (outline variant, small text) */
-  .user-table-role-badge {
-    @apply bg-[#12141e]/80 text-xs py-0.5 border-gray-700/50 hover:border-gray-600 text-white;
-  }
-  
-  /* The small plus-button to add a new role */
-  .user-table-role-add {
-    @apply h-6 w-6 hover:bg-gray-700/50 hover:text-white;
-  }
-  
-  /* The last column with user actions (Bell, etc.) */
-  .user-table-actions {
-    @apply p-4;
-  }
-  
-  /* The container for the action buttons */
-  .user-table-actions-container {
-    @apply flex items-center gap-2;
-  }
-  
-  /* Ghost action buttons in the table (Bell, UserPlus, MoreVertical) */
-  .user-table-action-btn {
-    @apply h-8 w-8 hover:bg-gray-700/50 hover:text-white;
-  }
-  
-  /* The dropdown content for these row actions */
-  .user-table-dropdown {
-    @apply bg-[#1a1d29] border-gray-800/60 text-white shadow-lg;
-  }
-  
-  /* The dropdown menu item style */
-  .user-table-dropdown-item {
-    @apply hover:bg-[#1e2235]/80 focus:bg-[#1e2235]/80 text-gray-300 focus:text-white;
-  }
-  
-  /* The expanded row (once clicked) */
-  .user-table-expanded-row {
-    @apply bg-[#1a1d29]/60;
-  }
-  
-  /* The expanded row cell containing extra details */
-  .user-table-expanded-cell {
-    @apply p-4;
-  }
-  
-  /* A box used for user details, roles, or description */
-  .user-table-detail-box {
-    @apply bg-[#12141e]/40 p-3 rounded-lg border border-gray-800/40;
-  }
-  
-  /* Title inside these detail boxes */
-  .user-table-section-title {
-    @apply text-white font-medium mb-2;
-  }
-  
-  /* A label style for 'Joined Stellar Devs:', etc. */
-  .user-table-label {
-    @apply text-gray-400;
-  }
-  
-  /* The bottom area with pagination & items-per-page select */
-  .user-table-footer {
-    @apply p-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-800/60 bg-[#12141e]/40;
-  }
-  
-  /* A small text snippet showing how many members are shown */
-  .user-table-showing {
-    @apply flex items-center gap-2 text-sm text-gray-300;
-  }
-  
-  /* The select used for # members per page */
-  .user-table-page-select-trigger {
-    @apply w-16 h-8 bg-[#0c0e14]/80 border-gray-700/50 focus:border-gray-600 text-white;
-  }
-  
-  /* The items inside that dropdown */
-  .user-table-page-select-content {
-    @apply bg-[#1a1d29] border-gray-800/60 text-white shadow-lg;
-  }
-  
-  /* The pages themselves (1,2,3...). Usually we rely on buttonVariants but you can
+.user-table-td {
+  @apply p-4 text-sm text-gray-300;
+}
+
+/* The cell that contains name + avatar */
+.user-table-name-cell {
+  @apply p-4;
+}
+
+/* The user’s name in bold, subdued color */
+.user-table-name {
+  @apply font-medium text-white/90;
+}
+
+/* The small ID or secondary text under the name */
+.user-table-id {
+  @apply text-xs text-gray-400;
+}
+
+/* The cell that contains roles */
+.user-table-roles-cell {
+  @apply p-4;
+}
+
+/* The container for role badges within a cell */
+.user-table-roles-container {
+  @apply flex flex-wrap items-center gap-2;
+}
+
+/* The style for each role badge (outline variant, small text) */
+.user-table-role-badge {
+  @apply border-gray-700/50 bg-[#12141e]/80 py-0.5 text-xs text-white hover:border-gray-600;
+}
+
+/* The small plus-button to add a new role */
+.user-table-role-add {
+  @apply h-6 w-6 hover:bg-gray-700/50 hover:text-white;
+}
+
+/* The last column with user actions (Bell, etc.) */
+.user-table-actions {
+  @apply p-4;
+}
+
+/* The container for the action buttons */
+.user-table-actions-container {
+  @apply flex items-center gap-2;
+}
+
+/* Ghost action buttons in the table (Bell, UserPlus, MoreVertical) */
+.user-table-action-btn {
+  @apply h-8 w-8 hover:bg-gray-700/50 hover:text-white;
+}
+
+/* The dropdown content for these row actions */
+.user-table-dropdown {
+  @apply border-gray-800/60 bg-[#1a1d29] text-white shadow-lg;
+}
+
+/* The dropdown menu item style */
+.user-table-dropdown-item {
+  @apply text-gray-300 hover:bg-[#1e2235]/80 focus:bg-[#1e2235]/80 focus:text-white;
+}
+
+/* The expanded row (once clicked) */
+.user-table-expanded-row {
+  @apply bg-[#1a1d29]/60;
+}
+
+/* The expanded row cell containing extra details */
+.user-table-expanded-cell {
+  @apply p-4;
+}
+
+/* A box used for user details, roles, or description */
+.user-table-detail-box {
+  @apply rounded-lg border border-gray-800/40 bg-[#12141e]/40 p-3;
+}
+
+/* Title inside these detail boxes */
+.user-table-section-title {
+  @apply mb-2 font-medium text-white;
+}
+
+/* A label style for 'Joined Stellar Devs:', etc. */
+.user-table-label {
+  @apply text-gray-400;
+}
+
+/* The bottom area with pagination & items-per-page select */
+.user-table-footer {
+  @apply flex flex-col items-center justify-between gap-4 border-t border-gray-800/60 bg-[#12141e]/40 p-4 sm:flex-row;
+}
+
+/* A small text snippet showing how many members are shown */
+.user-table-showing {
+  @apply flex items-center gap-2 text-sm text-gray-300;
+}
+
+/* The select used for # members per page */
+.user-table-page-select-trigger {
+  @apply h-8 w-16 border-gray-700/50 bg-[#0c0e14]/80 text-white focus:border-gray-600;
+}
+
+/* The items inside that dropdown */
+.user-table-page-select-content {
+  @apply border-gray-800/60 bg-[#1a1d29] text-white shadow-lg;
+}
+
+/* The pages themselves (1,2,3...). Usually we rely on buttonVariants but you can
      define your own here if you want to unify them. */
-  .user-table-page-link {
-    @apply hover:bg-gray-700/50 hover:text-white border-gray-700/50;
-  }
-  
-  /* The active page styling (when isActive = true) */
-  .user-table-page-link-active {
-    @apply bg-gray-700 border-gray-600 text-white;
-  }
-  
-  /* The Ellipsis '...' link styling */
-  .user-table-page-ellipsis {
-    @apply text-gray-400;
-  }
+.user-table-page-link {
+  @apply border-gray-700/50 hover:bg-gray-700/50 hover:text-white;
+}
+
+/* The active page styling (when isActive = true) */
+.user-table-page-link-active {
+  @apply border-gray-600 bg-gray-700 text-white;
+}
+
+/* The Ellipsis '...' link styling */
+.user-table-page-ellipsis {
+  @apply text-gray-400;
+}

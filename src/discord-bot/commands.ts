@@ -9,38 +9,21 @@ import { DISCORD_BOT_TOKEN } from "./constants";
 /** The slash commands to register (applicationGuildCommands). */
 export async function getSlashCommands() {
   return [
-    new SlashCommandBuilder()
-      .setName("listmembers")
-      .setDescription("Lists all members in the guild!"),
+    new SlashCommandBuilder().setName("listmembers").setDescription("Lists all members in the guild!"),
     new SlashCommandBuilder()
       .setName("nominate")
       .setDescription("Nominate a user for role advancement.")
-      .addUserOption((option) =>
-        option
-          .setName("user")
-          .setDescription("The user to nominate")
-          .setRequired(true)
-      ),
-    new SlashCommandBuilder()
-      .setName("getverified")
-      .setDescription("Learn how to get verified."),
-    new SlashCommandBuilder()
-      .setName("updatevote")
-      .setDescription("Update the vote count in the current voting thread."),
-    new SlashCommandBuilder()
-      .setName("listactivevotes")
-      .setDescription("Lists all active voting threads."),
+      .addUserOption((option) => option.setName("user").setDescription("The user to nominate").setRequired(true)),
+    new SlashCommandBuilder().setName("getverified").setDescription("Learn how to get verified."),
+    new SlashCommandBuilder().setName("updatevote").setDescription("Update the vote count in the current voting thread."),
+    new SlashCommandBuilder().setName("listactivevotes").setDescription("Lists all active voting threads."),
   ].map((cmd) => cmd.toJSON());
 }
 
 /**
  * Registers slash commands for a specific guild using the Discord REST API.
  */
-export async function registerSlashCommands(
-  clientId: string,
-  guild: Guild,
-  client: Client
-): Promise<void> {
+export async function registerSlashCommands(clientId: string, guild: Guild, client: Client): Promise<void> {
   if (!DISCORD_BOT_TOKEN) {
     logger("No bot token available; cannot register slash commands.", client);
     return;
@@ -59,22 +42,12 @@ export async function registerSlashCommands(
 }
 
 /** The "getverified" slash command: provide a link button. */
-export async function processGetVerifiedCommand(
-  interaction: ChatInputCommandInteraction,
-  client: Client
-) {
+export async function processGetVerifiedCommand(interaction: ChatInputCommandInteraction, client: Client) {
   try {
-    const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = await import(
-      "discord.js"
-    );
-    const getVerifiedButton = new ButtonBuilder()
-      .setLabel("Get Verified")
-      .setStyle(ButtonStyle.Link)
-      .setURL("https://communityfund.stellar.org/tiers");
+    const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = await import("discord.js");
+    const getVerifiedButton = new ButtonBuilder().setLabel("Get Verified").setStyle(ButtonStyle.Link).setURL("https://communityfund.stellar.org/tiers");
 
-    const row = new ActionRowBuilder<typeof getVerifiedButton>().addComponents(
-      getVerifiedButton
-    );
+    const row = new ActionRowBuilder<typeof getVerifiedButton>().addComponents(getVerifiedButton);
 
     await interaction.reply({
       content: "Start your SCF journey by getting verified!",
@@ -89,10 +62,7 @@ export async function processGetVerifiedCommand(
 }
 
 /** The "listmembers" slash command: fetch from DB, chunk results. */
-export async function processListMembersCommand(
-  interaction: ChatInputCommandInteraction,
-  client: Client
-) {
+export async function processListMembersCommand(interaction: ChatInputCommandInteraction, client: Client) {
   try {
     if (!interaction.guild) {
       await interaction.reply({

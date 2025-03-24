@@ -1,7 +1,7 @@
 // app/api/discord/grantRole/route.ts
 import { NextResponse } from "next/server";
 import type { Guild } from "discord.js";
-import { getClient } from "@/discord-bot/client"; 
+import { getClient } from "@/discord-bot/client";
 import { grantRoleWithChecks } from "@/discord-bot/roles";
 
 export async function POST(request: Request) {
@@ -10,10 +10,7 @@ export async function POST(request: Request) {
 
     // Basic checks
     if (!guildId || !userId || !roleName || !auth) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
     if (auth !== process.env.BOT_API_KEY) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -40,15 +37,10 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({
-      message: `Role: ${
-        result.finalRoleName || roleName
-      } granted successfully.`,
+      message: `Role: ${result.finalRoleName || roleName} granted successfully.`,
     });
   } catch (err) {
     console.error("Error in POST /api/discord/grantRole:", err);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

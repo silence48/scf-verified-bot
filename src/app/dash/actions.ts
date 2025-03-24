@@ -13,21 +13,20 @@ import { logger } from "@/discord-bot/logger";
 import { migrateMongoDatabasetoMongo } from "@/discord-bot/migrate-mongo";
 import { getAllPrecomputedBadges } from "@/lib/BadgeWatcher";
 
-
 export type RoleFilter = {
   id: string;
   name: string;
   color: string; // For example, hex color code string
 };
 
-/** 
+/**
  * Retrieves the roles from Discord for the given guild.
  * Excludes the @everyone role.
  */
 export async function getGuildRolesFromDiscord(guild: Guild, client: Client): Promise<RoleFilter[]> {
   const roles = await guild.roles.fetch();
   const roleFilters: RoleFilter[] = [];
-  
+
   roles?.each((role) => {
     if (role.name === "@everyone") return; // Exclude @everyone role
     // Sort roles so SCF roles appear first
@@ -36,14 +35,14 @@ export async function getGuildRolesFromDiscord(guild: Guild, client: Client): Pr
       roleFilters.unshift({
         id: role.id,
         name: role.name,
-        color: role.hexColor
+        color: role.hexColor,
       });
       return;
     }
     roleFilters.push({
       id: role.id,
       name: role.name,
-      color: role.hexColor
+      color: role.hexColor,
     });
   });
   logger(`Fetched ${roleFilters.length} roles for guild ${guild.name}`, client);
@@ -78,7 +77,6 @@ export async function refreshGuildFromDiscord(guildId: string): Promise<void> {
 */
 /** Load from DB the role stats + full member list for that guild. */
 export async function loadGuildData(guildId: string): Promise<{
-
   roleStats: {
     verified: number;
     pathfinder: number;
@@ -110,7 +108,7 @@ export async function loadGuildData(guildId: string): Promise<{
   const dbMembers = await syncMembersFromDiscord(guild, client);
   console.timeEnd("syncMembersFromDiscord");
   console.log(`[loadGuildData] [${Date.now()} ] - members synced from discord`);
-  const badges = await getAllPrecomputedBadges();  
+  const badges = await getAllPrecomputedBadges();
   console.log(`[loadGuildData] [${Date.now()} ] - badges fetched, retrieved ${badges.length} badges`);
   //const assets= await parseTomlFiles()
   //console.log(`asssets parsed ${assets}`);

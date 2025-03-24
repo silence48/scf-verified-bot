@@ -10,17 +10,15 @@ export default function MembersPage() {
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
   const handleFilterToggle = (role: string) => {
-    setActiveFilters((prev) => 
-      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
-    );
+    setActiveFilters((prev) => (prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]));
   };
 
   return (
     <div className="container mx-auto px-4 pb-6">
       <div className="flex flex-col gap-6">
-    <h2 className="text-2xl font-schabo tracking-wide mb-4">Members Overview</h2>
-    
-    {/* 
+        <h2 className="mb-4 font-schabo text-2xl tracking-wide">Members Overview</h2>
+
+        {/* 
     <RoleStats 
       activeFilters={activeFilters}
       onFilterToggle={handleFilterToggle}
@@ -32,9 +30,8 @@ export default function MembersPage() {
     />
     */}
       </div>
-      
+
       <Footer />
     </div>
   );
 }
-

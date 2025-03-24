@@ -25,7 +25,6 @@ export interface BaseUser {
 if (globalThis.isLoggingIn === undefined) globalThis.isLoggingIn = false;
 if (globalThis.didRunReadyBlock === undefined) globalThis.didRunReadyBlock = false;
 function waitForClientReady(client: Client): Promise<Client> {
-
   if (client.isReady()) {
     return Promise.resolve(client);
   }
@@ -54,7 +53,7 @@ export async function getClient(source?: string): Promise<Client> {
     console.log("[] waiting for discord client to be ready");
     return await waitForClientReady(globalThis.discordClient);
   }
-    /*
+  /*
     if (globalThis.discordClient.isReady()) {
       console.log('[] discord client is ready');
       return globalThis.discordClient;
@@ -70,17 +69,10 @@ export async function getClient(source?: string): Promise<Client> {
         globalThis.discordClient?.once('ready', readyHandler);
       });
     }*/
-  
 
   // Otherwise, create a new Client
   const options: ClientOptions = {
-    intents: [
-      GatewayIntentBits.Guilds,
-      GatewayIntentBits.GuildMessages,
-      GatewayIntentBits.GuildMembers,
-      GatewayIntentBits.MessageContent,
-      GatewayIntentBits.DirectMessages,
-    ],
+    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMembers, GatewayIntentBits.MessageContent, GatewayIntentBits.DirectMessages],
   };
   globalThis.discordClient = new Client(options);
   console.log(`[getClient] discord client created by ${source}`);
@@ -105,7 +97,7 @@ export async function getClient(source?: string): Promise<Client> {
         client?.once("ready", async () => {
           // Make sure we only run this block once, even if 'ready' is fired again
           if (!client || didRunReadyBlock) {
-            if(didRunReadyBlock) {
+            if (didRunReadyBlock) {
               console.log("did run ready block");
             }
             return;
@@ -118,10 +110,7 @@ export async function getClient(source?: string): Promise<Client> {
           }
 
           BOT_IS_LOGGED_IN.value = true;
-          logger(
-            `Logged in as ${client.user.tag}. Client ID: ${client.user.id}`,
-            client
-          );
+          logger(`Logged in as ${client.user.tag}. Client ID: ${client.user.id}`, client);
 
           // Now do the old "once ready" logic: fetch guilds, store them in DB,
           // register slash commands, sync roles/members, etc.
@@ -133,17 +122,16 @@ export async function getClient(source?: string): Promise<Client> {
               logger(`Initializing guild: ${fullGuild.name} (${guildId})`, client);
               console.log("The bot read only mode", BOT_READONLY_MODE);
               if (!BOT_READONLY_MODE) {
+                // Store guild in DB
+                //await upsertGuild(fullGuild.id, fullGuild.name);
 
-              // Store guild in DB
-              //await upsertGuild(fullGuild.id, fullGuild.name);
+                // Sync roles
+                //await syncRoles(fullGuild);
+                // Sync members
+                //await syncMembers(fullGuild);
 
-              // Sync roles
-              //await syncRoles(fullGuild);
-              // Sync members
-              //await syncMembers(fullGuild);
-
-              // Register slash commands
-              await registerSlashCommands(client.user.id, fullGuild, client);
+                // Register slash commands
+                await registerSlashCommands(client.user.id, fullGuild, client);
               }
 
               logger(`Guild initialization complete: ${fullGuild.name}`, client);
@@ -178,7 +166,7 @@ export async function restartDiscordClient(): Promise<void> {
       console.error("Error destroying Discord client:", err);
     }
   }
-  
+
   globalThis.discordClient = null;
   isLoggingIn = false;
   didRunReadyBlock = false;

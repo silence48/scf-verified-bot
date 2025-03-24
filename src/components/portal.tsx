@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
 interface PortalProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export function Portal({ children }: PortalProps) {
@@ -23,4 +23,3 @@ export function Portal({ children }: PortalProps) {
   // Create a portal to the document body
   return createPortal(children, document.body);
 }
-

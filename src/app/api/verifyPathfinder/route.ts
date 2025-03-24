@@ -54,172 +54,146 @@ export async function POST(request: NextRequest) {
     const conflictingUsers = await db
       .collection("SCF_Users")
       .find({
-        $or: [
-          { publicKey: address },
-          { publicKeys: { $in: [address] } }
-        ],
-        discordId: { $ne: discordId } // Exclude the current user
+        $or: [{ publicKey: address }, { publicKeys: { $in: [address] } }],
+        discordId: { $ne: discordId }, // Exclude the current user
       })
       .toArray();
     if (conflictingUsers.length > 0) {
-      logger(`Public key ${address} is already associated with other users: ${conflictingUsers.map(user => user.discordId).join(", ")}`, client);
+      logger(`Public key ${address} is already associated with other users: ${conflictingUsers.map((user) => user.discordId).join(", ")}`, client);
 
-      console.warn(
-        `Public key ${address} is already associated with other users: ${conflictingUsers
-          .map(user => user.discordId)
-          .join(", ")}`
-      );
+      console.warn(`Public key ${address} is already associated with other users: ${conflictingUsers.map((user) => user.discordId).join(", ")}`);
       return NextResponse.json(
         {
           error: "Public key is already associated with other users.",
-          conflictingUsers: conflictingUsers.map(user => user.discordId)
+          conflictingUsers: conflictingUsers.map((user) => user.discordId),
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Fetch the existing user record (if any)
     const userRecord = await db.collection<SCFUser>("SCF_Users").findOne({ discordId });
     const responseLog: processedUserResponse = { status: 200, date: new Date(), message: "User not found, creating new record.", role: "no-role-new-user" };
-    const user = userRecord ? userRecord : {
-      _id: new ObjectId(),
-      discordId: discordId,
-      publicKey: address,
-      publicKeys: [address],
-      lastProcessed: new Date().toISOString(),
-      processResponse: responseLog,
-      processedResponses: [ responseLog ]
-    };
+    const user = userRecord
+      ? userRecord
+      : {
+          _id: new ObjectId(),
+          discordId: discordId,
+          publicKey: address,
+          publicKeys: [address],
+          lastProcessed: new Date().toISOString(),
+          processResponse: responseLog,
+          processedResponses: [responseLog],
+        };
 
     const publicKey = user.publicKey ? user.publicKey : address;
     logger(`User ${discordId} has registered publicKey: ${publicKey}`, client);
     // Ensure publicKeys avoid duplicates
-    const publicKeys: string[] = Array.from(new Set([
-      ...(userRecord?.publicKeys || []),
-      address
-    ]));
+    const publicKeys: string[] = Array.from(new Set([...(userRecord?.publicKeys || []), address]));
 
     const funded = await checkAccount(publicKeys);
     const userbadges: PrecomputedBadge[] = await getBadgesForKeys(publicKeys, db);
     const currentRole = await getMemberHighestCurrentTierRole(member);
     const hasProjectRole = member.roles.cache.some((r) => r.name === "SCF Project");
     if (!funded) {
-      if(hasProjectRole) {
+      if (hasProjectRole) {
         const message = `${member.user.tag} did not link a funded account, but they have the scf project role and they could at least qualify for "SCF Pathfinder" role if they fund it.`;
         console.warn(message);
-        return NextResponse.json(
-          {error: message, roleAssigned: "notfunded-scfproject" },
-          {status: 406}
-        );
-      };
-      console.warn(`${member.user.tag}'s account ${address} is not funded, thus there is nothing to check. their current role is: ${currentRole?.roleName ?? "none"}`);
-      return NextResponse.json(
-        { error: `user ${discordId}, none of these keys: ${publicKeys} are funded on the network.`, roleAssigned: "notfunded-noexisting" },
-        { status: 406 }
-      );
-    }
-   // if (userbadges.length > 0) {
-      const roleEligibilityResult = await getHighestEligibleRole(discordId); 
-      if (!roleEligibilityResult.role) {
-        return NextResponse.json(
-          { error: `Failed to determine role eligibility for user ${discordId}`, roleAssigned: "error" },
-          { status: 500 }
-        );
+        return NextResponse.json({ error: message, roleAssigned: "notfunded-scfproject" }, { status: 406 });
       }
-      if (roleEligibilityResult.role?.roleName !== currentRole?.roleName) {
-        try {
-          const grantresult = await grantRoleWithChecks(guild, discordId, roleEligibilityResult.role.roleName, client);
+      console.warn(`${member.user.tag}'s account ${address} is not funded, thus there is nothing to check. their current role is: ${currentRole?.roleName ?? "none"}`);
+      return NextResponse.json({ error: `user ${discordId}, none of these keys: ${publicKeys} are funded on the network.`, roleAssigned: "notfunded-noexisting" }, { status: 406 });
+    }
+    // if (userbadges.length > 0) {
+    const roleEligibilityResult = await getHighestEligibleRole(discordId);
+    if (!roleEligibilityResult.role) {
+      return NextResponse.json({ error: `Failed to determine role eligibility for user ${discordId}`, roleAssigned: "error" }, { status: 500 });
+    }
+    if (roleEligibilityResult.role?.roleName !== currentRole?.roleName) {
+      try {
+        const grantresult = await grantRoleWithChecks(guild, discordId, roleEligibilityResult.role.roleName, client);
 
-          // Create new process response
-          const newProcessResponse: processedUserResponse = {
-            status: grantresult.statusCode,
-            date: new Date(),
-            message: grantresult.success 
-              ? `Role ${grantresult.finalRoleName} granted successfully.`
-              : `Failed to grant role: ${grantresult.error || "Unknown error"}`,
-            role: grantresult.finalRoleName ? grantresult.finalRoleName : roleEligibilityResult.role.roleName ? roleEligibilityResult.role.roleName : "unknown-error"
-          };
-          const oldProcessResponse: processedUserResponse = {
-            status: user.processResponse.status,
-            date: new Date(user.lastProcessed),
-            message: user.processResponse.message ? user.processResponse.message : user.processResponse.error ? user.processResponse.error : "unknown user event",
-            role: (user.processResponse.message && user.processResponse.status === 200 && !user.processResponse.role) ? await extractRoleName(user.processResponse.message) : user.processResponse.role ? user.processResponse.role : "no-role-error"
-          };
-            // Update the user's processResponse and processedResponses
-            const currentProcessedResponses = user.processedResponses || [];
-            
-            // Add the current processResponse to processedResponses if it exists
-            const updatedProcessedResponses = user.processResponse 
-            ? [...currentProcessedResponses, oldProcessResponse, newProcessResponse]
-            : [...currentProcessedResponses, newProcessResponse];
-            
-            // Update the current processResponse with the new one
-            user.processResponse = newProcessResponse;
+        // Create new process response
+        const newProcessResponse: processedUserResponse = {
+          status: grantresult.statusCode,
+          date: new Date(),
+          message: grantresult.success ? `Role ${grantresult.finalRoleName} granted successfully.` : `Failed to grant role: ${grantresult.error || "Unknown error"}`,
+          role: grantresult.finalRoleName ? grantresult.finalRoleName : roleEligibilityResult.role.roleName ? roleEligibilityResult.role.roleName : "unknown-error",
+        };
+        const oldProcessResponse: processedUserResponse = {
+          status: user.processResponse.status,
+          date: new Date(user.lastProcessed),
+          message: user.processResponse.message ? user.processResponse.message : user.processResponse.error ? user.processResponse.error : "unknown user event",
+          role:
+            user.processResponse.message && user.processResponse.status === 200 && !user.processResponse.role
+              ? await extractRoleName(user.processResponse.message)
+              : user.processResponse.role
+                ? user.processResponse.role
+                : "no-role-error",
+        };
+        // Update the user's processResponse and processedResponses
+        const currentProcessedResponses = user.processedResponses || [];
 
-          // Create a unique key based on both message and timestamp to preserve entries
-          // with the same message but different timestamps
-          const uniqueResponses = Array.from(
-            new Map(updatedProcessedResponses.map(item => 
-              [`${item.message ? item.message : item.error}_${item.date}`, item]
-            )).values()
-          );
+        // Add the current processResponse to processedResponses if it exists
+        const updatedProcessedResponses = user.processResponse ? [...currentProcessedResponses, oldProcessResponse, newProcessResponse] : [...currentProcessedResponses, newProcessResponse];
 
-          // Update the user in the database
-          await db.collection("SCF_Users").updateOne(
-            { discordId },
-            {
-              $set: {
-                publicKey: address,
-                publicKeys,
-                lastProcessed: new Date(),
-                processResponse: newProcessResponse,
-                processResponses: uniqueResponses
-              }
+        // Update the current processResponse with the new one
+        user.processResponse = newProcessResponse;
+
+        // Create a unique key based on both message and timestamp to preserve entries
+        // with the same message but different timestamps
+        const uniqueResponses = Array.from(new Map(updatedProcessedResponses.map((item) => [`${item.message ? item.message : item.error}_${item.date}`, item])).values());
+
+        // Update the user in the database
+        await db.collection("SCF_Users").updateOne(
+          { discordId },
+          {
+            $set: {
+              publicKey: address,
+              publicKeys,
+              lastProcessed: new Date(),
+              processResponse: newProcessResponse,
+              processResponses: uniqueResponses,
             },
-            { upsert: true }
-          );
+          },
+          { upsert: true },
+        );
 
-          if (!grantresult.success) {
-            return NextResponse.json(
-              { error: grantresult.error, roleAssigned: "role-grant-failed" },
-              { status: grantresult.statusCode || 500 }
-            );
-          }
-            // Calculate total reputation by counting all badges from all precomputed badges and multiplying by 5
-            const totalReputation = userbadges.reduce((total, precomputedBadge) => {
+        if (!grantresult.success) {
+          return NextResponse.json({ error: grantresult.error, roleAssigned: "role-grant-failed" }, { status: grantresult.statusCode || 500 });
+        }
+        // Calculate total reputation by counting all badges from all precomputed badges and multiplying by 5
+        const totalReputation =
+          userbadges.reduce((total, precomputedBadge) => {
             // Add the count of badges in this precomputed badge document
             return total + (precomputedBadge.badges?.length || 0);
-            }, 0) * 5;
+          }, 0) * 5;
 
-          return NextResponse.json({
-            quests: userbadges,
-            totalReputation: totalReputation.toString(),
-            scfRole: roleEligibilityResult.role?.roleName,
-            message: `Role ${grantresult.finalRoleName} granted successfully.`,
-            roleAssigned: grantresult.finalRoleName
-          });
-
-        } catch (error) {
-          return NextResponse.json(
-            { error: `Failed to assign role ${roleEligibilityResult.role?.roleName}, ${error}`, roleAssigned: "unknown-error" },
-            { status: 500 }
-          );
-        }
+        return NextResponse.json({
+          quests: userbadges,
+          totalReputation: totalReputation.toString(),
+          scfRole: roleEligibilityResult.role?.roleName,
+          message: `Role ${grantresult.finalRoleName} granted successfully.`,
+          roleAssigned: grantresult.finalRoleName,
+        });
+      } catch (error) {
+        return NextResponse.json({ error: `Failed to assign role ${roleEligibilityResult.role?.roleName}, ${error}`, roleAssigned: "unknown-error" }, { status: 500 });
       }
-      else {
-        return NextResponse.json(
-          { error: `user ${discordId}, stellar pubkeys ${JSON.stringify(publicKeys)} is not currently eligible for any role except that which they already have which is: ${currentRole.roleName}`, roleAssigned: "notfunded-otherkey-funded-not-enough-badges" },
-          { status: 406 }
-        );
-      }
+    } else {
+      return NextResponse.json(
+        {
+          error: `user ${discordId}, stellar pubkeys ${JSON.stringify(publicKeys)} is not currently eligible for any role except that which they already have which is: ${currentRole.roleName}`,
+          roleAssigned: "notfunded-otherkey-funded-not-enough-badges",
+        },
+        { status: 406 },
+      );
+    }
     //}
-  } catch(error) {
-    return NextResponse.json({ error: `unknown internal server error ${error}`} ,{status: 500});
+  } catch (error) {
+    return NextResponse.json({ error: `unknown internal server error ${error}` }, { status: 500 });
   }
 }
-    
 
-    
 /*
 const totalReputation = aggregatedBadges.length * 10;
 

@@ -26,10 +26,7 @@ export default function DashboardClient({ guilds }: Props) {
           all data needed is already included in guilds prop. */}
       <Flex direction="column" gap="2" style={{ marginTop: "1rem" }}>
         <label>Select a guild:</label>
-        <select
-          value={selectedGuildId ?? ""}
-          onChange={(e) => setSelectedGuildId(e.target.value)}
-        >
+        <select value={selectedGuildId ?? ""} onChange={(e) => setSelectedGuildId(e.target.value)}>
           <option value="">-- Choose a guild --</option>
           {guilds.map((g) => (
             <option key={g.id} value={g.id}>

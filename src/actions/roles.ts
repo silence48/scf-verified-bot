@@ -26,20 +26,20 @@ export async function fetchRoleCounts(roles: TierRole[]) {
     const db = await getMongoDatabase();
     const userRolesColl = db.collection("user_roles");
     const results: Record<string, number> = {};
-    
+
     for (const role of roles) {
       if (!role.tier) continue;
-      
+
       // Use the role's _id to find matching user roles
       const count = await userRolesColl.countDocuments({ roleId: role._id });
-      
+
       // Group by tier name
       if (!results[role.tier]) {
         results[role.tier] = 0;
       }
       results[role.tier] += count;
     }
-    
+
     return results;
   } catch (err) {
     console.error("[fetchRoleCounts] Error:", err);
@@ -47,14 +47,13 @@ export async function fetchRoleCounts(roles: TierRole[]) {
   }
 }
 
-
 /** Checks if tier roles have been initialized; initializes them if not. */
 export async function checkAndInitializeTierRoles() {
   const db = await getMongoDatabase();
-  const metaColl = db.collection<AppMetaDoc> ("app_meta");  
+  const metaColl = db.collection<AppMetaDoc>("app_meta");
   if (!globalThis.tierRolesInitialized) {
-  const initialized = await metaColl.findOne({ _id: "tier_roles_initialized" });
-    if (initialized){
+    const initialized = await metaColl.findOne({ _id: "tier_roles_initialized" });
+    if (initialized) {
       console.log("[checkAndInitializeTierRoles] Already initialized, skipping.");
       globalThis.tierRolesInitialized = true;
       return;
@@ -65,7 +64,7 @@ export async function checkAndInitializeTierRoles() {
   await initializeTierRoles();
 
   // updae the app meta to not overwrite them later.
-  await metaColl.insertOne({ _id: "tier_roles_initialized", date: new Date(), });
+  await metaColl.insertOne({ _id: "tier_roles_initialized", date: new Date() });
   globalThis.tierRolesInitialized = true;
   console.log("[checkAndInitializeTierRoles] Done initializing Tier Roles.");
 }
@@ -95,20 +94,17 @@ export async function initializeTierRoles(): Promise<void> {
           requirements: [
             { id: "vg1-req-1", type: "Discord" },
             { id: "vg1-req-2", type: "SocialVerification" },
-            { id: "vg1-req-3", type: "StellarAccount" }
-          ]
+            { id: "vg1-req-3", type: "StellarAccount" },
+          ],
         },
         {
           id: "verified-group-2",
           name: "ExistingUser",
           groupMode: "ANY",
-          requirements: [
-            { id: "vg2-req-1", type: "ConcurrentRole", concurrentRoleName: "SCF Verified"}
-          ]
-        }
-        
+          requirements: [{ id: "vg2-req-1", type: "ConcurrentRole", concurrentRoleName: "SCF Verified" }],
+        },
       ],
-      nominationEnabled: false
+      nominationEnabled: false,
     },
     {
       _id: "1082357854926807111",
@@ -127,8 +123,8 @@ export async function initializeTierRoles(): Promise<void> {
           groupMode: "ANY",
           requirements: [
             { id: "pg1-req-1", type: "ConcurrentRole", concurrentRoleName: "SCF Pathfinder" },
-            { id: "pg1-req-2", type: "ConcurrentRole", concurrentRoleName: "SCF Project" }
-          ]
+            { id: "pg1-req-2", type: "ConcurrentRole", concurrentRoleName: "SCF Project" },
+          ],
         },
         {
           id: "path-group-2",
@@ -136,11 +132,11 @@ export async function initializeTierRoles(): Promise<void> {
           groupMode: "ALL",
           requirements: [
             { id: "pg2-req-1", type: "ExistingRole", existingRole: "SCF Verified" },
-            { id: "pg2-req-2", type: "BadgeCount", badgeCategory: "SSQ", minCount: 5 }
-          ]
-        }
+            { id: "pg2-req-2", type: "BadgeCount", badgeCategory: "SSQ", minCount: 5 },
+          ],
+        },
       ],
-      nominationEnabled: false
+      nominationEnabled: false,
     },
     {
       _id: "1082353855041392731",
@@ -160,21 +156,19 @@ export async function initializeTierRoles(): Promise<void> {
           requirements: [
             { id: "ng1-req-1", type: "ExistingRole", existingRole: "SCF Pathfinder" },
             { id: "ng1-req-2", type: "CommunityVote", participationRounds: 2 },
-            { id: "ng1-req-3", type: "Nomination", eligibleVoterRoles: ["SCF Navigator", "SCF Pilot"], nominationRequiredCount: 5 }
-          ]
+            { id: "ng1-req-3", type: "Nomination", eligibleVoterRoles: ["SCF Navigator", "SCF Pilot"], nominationRequiredCount: 5 },
+          ],
         },
         {
           id: "navigator-group-2",
           name: "Existing or Concurrent Role Path",
           groupMode: "ANY",
-          requirements: [
-            { id: "ng2-req-1", type: "ConcurrentRole", concurrentRoleName: "SCF Navigator" },
-          ]
-        }
+          requirements: [{ id: "ng2-req-1", type: "ConcurrentRole", concurrentRoleName: "SCF Navigator" }],
+        },
       ],
       nominationEnabled: true,
       votesRequired: 8,
-      eligibleNominators: ["SCF Navigator", "SCF Pilot"]
+      eligibleNominators: ["SCF Navigator", "SCF Pilot"],
     },
     {
       _id: "1082331251899379762",
@@ -194,22 +188,20 @@ export async function initializeTierRoles(): Promise<void> {
           requirements: [
             { id: "pg1-req-1", type: "ExistingRole", existingRole: "SCF Navigator" },
             { id: "pg1-req-2", type: "CommunityVote", participationRounds: 3 },
-            { id: "pg1-req-3", type: "Nomination", eligibleVoterRoles: ["SCF Pilot"], nominationRequiredCount: 5 }
-          ]
+            { id: "pg1-req-3", type: "Nomination", eligibleVoterRoles: ["SCF Pilot"], nominationRequiredCount: 5 },
+          ],
         },
         {
           id: "pilot-group-2",
           name: "Existing or Concurrent Role Path",
           groupMode: "ANY",
-          requirements: [
-            { id: "pg2-req-1", type: "ConcurrentRole", concurrentRoleName: "SCF Pilot" },
-          ]
-        }
+          requirements: [{ id: "pg2-req-1", type: "ConcurrentRole", concurrentRoleName: "SCF Pilot" }],
+        },
       ],
       nominationEnabled: true,
       votesRequired: 5,
-      eligibleNominators: ["SCF Pilot"]
-    }
+      eligibleNominators: ["SCF Pilot"],
+    },
   ];
 
   // Upsert each role, preserving createdAt & removedAt from DB if they exist
@@ -222,17 +214,20 @@ export async function initializeTierRoles(): Promise<void> {
     role.updatedAt = now;
     await upsertTierRole(role);
   }
-  
+
   // Look up the roles after insertion to verify
-  const updatedRoles = await db.collection<TierRole>("guild_roles").find({
-    _id: { $in: tierRoles.map(role => role._id) }
-  }).toArray();
-  
+  const updatedRoles = await db
+    .collection<TierRole>("guild_roles")
+    .find({
+      _id: { $in: tierRoles.map((role) => role._id) },
+    })
+    .toArray();
+
   console.log("Updated roles in database:");
-  updatedRoles.forEach(role => {
+  updatedRoles.forEach((role) => {
     console.log(`Role: ${role.roleName} (${role.tier})`);
   });
-  
+
   // Log to a file
   await printFile(updatedRoles);
 }
@@ -242,19 +237,15 @@ export async function initializeTierRoles(): Promise<void> {
  * @param data The data to write to the file
  */
 async function printFile(data: unknown): Promise<void> {
-  
   try {
-    const content = typeof data === "string" 
-      ? data 
-      : JSON.stringify(data, null, 2);
-    
+    const content = typeof data === "string" ? data : JSON.stringify(data, null, 2);
+
     await fs.writeFile("outputlog.log", content, "utf8");
     console.log("Successfully wrote to outputlog.log");
   } catch (error) {
     console.error("Error writing to file:", error);
   }
 }
-
 
 /**
  * Upserts an individual TierRole in the database without overwriting the existing base fields.
@@ -279,25 +270,23 @@ export async function upsertTierRole(role: TierRole): Promise<void> {
         votesRequired: role.votesRequired,
         eligibleNominators: role.eligibleNominators,
         removedAt: role.removedAt,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       },
       $setOnInsert: {
         // Insert only if this doc is new
         guildId: role.guildId,
-        createdAt: role.createdAt || new Date()
-      }
+        createdAt: role.createdAt || new Date(),
+      },
     },
-    { upsert: true }
+    { upsert: true },
   );
 }
 
-
 export async function getAllRoles(): Promise<TierRole[]> {
   const db = await getMongoDatabase();
-  const existingRoles = await db.collection<TierRole>("guild_roles").find().toArray(); 
-  return existingRoles; 
+  const existingRoles = await db.collection<TierRole>("guild_roles").find().toArray();
+  return existingRoles;
 }
-
 
 // Mock function to create a new role
 export async function createRole(role: TierRole): Promise<TierRole> {
@@ -306,7 +295,7 @@ export async function createRole(role: TierRole): Promise<TierRole> {
   if (!validationResult.valid) {
     throw new Error(`Invalid role data: ${validationResult.errors.join(", ")}`);
   }
-  
+
   // Return the role with a new ID
   return {
     ...role,
@@ -323,12 +312,12 @@ export async function createRole(role: TierRole): Promise<TierRole> {
  */
 export async function validateTierRoleData(role: TierRole): Promise<{ valid: boolean; errors: string[] }> {
   const errors: string[] = [];
-  
+
   // Basic required fields
   if (!role.roleName) errors.push("roleName is required");
   if (!role.guildId) errors.push("guildId is required");
   if (!role.description) errors.push("description is required");
-  
+
   // Validate tier
   /*
   const validTiers: RoleTier[] = ["SCF Verified", "SCF Pathfinder", "SCF Navigator", "SCF Pilot"];
@@ -342,7 +331,7 @@ export async function validateTierRoleData(role: TierRole): Promise<{ valid: boo
   if (!role.requirements || !validRoleModes.includes(role.requirements)) {
     errors.push(`requirements must be one of: ${validRoleModes.join(", ")}`);
   }
-  
+
   // If nominationEnabled is true, validate related fields
   if (role.nominationEnabled === true) {
     if (role.votesRequired === undefined || role.votesRequired <= 0) {
@@ -352,7 +341,7 @@ export async function validateTierRoleData(role: TierRole): Promise<{ valid: boo
       errors.push("eligibleNominators must be defined and not empty when nominationEnabled is true");
     }
   }
-  
+
   // Validate requirementGroups
   if (!role.requirementGroups || role.requirementGroups.length === 0) {
     errors.push("requirementGroups must be defined and not empty");
@@ -361,24 +350,21 @@ export async function validateTierRoleData(role: TierRole): Promise<{ valid: boo
     role.requirementGroups.forEach((group, groupIndex) => {
       if (!group.id) errors.push(`requirementGroups[${groupIndex}].id is required`);
       if (!group.name) errors.push(`requirementGroups[${groupIndex}].name is required`);
-      
+
       const validGroupModes: GroupMode[] = ["ANY", "ALL"];
       if (!group.groupMode || !validGroupModes.includes(group.groupMode)) {
         errors.push(`requirementGroups[${groupIndex}].groupMode must be one of: ${validGroupModes.join(", ")}`);
       }
-      
+
       if (!group.requirements || group.requirements.length === 0) {
         errors.push(`requirementGroups[${groupIndex}].requirements must be defined and not empty`);
       } else {
         // Validate each requirement in the group
         group.requirements.forEach((req, reqIndex) => {
           if (!req.id) errors.push(`requirementGroups[${groupIndex}].requirements[${reqIndex}].id is required`);
-          
-          const validVerificationTypes: VerificationType[] = [
-            "Discord", "SocialVerification", "StellarAccount", "BadgeCount", 
-            "ConcurrentRole", "Nomination", "CommunityVote", "ExistingRole"
-          ];
-          
+
+          const validVerificationTypes: VerificationType[] = ["Discord", "SocialVerification", "StellarAccount", "BadgeCount", "ConcurrentRole", "Nomination", "CommunityVote", "ExistingRole"];
+
           if (!req.type || !validVerificationTypes.includes(req.type)) {
             errors.push(`requirementGroups[${groupIndex}].requirements[${reqIndex}].type must be one of: ${validVerificationTypes.join(", ")}`);
           } else {
@@ -386,7 +372,8 @@ export async function validateTierRoleData(role: TierRole): Promise<{ valid: boo
             switch (req.type) {
               case "BadgeCount":
                 if (!req.badgeCategory) errors.push(`requirementGroups[${groupIndex}].requirements[${reqIndex}].badgeCategory is required for BadgeCount type`);
-                if (typeof req.minCount !== "number" || req.minCount <= 0) errors.push(`requirementGroups[${groupIndex}].requirements[${reqIndex}].minCount must be a positive number for BadgeCount type`);
+                if (typeof req.minCount !== "number" || req.minCount <= 0)
+                  errors.push(`requirementGroups[${groupIndex}].requirements[${reqIndex}].minCount must be a positive number for BadgeCount type`);
                 break;
               case "ConcurrentRole":
                 if (!req.concurrentRoleName) errors.push(`requirementGroups[${groupIndex}].requirements[${reqIndex}].concurrentRoleName is required for ConcurrentRole type`);
@@ -395,11 +382,14 @@ export async function validateTierRoleData(role: TierRole): Promise<{ valid: boo
                 if (!req.existingRole) errors.push(`requirementGroups[${groupIndex}].requirements[${reqIndex}].existingRole is required for ExistingRole type`);
                 break;
               case "Nomination":
-                if (!req.eligibleVoterRoles || req.eligibleVoterRoles.length === 0) errors.push(`requirementGroups[${groupIndex}].requirements[${reqIndex}].eligibleVoterRoles must be defined and not empty for Nomination type`);
-                if (typeof req.nominationRequiredCount !== "number" || req.nominationRequiredCount <= 0) errors.push(`requirementGroups[${groupIndex}].requirements[${reqIndex}].nominationRequiredCount must be a positive number for Nomination type`);
+                if (!req.eligibleVoterRoles || req.eligibleVoterRoles.length === 0)
+                  errors.push(`requirementGroups[${groupIndex}].requirements[${reqIndex}].eligibleVoterRoles must be defined and not empty for Nomination type`);
+                if (typeof req.nominationRequiredCount !== "number" || req.nominationRequiredCount <= 0)
+                  errors.push(`requirementGroups[${groupIndex}].requirements[${reqIndex}].nominationRequiredCount must be a positive number for Nomination type`);
                 break;
               case "CommunityVote":
-                if (typeof req.participationRounds !== "number" || req.participationRounds <= 0) errors.push(`requirementGroups[${groupIndex}].requirements[${reqIndex}].participationRounds must be a positive number for CommunityVote type`);
+                if (typeof req.participationRounds !== "number" || req.participationRounds <= 0)
+                  errors.push(`requirementGroups[${groupIndex}].requirements[${reqIndex}].participationRounds must be a positive number for CommunityVote type`);
                 break;
             }
           }
@@ -407,10 +397,10 @@ export async function validateTierRoleData(role: TierRole): Promise<{ valid: boo
       }
     });
   }
-  
+
   return {
     valid: errors.length === 0,
-    errors
+    errors,
   };
 }
 
@@ -435,21 +425,21 @@ export async function updateRole(role: TierRole): Promise<TierRole> {
         votesRequired: role.votesRequired,
         eligibleNominators: role.eligibleNominators,
         removedAt: role.removedAt,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       },
       $setOnInsert: {
         // Insert only if this doc is new
         guildId: role.guildId,
-        createdAt: role.createdAt || new Date()
-      }
+        createdAt: role.createdAt || new Date(),
+      },
     },
-    { upsert: true, returnDocument: "after" }
+    { upsert: true, returnDocument: "after" },
   );
-  
+
   if (!result) {
     throw new Error(`Failed to update role: ${role._id}`);
   }
-  
+
   return result;
 }
 
@@ -467,34 +457,24 @@ export async function deleteRole(roleId: string): Promise<void> {
 /**
  * Helper: Checks if user has an account with at least a badge. (precomputedBadge with publicKey).
  */
-export async function checkStellarQuestForDiscordId(
-  userId: string,
-  db: Db
-): Promise<boolean> {
-  const precomputed = await db
-    .collection<PrecomputedBadge>("precomputed_badges")
-    .findOne({ discordId: userId });
+export async function checkStellarQuestForDiscordId(userId: string, db: Db): Promise<boolean> {
+  const precomputed = await db.collection<PrecomputedBadge>("precomputed_badges").findOne({ discordId: userId });
   return !!precomputed?.publicKey;
 }
 
 /**
  * Helper: Checks if the user linked their social account (simply returns true here).
  */
-export async function checkSocialVerificationRequirement(member: MemberInfo, provider: string): Promise<{met: boolean, provider: string}> {
+export async function checkSocialVerificationRequirement(member: MemberInfo, provider: string): Promise<{ met: boolean; provider: string }> {
   // For now, if they have a discordId, return true
-  return {met: !!member.discordId, provider: provider};
+  return { met: !!member.discordId, provider: provider };
 }
 
 /**
  * Helper: Checks if user has a Stellar account (precomputedBadge with publicKey).
  */
-export async function getBadgeForPubKey(
-  publicKey: string,
-  db: Db
-): Promise<null | PrecomputedBadge> {
-  const precomputed = await db
-    .collection<PrecomputedBadge>("precomputed_badges")
-    .findOne({ publicKey: publicKey });
+export async function getBadgeForPubKey(publicKey: string, db: Db): Promise<null | PrecomputedBadge> {
+  const precomputed = await db.collection<PrecomputedBadge>("precomputed_badges").findOne({ publicKey: publicKey });
   if (!precomputed) return null;
   return precomputed;
 }
@@ -520,12 +500,12 @@ export async function getBadgeCategory(badge: { category_broad?: string; code?: 
   if (badge.category_broad && badge.category_broad.trim() !== "") {
     return badge.category_broad;
   }
-  
+
   // Fall back to extracting from code if available
   if (badge.code) {
     return extractCategoryFromCode(badge.code);
   }
-  
+
   // If neither is available
   return "unknown";
 }
@@ -536,56 +516,49 @@ export async function getBadgeCategory(badge: { category_broad?: string; code?: 
 export async function getUniqueBadgeCategories(db: Db): Promise<string[]> {
   // Get all badges from the badges collection
   const badges = await db.collection<BadgeAsset>("badges").find({}).toArray();
-  
+
   // Get unique categories using Set
   const categories = new Set<string>();
-  
+
   // Use for...of loop for proper async handling
   for (const badge of badges) {
     const category = await getBadgeCategory(badge);
     categories.add(category);
   }
-  
+
   return Array.from(categories).sort();
 }
 
 /**
  * Helper: Checks if the user's badge count meets a minimum for a specific category.
  */
-async function checkBadgeCountRequirement(
-  userId: string,
-  minCount: number,
-  db: Db
-): Promise<{met: boolean, categoryCounts: { [category: string]: number }} > {
-  const precomputed = await db
-    .collection<PrecomputedBadge>("precomputed_badges")
-    .findOne({ discordId: userId });
-    
+async function checkBadgeCountRequirement(userId: string, minCount: number, db: Db): Promise<{ met: boolean; categoryCounts: { [category: string]: number } }> {
+  const precomputed = await db.collection<PrecomputedBadge>("precomputed_badges").findOne({ discordId: userId });
+
   if (!precomputed?.badges?.length) {
-    return { met: false, categoryCounts: {} }; 
+    return { met: false, categoryCounts: {} };
   }
-  
-  
-    // Create an object to store category counts
-    const categoryCounts: { [category: string]: number } = {};
-    
-    // Count badges by category
-    // Use a for...of loop instead of forEach to handle async operations
-    for (const badge of precomputed.badges) {
-      const category = await getBadgeCategory(badge);
-      if (!categoryCounts[category]) {
+
+  // Create an object to store category counts
+  const categoryCounts: { [category: string]: number } = {};
+
+  // Count badges by category
+  // Use a for...of loop instead of forEach to handle async operations
+  for (const badge of precomputed.badges) {
+    const category = await getBadgeCategory(badge);
+    if (!categoryCounts[category]) {
       categoryCounts[category] = 0;
-      }
-      categoryCounts[category]++;
     }
-    const result = {
-      // this met boolean is whether all the precomputed.badges.length is greater than the mincount.
-      met: precomputed.badges.length >= minCount,
-      categoryCounts: categoryCounts // categorycounts looks like: {SSQ: 5, XYZ: 3}
-    };
-    return result;
-  
- /* 
+    categoryCounts[category]++;
+  }
+  const result = {
+    // this met boolean is whether all the precomputed.badges.length is greater than the mincount.
+    met: precomputed.badges.length >= minCount,
+    categoryCounts: categoryCounts, // categorycounts looks like: {SSQ: 5, XYZ: 3}
+  };
+  return result;
+
+  /* 
   // Count badges that match the requested category
   const categoryBadgeCount = precomputed.badges.filter(badge => {
     // Get the badge's category
@@ -601,10 +574,10 @@ async function checkBadgeCountRequirement(
  */
 async function checkStellarAccountRequirement(member: MemberInfo, db: Db): Promise<boolean> {
   const scf_user = await db.collection<SCFUser>("SCF_Users").findOne({ discordId: member.discordId });
-  if(scf_user) {
+  if (scf_user) {
     return !!scf_user.publicKey;
   }
-  return false;  
+  return false;
 }
 
 /**
@@ -622,13 +595,14 @@ export async function checkNominationRequirement(role: TierRole, userId: string)
   const db = await getMongoDatabase();
 
   // Query all nomination threads where this user was a nominee for this role
-  const nominationThreads = await db.collection<NominationThread>("nomination_threads")
+  const nominationThreads = await db
+    .collection<NominationThread>("nomination_threads")
     .find({
       nomineeId: userId,
-      roleId: role._id
+      roleId: role._id,
     })
     .toArray();
-  
+
   // If no nomination threads exist, return not met
   if (nominationThreads.length === 0) {
     return {
@@ -636,37 +610,38 @@ export async function checkNominationRequirement(role: TierRole, userId: string)
       roleName: role.roleName,
       winningThread: "",
       nominatorId: "",
-      voteResults: []
+      voteResults: [],
     };
   }
 
   // Get all nomination votes for these threads
-  const nominationVotes = await db.collection<NominationVote>("nomination_votes").find({
-    threadId: { $in: nominationThreads.map(thread => thread._id) }
-  }).toArray();
+  const nominationVotes = await db
+    .collection<NominationVote>("nomination_votes")
+    .find({
+      threadId: { $in: nominationThreads.map((thread) => thread._id) },
+    })
+    .toArray();
 
   // Process each thread to build vote results
-  const voteResults: NominationVoteResult[] = nominationThreads.map(thread => {
-    const threadVotes = nominationVotes.filter(vote => vote.threadId === thread._id);
-    
+  const voteResults: NominationVoteResult[] = nominationThreads.map((thread) => {
+    const threadVotes = nominationVotes.filter((vote) => vote.threadId === thread._id);
+
     // Find the last vote timestamp
-    const lastVote = threadVotes.length > 0 
-      ? new Date(Math.max(...threadVotes.map(v => v.voteTimestamp.getTime())))
-      : thread.createdAt;
-    
+    const lastVote = threadVotes.length > 0 ? new Date(Math.max(...threadVotes.map((v) => v.voteTimestamp.getTime()))) : thread.createdAt;
+
     return {
       met: threadVotes.length >= (role.votesRequired || 0),
       threadId: thread._id,
       voteCount: threadVotes.length,
       lastVote: lastVote,
       nominationDate: thread.createdAt,
-      votes: threadVotes
+      votes: threadVotes,
     };
   });
 
   // Find threads that meet the vote requirement
-  const successfulThreads = voteResults.filter(result => result.met);
-  
+  const successfulThreads = voteResults.filter((result) => result.met);
+
   // If no thread has enough votes, return not met
   if (successfulThreads.length === 0) {
     return {
@@ -674,77 +649,62 @@ export async function checkNominationRequirement(role: TierRole, userId: string)
       roleName: role.roleName,
       winningThread: "",
       nominatorId: "",
-      voteResults: voteResults
+      voteResults: voteResults,
     };
   }
 
   // Find the winning thread (the one with the most votes)
-  const winningResult = successfulThreads.reduce((prev, current) => 
-    (prev.voteCount > current.voteCount) ? prev : current
-  );
+  const winningResult = successfulThreads.reduce((prev, current) => (prev.voteCount > current.voteCount ? prev : current));
 
   // Find the original thread to get the nominator
-  const winningThread = nominationThreads.find(thread => thread._id === winningResult.threadId);
-  
+  const winningThread = nominationThreads.find((thread) => thread._id === winningResult.threadId);
+
   return {
     met: true,
     roleName: role.roleName,
     winningThread: winningResult.threadId,
     nominatorId: winningThread?.nominatorId || "",
-    voteResults: voteResults
+    voteResults: voteResults,
   };
 }
 /**
  * Checks if a user meets the requirements for an existing role
  */
-async function checkExistingRoleRequirement(
-  userId: string, 
-  existingRole: string,
-  db: Db
-): Promise<boolean> {
+async function checkExistingRoleRequirement(userId: string, existingRole: string, db: Db): Promise<boolean> {
   // Get the member to check their roles
   const member = await db.collection<MemberInfo>("members").findOne({ discordId: userId });
   if (!member?.roles) return false;
-  
+
   // Check if they have the required role
-  return member.roles.some(role => role.name === existingRole);
+  return member.roles.some((role) => role.name === existingRole);
 }
 
 /**
  * Checks if a user meets community vote requirements
  */
-async function checkCommunityVoteRequirement(
-  member: MemberInfo,
-  participationRounds: number,
-  db: Db
-): Promise<boolean> {
+async function checkCommunityVoteRequirement(member: MemberInfo, participationRounds: number, db: Db): Promise<boolean> {
   // We need a way to fetch this data from an api and put it in the database for now just return true.
   return true;
 }
 
 //checks if a member has some role.
-async function checkConcurrentRoleRequirement(member: MemberInfo, concurrentRole: string): Promise<{met: boolean, reason: string}> {
+async function checkConcurrentRoleRequirement(member: MemberInfo, concurrentRole: string): Promise<{ met: boolean; reason: string }> {
   // Get the member to check their roles
   const role = member.roles.find((r) => r.name === concurrentRole);
-  const met = role === undefined ? false: true;
-  return {met: met, reason: met ? `User has concurrent role ${concurrentRole}` : `User does not have concurrent role ${concurrentRole}`};
-  }
+  const met = role === undefined ? false : true;
+  return { met: met, reason: met ? `User has concurrent role ${concurrentRole}` : `User does not have concurrent role ${concurrentRole}` };
+}
 /**
  * Evaluates all requirements in a group based on group mode (ALL or ANY)
  */
-async function evaluateRequirementGroup(
-  group: RequirementGroup,
-  member: MemberInfo,
-  role: TierRole,
-  db: Db
-): Promise<RequirementGroupResult> {
+async function evaluateRequirementGroup(group: RequirementGroup, member: MemberInfo, role: TierRole, db: Db): Promise<RequirementGroupResult> {
   const reqResults = [];
   let metCount = 0;
-  
+
   for (const req of group.requirements) {
     let met = false;
     let reason: string | undefined | { [category: string]: number };
-    
+
     try {
       switch (req.type) {
         case "Discord":
@@ -760,17 +720,13 @@ async function evaluateRequirementGroup(
           met = await checkStellarAccountRequirement(member, db);
           break;
         case "BadgeCount":
-          const badges = await checkBadgeCountRequirement(
-            member.discordId,
-            req.minCount || 5,
-            db
-          );
+          const badges = await checkBadgeCountRequirement(member.discordId, req.minCount || 5, db);
           met = badges.met;
           reason = badges.categoryCounts;
           console.log(`[evaluateRequirementGroup] - ${Date.now()} - User ${member.discordId} badge count check: ${met ? "met" : "not met"}`);
           break;
         case "ConcurrentRole":
-          if(!req.concurrentRoleName) throw new Error("ConcurrentRole requirement missing concurrentRoleName");
+          if (!req.concurrentRoleName) throw new Error("ConcurrentRole requirement missing concurrentRoleName");
           const cRoleResult = await checkConcurrentRoleRequirement(member, req.concurrentRoleName);
           met = cRoleResult.met;
           reason = cRoleResult.reason;
@@ -780,7 +736,7 @@ async function evaluateRequirementGroup(
           if (!req.existingRole) throw new Error("ExistingRole requirement missing existingRole");
           const eRoleResult = await checkConcurrentRoleRequirement(member, req.existingRole);
           met = eRoleResult.met;
-          reason = eRoleResult.reason;          
+          reason = eRoleResult.reason;
           break;
         case "CommunityVote":
           if (!req.participationRounds) throw new Error("CommunityVote requirement missing participationRounds");
@@ -789,17 +745,16 @@ async function evaluateRequirementGroup(
         case "Nomination":
           const voteResult = await checkNominationRequirement(role, member.discordId);
           met = voteResult.met;
-            const totalNominations = voteResult.voteResults.length;
-            const totalVotes = voteResult.voteResults.reduce((sum, result) => sum + result.voteCount, 0);
-            const winningNomination = voteResult.voteResults.find(result => result.threadId === voteResult.winningThread);
-            
-            reason = met 
+          const totalNominations = voteResult.voteResults.length;
+          const totalVotes = voteResult.voteResults.reduce((sum, result) => sum + result.voteCount, 0);
+          const winningNomination = voteResult.voteResults.find((result) => result.threadId === voteResult.winningThread);
+
+          reason = met
             ? `User has ${totalNominations} nomination(s) with a total of ${totalVotes} votes. ` +
               `The winning nomination received ${winningNomination?.voteCount || 0} votes ` +
               `and was created by ${voteResult.nominatorId} on ${winningNomination?.nominationDate.toLocaleDateString()}.`
-            : `User has ${totalNominations} nomination(s) with a total of ${totalVotes} votes, ` +
-              `but none meet the required ${role.votesRequired || 0} votes threshold.`;
-            console.log(`[evaluateRequirementGroup] - ${Date.now()} - User ${member.discordId} nomination check: ${reason}`);
+            : `User has ${totalNominations} nomination(s) with a total of ${totalVotes} votes, ` + `but none meet the required ${role.votesRequired || 0} votes threshold.`;
+          console.log(`[evaluateRequirementGroup] - ${Date.now()} - User ${member.discordId} nomination check: ${reason}`);
           break;
         default:
           met = false;
@@ -809,26 +764,24 @@ async function evaluateRequirementGroup(
       met = false;
       reason = `Error checking requirement: ${error instanceof Error ? error.message : String(error)}`;
     }
-    
+
     if (met) metCount++;
-    
-    reqResults.push({ 
-      id: req.id || "", 
-      met, 
-      reason: met ? undefined : reason || `Requirement ${req.type} not met` 
+
+    reqResults.push({
+      id: req.id || "",
+      met,
+      reason: met ? undefined : reason || `Requirement ${req.type} not met`,
     });
   }
-  
+
   // Determine if the group is met based on its mode
-  const groupMet = group.groupMode === "ALL" 
-    ? metCount === group.requirements.length
-    : metCount > 0;
+  const groupMet = group.groupMode === "ALL" ? metCount === group.requirements.length : metCount > 0;
   console.log(`[evaluateRequirementGroup] - ${Date.now()} - User ${member.discordId} group ${group.name} check: ${groupMet ? "met" : "not met"}`);
   console.log(`[evaluateRequirementGroup] - ${Date.now()} - requirementresults ${JSON.stringify(reqResults)}`);
   return {
     groupId: group.id,
     met: groupMet,
-    requirements: reqResults
+    requirements: reqResults,
   };
 }
 
@@ -837,54 +790,53 @@ async function evaluateRequirementGroup(
  * @param userId Discord ID of the user
  * @returns The highest role the user is eligible for, or null if not eligible for any role
  */
-export async function getHighestEligibleRole(
-  userId: string
-): Promise<{ role: TierRole | null; eligibility: RoleEligibilityResult }> {
+export async function getHighestEligibleRole(userId: string): Promise<{ role: TierRole | null; eligibility: RoleEligibilityResult }> {
   const db = await getMongoDatabase();
-  
+
   // Get member data
   const member = await db.collection<MemberInfo>("members").findOne({ discordId: userId });
   if (!member) {
-    return { 
-      role: null, 
-      eligibility: { 
-        eligible: false, 
-        requirementsMet: [], 
-        message: "User not found" 
-      }
+    return {
+      role: null,
+      eligibility: {
+        eligible: false,
+        requirementsMet: [],
+        message: "User not found",
+      },
     };
   }
-  
+
   // Get all roles from the database and sort them by tier hierarchy
   // This assumes the tiers are ordered: Verified -> Pathfinder -> Navigator -> Pilot
   const tierOrder: { [key in RoleTier]: number } = {
     "SCF Verified": 1,
     "SCF Pathfinder": 2,
     "SCF Navigator": 3,
-    "SCF Pilot": 4
+    "SCF Pilot": 4,
   };
-  
+
   //const precomputedBadges = await getBadgesForDiscordId(userId);
 
-  const roles = await db.collection<TierRole>("guild_roles")
+  const roles = await db
+    .collection<TierRole>("guild_roles")
     .find({ requirements: { $exists: true } })
     .toArray();
-  
+
   // Sort roles from highest tier to lowest
   const sortedRoles = roles.sort((a, b) => {
     const tierA = tierOrder[a.tier as RoleTier] || 0;
     const tierB = tierOrder[b.tier as RoleTier] || 0;
-    return tierB - tierA;  // Descending order to check highest first
+    return tierB - tierA; // Descending order to check highest first
   });
 
-  const currentRole = member.roles.find(role => role.name === sortedRoles[0].roleName);
+  const currentRole = member.roles.find((role) => role.name === sortedRoles[0].roleName);
   console.log(`the current user ${member.username} currentRole is ${currentRole}`);
 
   // each memberInfo document has an array of "roles" which is basically showing when they earned previous roles already.  For this reason we need to only check for the next role than the user has not already earned.
   const existingroles = member.roles;
   // Filter out roles the user already has
-  const filteredRoles = sortedRoles.filter(role => !existingroles.some(r => r.name === role.roleName));
-  
+  const filteredRoles = sortedRoles.filter((role) => !existingroles.some((r) => r.name === role.roleName));
+
   // Check each role in order from highest to lowest
   for (const role of filteredRoles) {
     const eligibility = await checkRoleEligibility(role, member);
@@ -892,33 +844,33 @@ export async function getHighestEligibleRole(
       return { role, eligibility };
     }
   }
-  
+
   // User is not eligible for any role
-  return { 
-    role: null, 
-    eligibility: { 
-      eligible: false, 
-      requirementsMet: [], 
-      message: "User is not eligible for any role" 
-    } 
+  return {
+    role: null,
+    eligibility: {
+      eligible: false,
+      requirementsMet: [],
+      message: "User is not eligible for any role",
+    },
   };
 }
 
 /**
  * Checks if a user is eligible for a specific role
  */
-export async function  checkRoleEligibility(
+export async function checkRoleEligibility(
   //roleId: string,
   //userId: string
   role: TierRole,
-  member: MemberInfo
+  member: MemberInfo,
 ): Promise<RoleEligibilityResult> {
   const db = await getMongoDatabase();
-  
+
   // Evaluate each requirement group
   const groupResults: RequirementGroupResult[] = [];
   if (!role.requirementGroups) {
-  throw new Error (`Role ${role.roleName} does not have any requirement groups, admin must grant role`);
+    throw new Error(`Role ${role.roleName} does not have any requirement groups, admin must grant role`);
   }
   for (const group of role.requirementGroups) {
     const groupResult = await evaluateRequirementGroup(group, member, role, db);
@@ -928,20 +880,17 @@ export async function  checkRoleEligibility(
   // Determine eligibility based on role's requirement mode
   let eligible = false;
   if (role.requirements === "ALL_GROUPS") {
-    eligible = groupResults.every(group => group.met);
+    eligible = groupResults.every((group) => group.met);
   } else if (role.requirements === "ANY_GROUP") {
-    eligible = groupResults.some(group => group.met);
+    eligible = groupResults.some((group) => group.met);
   }
 
   return {
     eligible,
     requirementsMet: groupResults,
-    message: eligible ? 
-      `User is eligible for role ${role.roleName}` : 
-      `User does not meet the requirements for role ${role.roleName}`
+    message: eligible ? `User is eligible for role ${role.roleName}` : `User does not meet the requirements for role ${role.roleName}`,
   };
 }
-
 
 // Update the grantRole function to handle role requirements and overrides
 export async function grantRole(roleId: string, userId: string, override = false): Promise<RoleActionResult> {
@@ -1043,4 +992,3 @@ export async function revokeRole(roleId: string, userId: string): Promise<RoleAc
     message: "Role revoked successfully",
   };
 }
-

@@ -7,7 +7,7 @@ import { AlertCircle } from "lucide-react";
 import { UserTable } from "./components/UserTable";
 
 interface UsersClientProps {
-  guildData: LoadGuildData
+  guildData: LoadGuildData;
 }
 
 export default function UsersClient({ guildData }: UsersClientProps) {
@@ -39,12 +39,12 @@ export default function UsersClient({ guildData }: UsersClientProps) {
 
   return (
     <div className="dark container mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-wide text-white/90">Manage Users</h1>
       </div>
 
       {error && (
-        <div className="bg-destructive/20 text-destructive flex items-center gap-2 p-3 rounded-md mb-4">
+        <div className="mb-4 flex items-center gap-2 rounded-md bg-destructive/20 p-3 text-destructive">
           <AlertCircle className="h-4 w-4" />
           <span>{error}</span>
         </div>
@@ -62,4 +62,3 @@ export default function UsersClient({ guildData }: UsersClientProps) {
     </div>
   );
 }
-

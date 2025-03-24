@@ -59,19 +59,10 @@ export function RoleStats({ activeFilters, onFilterToggle }: RoleStatsProps) {
           <div
             key={stat.name}
             onClick={() => onFilterToggle(stat.name)}
-            className={
-              isActive
-                ? `role-stats-card ${stat.bgColor} ${stat.borderColor} ${stat.color}`
-                : "role-stats-card role-stats-card-inactive"
-            }
+            className={isActive ? `role-stats-card ${stat.bgColor} ${stat.borderColor} ${stat.color}` : "role-stats-card role-stats-card-inactive"}
           >
             <div className="relative">
-              <Image
-                src={stat.iconSrc}
-                alt={`${stat.name} icon`}
-                width={32}
-                height={32}
-              />
+              <Image src={stat.iconSrc} alt={`${stat.name} icon`} width={32} height={32} />
               {isActive && (
                 <button
                   onClick={(e) => {
@@ -85,12 +76,8 @@ export function RoleStats({ activeFilters, onFilterToggle }: RoleStatsProps) {
               )}
             </div>
             <div>
-              <p className={isActive ? stat.color : "role-stats-name"}>
-                {stat.name}
-              </p>
-              <p className={isActive ? stat.countColor : "role-stats-count"}>
-                {stat.count}
-              </p>
+              <p className={isActive ? stat.color : "role-stats-name"}>{stat.name}</p>
+              <p className={isActive ? stat.countColor : "role-stats-count"}>{stat.count}</p>
             </div>
           </div>
         );

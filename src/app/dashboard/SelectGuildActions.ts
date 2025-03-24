@@ -14,15 +14,13 @@ export async function handleFormSubmit(formData: FormData) {
   const details = await fetchGuildDetailsAction(guildId);
   return { guild: details };
 }
-export async function fetchGuildDetailsAction(
-  guildId: string
-): Promise<DetailedGuild | null> {
+export async function fetchGuildDetailsAction(guildId: string): Promise<DetailedGuild | null> {
   // Double-check user is logged in (optional):
   const session = await auth();
   if (!session) {
     throw new Error("Not authenticated");
   }
-      const client = await getClient();
+  const client = await getClient();
   // Optional: check if session.user.id in allowedAdminIds.
 
   if (!guildId) return null;

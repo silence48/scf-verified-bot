@@ -1,9 +1,9 @@
 /* header.css */
 
 .header {
-    @apply bg-[#1a1d29]/80 border-b border-gray-800/60 py-4 px-6;
-  }
-  
-  .header-title {
-    @apply text-3xl font-schabo tracking-wide;
-  }
+  @apply border-b border-gray-800/60 bg-[#1a1d29]/80 px-6 py-4;
+}
+
+.header-title {
+  @apply font-schabo text-3xl tracking-wide;
+}

@@ -34,34 +34,33 @@ export interface BaseBadgeHolder {
   badges: { badgeId: ObjectId; tx: string }[];
 }
 
-export interface BadgeHolder extends BaseBadgeHolder, Document {};
-
-
-
+export interface BadgeHolder extends BaseBadgeHolder, Document {}
 
 export async function fetchTransactionsForHolder(db: Db, address: string): Promise<{ badge: string; txhash: string; questid: string }[]> {
   // Fetch BadgeHolder data from the database where the owner matches the address
-  const badgeHolder = await db.collection("BadgeHolders").findOne({ owner: address }) as BadgeHolder;
+  const badgeHolder = (await db.collection("BadgeHolders").findOne({ owner: address })) as BadgeHolder;
 
   if (!badgeHolder) {
     return [];
   }
 
   // Fetch all badges from the database
-  const badges = await db.collection("badges").find().toArray() as Badge[];
+  const badges = (await db.collection("badges").find().toArray()) as Badge[];
 
   // Get badge data for the holder
-  const holderBadges = badgeHolder.badges.map(holderBadge => {
-    const badge = badges.find(b => b._id?.equals(holderBadge.badgeId));
-    if (badge) {
-      return {
-        badge: `${badge.assetCode}:${badge.assetIssuer}`,
-        txhash: holderBadge.tx,
-        questid: holderBadge.badgeId.toString(),
-      };
-    }
-    return null;
-  }).filter(b => b !== null) as { badge: string; txhash: string; questid: string }[];
+  const holderBadges = badgeHolder.badges
+    .map((holderBadge) => {
+      const badge = badges.find((b) => b._id?.equals(holderBadge.badgeId));
+      if (badge) {
+        return {
+          badge: `${badge.assetCode}:${badge.assetIssuer}`,
+          txhash: holderBadge.tx,
+          questid: holderBadge.badgeId.toString(),
+        };
+      }
+      return null;
+    })
+    .filter((b) => b !== null) as { badge: string; txhash: string; questid: string }[];
 
   return holderBadges;
 }
@@ -70,8 +69,8 @@ export async function fetchWithRetry(url: string): Promise<any> {
   try {
     const response = await fetch(url, {
       headers: {
-        "Authorization": `Bearer ${API_KEY}`
-      }
+        Authorization: `Bearer ${API_KEY}`,
+      },
     });
 
     if (!response.ok) {
@@ -101,7 +100,9 @@ export async function fetchAssetHolders(db: Db, asset: Asset): Promise<Badge[]> 
   let allHolders: Badge[] = [];
   const assetData = await db.collection("badges").findOne({ code: asset.code, issuer: asset.issuer });
 
-  let nextUrl: string | null = assetData?.lastMarkUrlHolders ? `${BASE_URL}${assetData.lastMarkUrlHolders}` : `${BASE_URL}/explorer/public/asset/${asset.code}-${asset.issuer}/holders?order=asc&limit=200`;
+  let nextUrl: string | null = assetData?.lastMarkUrlHolders
+    ? `${BASE_URL}${assetData.lastMarkUrlHolders}`
+    : `${BASE_URL}/explorer/public/asset/${asset.code}-${asset.issuer}/holders?order=asc&limit=200`;
   // cursor isnt working properly so lets just get them all for now.
   nextUrl = `${BASE_URL}/explorer/public/asset/${asset.code}-${asset.issuer}/holders?order=desc&limit=200`;
   let badgeIndex = 1;
@@ -129,10 +130,7 @@ export async function fetchAssetHolders(db: Db, asset: Asset): Promise<Badge[]> 
         nextUrl = BASE_URL + data._links.next.href;
       }
 
-      await db.collection("badges").updateOne(
-        { code: asset.code, issuer: asset.issuer },
-        { $set: { lastMarkUrlHolders: data._links.self.href } }
-      );
+      await db.collection("badges").updateOne({ code: asset.code, issuer: asset.issuer }, { $set: { lastMarkUrlHolders: data._links.self.href } });
 
       await sleep(SLEEP_DURATION_MS);
     } catch (err) {
@@ -151,24 +149,30 @@ export async function fetchAssetHolders(db: Db, asset: Asset): Promise<Badge[]> 
 export async function fetchAllAssetHolders(db: Db, assets: Asset[], fetchFromApi: boolean): Promise<Badge[]> {
   if (!fetchFromApi) {
     // Fetch holders from database where badges match the provided assets
-    const assetCodes = assets.map(asset => asset.code);
-    const assetIssuers = assets.map(asset => asset.issuer);
+    const assetCodes = assets.map((asset) => asset.code);
+    const assetIssuers = assets.map((asset) => asset.issuer);
 
-    const matchingBadges = await db.collection("badges").find({
-      code: { $in: assetCodes },
-      issuer: { $in: assetIssuers }
-    }).toArray();
+    const matchingBadges = await db
+      .collection("badges")
+      .find({
+        code: { $in: assetCodes },
+        issuer: { $in: assetIssuers },
+      })
+      .toArray();
 
-    const badgeIds = matchingBadges.map(badge => badge._id);
+    const badgeIds = matchingBadges.map((badge) => badge._id);
 
-    const badgeHolders: BadgeHolder[] = await db.collection("BadgeHolders").find({
-      "badges.badgeId": { $in: badgeIds }
-    }).toArray() as BadgeHolder[];
+    const badgeHolders: BadgeHolder[] = (await db
+      .collection("BadgeHolders")
+      .find({
+        "badges.badgeId": { $in: badgeIds },
+      })
+      .toArray()) as BadgeHolder[];
 
     const allHolders: Badge[] = [];
     for (const holder of badgeHolders) {
       for (const badge of holder.badges) {
-        const asset = matchingBadges.find(matchingBadge => matchingBadge._id.equals(badge.badgeId));
+        const asset = matchingBadges.find((matchingBadge) => matchingBadge._id.equals(badge.badgeId));
         if (asset) {
           allHolders.push({
             _id: badge.badgeId,
@@ -177,7 +181,7 @@ export async function fetchAllAssetHolders(db: Db, assets: Asset[], fetchFromApi
             assetIssuer: asset.issuer,
             owner: holder.owner,
             balance: asset.balance,
-            transactions: [{ badgeId: badge.badgeId, tx: badge.tx }]
+            transactions: [{ badgeId: badge.badgeId, tx: badge.tx }],
           });
         }
       }
@@ -212,10 +216,7 @@ export async function fetchAllAssetHolders(db: Db, assets: Asset[], fetchFromApi
           existingTransactions.push({ badgeId: holder.transactions[0].badgeId, tx: "" });
         }
 
-        await db.collection("BadgeHolders").updateOne(
-          { owner: holder.owner },
-          { $set: { badges: existingTransactions } }
-        );
+        await db.collection("BadgeHolders").updateOne({ owner: holder.owner }, { $set: { badges: existingTransactions } });
       }
 
       allHolders.push(holder);
@@ -224,8 +225,6 @@ export async function fetchAllAssetHolders(db: Db, assets: Asset[], fetchFromApi
 
   return allHolders;
 }
-
-
 
 /**
  * Fetch transactions for given badges and holder accounts.
@@ -236,7 +235,7 @@ export async function fetchTransactions(db: Db, holders: Badge[]) {
   const assetMap = new Map<string, Set<string>>();
 
   // Group holders by asset
-  holders.forEach(holder => {
+  holders.forEach((holder) => {
     const assetKey = `${holder.assetCode}-${holder.assetIssuer}`;
     if (!assetMap.has(assetKey)) {
       assetMap.set(assetKey, new Set());
@@ -256,7 +255,7 @@ export async function fetchTransactions(db: Db, holders: Badge[]) {
     chunk.forEach(([asset, owners]) => {
       assetFilters.push(`asset[]=${asset}-2`);
       //owners.forEach(owner => {
-        accountFilters.push(`account[]=${asset.split("-")[1]}`);
+      accountFilters.push(`account[]=${asset.split("-")[1]}`);
       //});
     });
 
@@ -267,7 +266,7 @@ export async function fetchTransactions(db: Db, holders: Badge[]) {
   // Run URL batches asynchronously with rate limiting
   for (let i = 0; i < allUrlBatches.length; i += 10) {
     const batch = allUrlBatches.slice(i, i + 10);
-    await Promise.all(batch.map(url => fetchTransactionsForUrlBatch(db, url)));
+    await Promise.all(batch.map((url) => fetchTransactionsForUrlBatch(db, url)));
     await sleep(1000); // Ensure no more than 10 requests per second
   }
 }
@@ -319,7 +318,6 @@ export async function fetchTransactionsForUrlBatch(db: Db, url: string): Promise
     } else {
       nextUrl = BASE_URL + data._links.next.href;
     }
-
   } while (nextUrl);
 
   return transactions;
@@ -346,9 +344,7 @@ async function processTransactionRecords(db: Db, records: any[]) {
         continue;
       }
 
-      const paymentOps = transaction.operations.filter(op => 
-        op.type === "payment"
-      ) as import("@stellar/stellar-sdk").Operation.Payment[];
+      const paymentOps = transaction.operations.filter((op) => op.type === "payment") as import("@stellar/stellar-sdk").Operation.Payment[];
 
       const txDetails: Transaction = {
         account_id: "",
@@ -370,8 +366,8 @@ async function processTransactionRecords(db: Db, records: any[]) {
           txDetails.account_id = op.destination;
 
           // Avoid duplicates in badge_ids
-          if (!txDetails.badge_ids.some(badgeId => badgeId.equals(badge._id))) {
-            txDetails.badge_ids.push(badge._id );
+          if (!txDetails.badge_ids.some((badgeId) => badgeId.equals(badge._id))) {
+            txDetails.badge_ids.push(badge._id);
           }
 
           const badgeHolder = await db.collection("BadgeHolders").findOne({ owner: op.destination });
@@ -379,10 +375,7 @@ async function processTransactionRecords(db: Db, records: any[]) {
             const transactions = badgeHolder.badges;
             updateTransactionHash(transactions, badge._id, record.hash);
 
-            await db.collection("BadgeHolders").updateOne(
-              { owner: op.destination },
-              { $set: { badges: transactions } }
-            );
+            await db.collection("BadgeHolders").updateOne({ owner: op.destination }, { $set: { badges: transactions } });
 
             await saveTransactionData(db, txDetails);
 
@@ -402,8 +395,8 @@ async function processTransactionRecords(db: Db, records: any[]) {
             txDetails.account_id = claimed.account;
 
             // Avoid duplicates in badge_ids
-            if (!txDetails.badge_ids.some(badgeId => badgeId.equals(badge._id))) {
-              txDetails.badge_ids.push(badge._id );
+            if (!txDetails.badge_ids.some((badgeId) => badgeId.equals(badge._id))) {
+              txDetails.badge_ids.push(badge._id);
             }
 
             const badgeHolder = await db.collection("BadgeHolders").findOne({ owner: claimed.account });
@@ -411,10 +404,7 @@ async function processTransactionRecords(db: Db, records: any[]) {
               const transactions = badgeHolder.badges;
               updateTransactionHash(transactions, badge._id, record.hash);
 
-              await db.collection("BadgeHolders").updateOne(
-                { owner: claimed.account },
-                { $set: { badges: transactions } }
-              );
+              await db.collection("BadgeHolders").updateOne({ owner: claimed.account }, { $set: { badges: transactions } });
 
               await saveTransactionData(db, txDetails);
             }
@@ -450,51 +440,60 @@ function updateTransactionHash(transactions: { badgeId: ObjectId; tx: string }[]
  * @returns {object[]} - List of claimed balances.
  */
 // Ensure correct processing of claimable balances
-async function processTransactionMeta(txMeta: any):Promise< { account: string; balance: string; assetCode: string; assetIssuer: string }[]> {
+async function processTransactionMeta(txMeta: any): Promise<{ account: string; balance: string; assetCode: string; assetIssuer: string }[]> {
   const changes: any[] = [];
 
   // Extract changes from txChangesBefore
   if (Array.isArray(txMeta.value().txChangesBefore())) {
-    txMeta.value().txChangesBefore().forEach((change: any) => {
-      changes.push(change);
-    });
+    txMeta
+      .value()
+      .txChangesBefore()
+      .forEach((change: any) => {
+        changes.push(change);
+      });
   }
 
   // Extract changes from operations
   if (Array.isArray(txMeta.value().operations())) {
-    txMeta.value().operations().forEach((operationMeta: any) => {
-      if (Array.isArray(operationMeta.changes())) {
-        operationMeta.changes().forEach((change: any) => {
-          changes.push(change);
-        });
-      }
-    });
+    txMeta
+      .value()
+      .operations()
+      .forEach((operationMeta: any) => {
+        if (Array.isArray(operationMeta.changes())) {
+          operationMeta.changes().forEach((change: any) => {
+            changes.push(change);
+          });
+        }
+      });
   }
 
   // Extract changes from txChangesAfter
   if (Array.isArray(txMeta.value().txChangesAfter())) {
-    txMeta.value().txChangesAfter().forEach((change: any) => {
-      changes.push(change);
-    });
+    txMeta
+      .value()
+      .txChangesAfter()
+      .forEach((change: any) => {
+        changes.push(change);
+      });
   }
 
   const trackedBalances: any = {};
 
   // Process balance creations in parallel
-  const creationPromises = changes.map(change => processClaimableBalanceCreation(change));
+  const creationPromises = changes.map((change) => processClaimableBalanceCreation(change));
   const createdBalances = await Promise.all(creationPromises);
-  
-  createdBalances.forEach(balance => {
+
+  createdBalances.forEach((balance) => {
     if (balance) {
       trackedBalances[balance.balanceId] = balance;
     }
   });
 
   // Process claimed balances in parallel
-  const claimPromises = changes.map(change => isClaimableBalanceClaimed(change, trackedBalances));
+  const claimPromises = changes.map((change) => isClaimableBalanceClaimed(change, trackedBalances));
   const claimedBalanceResults = await Promise.all(claimPromises);
-  
-  const claimedBalances = claimedBalanceResults.filter(result => result !== null) as {
+
+  const claimedBalances = claimedBalanceResults.filter((result) => result !== null) as {
     account: string;
     balance: string;
     assetCode: string;
@@ -504,7 +503,6 @@ async function processTransactionMeta(txMeta: any):Promise< { account: string; b
   return claimedBalances;
 }
 
-
 /**
  * Process claimable balance creation change.
  * @param {any} change - Change data.
@@ -513,14 +511,14 @@ async function processTransactionMeta(txMeta: any):Promise< { account: string; b
 async function processClaimableBalanceCreation(change: any): Promise<{ balanceId: string; asset: any; amount: string; claimants: any[] } | null> {
   const StellarSDK = await import("@stellar/stellar-sdk");
   if (
-      change._switch.name === "ledgerEntryState" &&
-      change._arm === "state" &&
-      change._value &&
-      change._value._attributes &&
-      change._value._attributes.data &&
-      change._value._attributes.data._switch.name === "claimableBalance" &&
-      change._value._attributes.data._arm === "claimableBalance"
-    ) {
+    change._switch.name === "ledgerEntryState" &&
+    change._arm === "state" &&
+    change._value &&
+    change._value._attributes &&
+    change._value._attributes.data &&
+    change._value._attributes.data._switch.name === "claimableBalance" &&
+    change._value._attributes.data._arm === "claimableBalance"
+  ) {
     const balance = change._value._attributes.data._value._attributes;
     const assetDetails = balance.asset._value._attributes;
 
@@ -543,15 +541,9 @@ async function processClaimableBalanceCreation(change: any): Promise<{ balanceId
  * @param {any[]} trackedBalances - List of tracked balances.
  * @returns {object|null} - Claimed balance details if a balance is claimed, otherwise null.
  */
-async function isClaimableBalanceClaimed(change: any, trackedBalances: any): Promise<{ account: string; balance: string; assetCode: string; assetIssuer: string } | null > {
+async function isClaimableBalanceClaimed(change: any, trackedBalances: any): Promise<{ account: string; balance: string; assetCode: string; assetIssuer: string } | null> {
   const StellarSDK = await import("@stellar/stellar-sdk");
-  if (
-    change._switch.name === "ledgerEntryRemoved" &&
-    change._arm === "removed" &&
-    change._value &&
-    change._value._switch.name === "claimableBalance" &&
-    change._value._arm === "claimableBalance"
-  ) {
+  if (change._switch.name === "ledgerEntryRemoved" && change._arm === "removed" && change._value && change._value._switch.name === "claimableBalance" && change._value._arm === "claimableBalance") {
     const balanceIdBuffer = change._value._value._attributes.balanceId._value;
     const balanceId = Buffer.from(balanceIdBuffer).toString("hex");
 
@@ -562,9 +554,7 @@ async function isClaimableBalanceClaimed(change: any, trackedBalances: any): Pro
           c._value &&
           c._value._attributes &&
           c._value._attributes.destination &&
-          trackedBalance.claimants.some(
-            (tc: any) => Buffer.compare(tc._value._attributes.destination._value, c._value._attributes.destination._value) === 0
-          )
+          trackedBalance.claimants.some((tc: any) => Buffer.compare(tc._value._attributes.destination._value, c._value._attributes.destination._value) === 0)
         );
       });
 
@@ -581,7 +571,6 @@ async function isClaimableBalanceClaimed(change: any, trackedBalances: any): Pro
 
   return null;
 }
-
 
 /**
  * Convert buffer to string.
@@ -605,10 +594,9 @@ async function saveTransactionData(db: Db, tx: any) {
         meta: tx.meta,
         result: tx.result,
       },
-      
-      $addToSet: { badge_ids: { $each: tx.badge_ids } }
+
+      $addToSet: { badge_ids: { $each: tx.badge_ids } },
     },
-    { upsert: true }
+    { upsert: true },
   );
 }
-

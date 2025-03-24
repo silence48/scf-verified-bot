@@ -13,28 +13,15 @@ import {
   GuildMember,
   Client,
 } from "discord.js";
-import {
-  insertVote,
-  getThreadVotes,
-  getVotingThreadCreatedAt,
-  markVotingThreadClosed,
-  incrementThreadVoteCount,
-  insertNewVotingThread,
-  getOpenVotingThreads,
-  getThreadVoteCount,
-} from "./mongo-db";
+import { insertVote, getThreadVotes, getVotingThreadCreatedAt, markVotingThreadClosed, incrementThreadVoteCount, insertNewVotingThread, getOpenVotingThreads, getThreadVoteCount } from "./mongo-db";
 import { logger } from "./logger";
 import { updateUserRole } from "./roles";
 import { BOT_READONLY_MODE } from "./constants";
 
 export const voteCounts: Map<string, Map<string, boolean>> = new Map();
 
-
 /** Check if user can vote for the specified roleName. */
-export async function validateVoterRole(
-  interaction: ButtonInteraction,
-  roleName: string
-): Promise<boolean> {
+export async function validateVoterRole(interaction: ButtonInteraction, roleName: string): Promise<boolean> {
   if (!interaction.guild) {
     await interaction.reply({
       content: "Voting is only permitted in a server thread.",
@@ -61,12 +48,7 @@ export async function validateVoterRole(
 }
 
 /** Record a user's "yes" vote in the DB, update local map, check if threshold is met. */
-export async function recordVote(
-  interaction: ButtonInteraction,
-  nomineeId: string,
-  roleName: string,
-  client: Client
-): Promise<boolean> {
+export async function recordVote(interaction: ButtonInteraction, nomineeId: string, roleName: string, client: Client): Promise<boolean> {
   if (!interaction.channel || !(interaction.channel instanceof ThreadChannel)) {
     await interaction.reply({
       content: "Voting is only permitted in a thread channel.",
@@ -98,14 +80,7 @@ export async function recordVote(
 
   // Update the count, possibly assign the role
   const newCount = threadVotes.size;
-  await updateVoteCountAndCheckRoleAssignment(
-    interaction,
-    threadId,
-    nomineeId,
-    roleName,
-    newCount,
-    client
-  );
+  await updateVoteCountAndCheckRoleAssignment(interaction, threadId, nomineeId, roleName, newCount, client);
   return true;
 }
 
@@ -116,7 +91,7 @@ export async function updateVoteCountAndCheckRoleAssignment(
   nomineeId: string,
   roleName: string,
   currentVoteCount: number,
-  client: Client
+  client: Client,
 ): Promise<void> {
   if (!interaction.guild) {
     await interaction.reply({
@@ -143,8 +118,7 @@ export async function updateVoteCountAndCheckRoleAssignment(
     }
     await markVotingThreadClosed(threadId);
     await interaction.reply({
-      content:
-        "This voting thread has expired (5 days). The user must wait and try again.",
+      content: "This voting thread has expired (5 days). The user must wait and try again.",
       ephemeral: false,
     });
     return;
@@ -171,12 +145,7 @@ export async function updateVoteCountAndCheckRoleAssignment(
   }
 
   // Enough votes => try to assign role
-  const roleAssigned =  BOT_READONLY_MODE ? false : await updateUserRole(
-    interaction.guild,
-    nomineeId,
-    roleName,
-    client
-  );
+  const roleAssigned = BOT_READONLY_MODE ? false : await updateUserRole(interaction.guild, nomineeId, roleName, client);
   if (roleAssigned) {
     await interaction.reply({
       content: `Vote complete! The role ${roleName} has been assigned.`,
@@ -196,11 +165,7 @@ export async function updateVoteCountAndCheckRoleAssignment(
 }
 
 /** Updates a thread's name to show the vote count. */
-export async function updateThreadVoteCount(
-  thread: ThreadChannel,
-  currentVoteCount: number,
-  client: Client
-): Promise<void> {
+export async function updateThreadVoteCount(thread: ThreadChannel, currentVoteCount: number, client: Client): Promise<void> {
   try {
     if (!thread.name) {
       logger("Thread has no name set", client);
@@ -217,13 +182,7 @@ export async function updateThreadVoteCount(
 }
 
 /** Creates a new thread for /nominate, inserts it in DB, etc. */
-export async function createVotingThread(
-  interaction: CommandInteraction,
-  nominee: GuildMember,
-  nominator: GuildMember,
-  roleName: string,
-  client: Client
-): Promise<ThreadChannel | null> {
+export async function createVotingThread(interaction: CommandInteraction, nominee: GuildMember, nominator: GuildMember, roleName: string, client: Client): Promise<ThreadChannel | null> {
   try {
     if (!(interaction.channel instanceof TextChannel)) {
       await interaction.reply({
@@ -238,18 +197,13 @@ export async function createVotingThread(
       reason: `Nomination for ${nominee.user.username} => ${roleName}`,
     });
 
-    const voteButton = new ButtonBuilder()
-      .setCustomId(`vote-yes:${nominee.id}:${roleName}`)
-      .setLabel("Vote Yes")
-      .setStyle(ButtonStyle.Success);
+    const voteButton = new ButtonBuilder().setCustomId(`vote-yes:${nominee.id}:${roleName}`).setLabel("Vote Yes").setStyle(ButtonStyle.Success);
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(voteButton);
     const embed = new EmbedBuilder()
       .setColor(0x0099ff)
       .setTitle(`Nomination for ${nominee.user.username}`)
-      .setDescription(
-        `Cast your vote for ${nominee.displayName} to become a ${roleName}.`
-      )
+      .setDescription(`Cast your vote for ${nominee.displayName} to become a ${roleName}.`)
       .setTimestamp();
 
     await thread.send({
@@ -273,10 +227,7 @@ export async function createVotingThread(
 }
 
 /** The /nominate slash command handler. */
-export async function processNominateCommand(
-  interaction: ChatInputCommandInteraction,
-  client: Client
-): Promise<void> {
+export async function processNominateCommand(interaction: ChatInputCommandInteraction, client: Client): Promise<void> {
   try {
     if (!interaction.guild) {
       await interaction.reply({
@@ -347,12 +298,8 @@ export async function processNominateCommand(
 }
 
 function determineNomineeRole(nominee: GuildMember): string | null {
-  const hasPathfinder = nominee.roles.cache.some(
-    (r) => r.name === "SCF Pathfinder"
-  );
-  const hasNavigator = nominee.roles.cache.some(
-    (r) => r.name === "SCF Navigator"
-  );
+  const hasPathfinder = nominee.roles.cache.some((r) => r.name === "SCF Pathfinder");
+  const hasNavigator = nominee.roles.cache.some((r) => r.name === "SCF Navigator");
   if (hasPathfinder) return "SCF Navigator";
   if (hasNavigator) return "SCF Pilot";
   return null;
@@ -362,9 +309,7 @@ function canNominatorAssignRole(nominator: GuildMember, role: string): boolean {
   // SCF Navigator => require SCF Navigator or SCF Pilot
   // SCF Pilot => require SCF Pilot
   if (role === "SCF Navigator") {
-    return nominator.roles.cache.some(
-      (r) => r.name === "SCF Navigator" || r.name === "SCF Pilot"
-    );
+    return nominator.roles.cache.some((r) => r.name === "SCF Navigator" || r.name === "SCF Pilot");
   }
   if (role === "SCF Pilot") {
     return nominator.roles.cache.some((r) => r.name === "SCF Pilot");
@@ -373,10 +318,7 @@ function canNominatorAssignRole(nominator: GuildMember, role: string): boolean {
 }
 
 /** The /updatevote slash command to refresh the displayed vote count in the thread. */
-export async function processUpdateVoteCommand(
-  interaction: CommandInteraction,
-  client: Client
-) {
+export async function processUpdateVoteCommand(interaction: CommandInteraction, client: Client) {
   try {
     if (!interaction.channel || !interaction.channel.isThread()) {
       await interaction.reply({
@@ -408,10 +350,7 @@ export async function processUpdateVoteCommand(
 }
 
 /** The /listactivevotes slash command: list "OPEN" threads from DB that are also still active in Discord. */
-export async function processListActiveVotesCommand(
-  interaction: CommandInteraction,
-  client: Client
-): Promise<void> {
+export async function processListActiveVotesCommand(interaction: CommandInteraction, client: Client): Promise<void> {
   try {
     if (!interaction.guild) {
       await interaction.reply({
@@ -425,9 +364,7 @@ export async function processListActiveVotesCommand(
     // Filter to only threads that are truly still active in Discord
     const active = await interaction.guild.channels.fetchActiveThreads();
     const activeThreadIds = new Set(active.threads.map((t) => t.id));
-    const filtered = allActiveVotes.filter((v) =>
-      activeThreadIds.has(v.thread_id)
-    );
+    const filtered = allActiveVotes.filter((v) => activeThreadIds.has(v.thread_id));
 
     if (!filtered.length) {
       await interaction.reply({
@@ -463,9 +400,7 @@ export async function processListActiveVotesCommand(
 
         if (fieldCount >= 25) {
           await interaction.followUp({ embeds: [embed], ephemeral: false });
-          embed = new EmbedBuilder()
-            .setTitle(`${title} (cont.)`)
-            .setColor(0x0099ff);
+          embed = new EmbedBuilder().setTitle(`${title} (cont.)`).setColor(0x0099ff);
           fieldCount = 0;
         }
 

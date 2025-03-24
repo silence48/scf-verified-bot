@@ -33,7 +33,7 @@ export function RoleManagementModal({ userId, username, userRoles, onClose }: Ro
     isOpen: false,
     title: "",
     message: "",
-    onConfirm: () => { },
+    onConfirm: () => {},
   });
 
   // Fetch roles and badges
@@ -133,7 +133,7 @@ export function RoleManagementModal({ userId, username, userRoles, onClose }: Ro
     <Portal>
       {/* Modal Backdrop */}
       <div
-        className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[9999]"
+        className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-sm"
         style={{
           position: "fixed",
           top: 0,
@@ -148,7 +148,7 @@ export function RoleManagementModal({ userId, username, userRoles, onClose }: Ro
 
       {/* Modal Content */}
       <div
-        className="fixed z-[9999] w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+        className="fixed z-[9999] max-h-[90vh] w-full max-w-2xl overflow-y-auto"
         style={{
           position: "fixed",
           top: "50%",
@@ -157,21 +157,16 @@ export function RoleManagementModal({ userId, username, userRoles, onClose }: Ro
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="bg-[#1a1d29]/80 border border-gray-800/60 rounded-lg p-6 shadow-lg">
-          <div className="flex justify-between items-center mb-6">
+        <div className="rounded-lg border border-gray-800/60 bg-[#1a1d29]/80 p-6 shadow-lg">
+          <div className="mb-6 flex items-center justify-between">
             <h2 className="text-xl font-bold tracking-wide text-white/90">Manage Roles for {username}</h2>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="h-8 w-8 hover:bg-gray-700/50 hover:text-white"
-            >
+            <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 hover:bg-gray-700/50 hover:text-white">
               <X className="h-4 w-4" />
             </Button>
           </div>
 
           {error && (
-            <div className="bg-destructive/20 text-destructive flex items-center gap-2 p-3 rounded-md mb-4">
+            <div className="mb-4 flex items-center gap-2 rounded-md bg-destructive/20 p-3 text-destructive">
               <AlertCircle className="h-4 w-4" />
               <span>{error}</span>
             </div>
@@ -179,26 +174,21 @@ export function RoleManagementModal({ userId, username, userRoles, onClose }: Ro
 
           {isLoading ? (
             <div className="flex justify-center py-12">
-              <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full"></div>
+              <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
             </div>
           ) : (
             <div className="space-y-6">
               {/* Current Roles */}
               <div>
-                <h3 className="text-lg font-medium text-white/90 mb-3">Current Roles</h3>
+                <h3 className="mb-3 text-lg font-medium text-white/90">Current Roles</h3>
                 <div className="grid gap-3">
                   {userRoles.length > 0 ? (
                     userRoles.map((memberRole, index) => (
-                      <div
-                        key={index}
-                        className="bg-[#12141e]/40 p-3 rounded-lg border border-gray-800/40 flex justify-between items-center"
-                      >
+                      <div key={index} className="flex items-center justify-between rounded-lg border border-gray-800/40 bg-[#12141e]/40 p-3">
                         <div className="flex items-center gap-2">
-                          <div className={`w-3 h-3 rounded-full ${getRoleDotColorClass(memberRole.shortname)}`} />
+                          <div className={`h-3 w-3 rounded-full ${getRoleDotColorClass(memberRole.shortname)}`} />
                           <span>{memberRole.name}</span>
-                          <span className="text-xs text-gray-400">
-                            (since {new Date(memberRole.obtained).toLocaleDateString()})
-                          </span>
+                          <span className="text-xs text-gray-400">(since {new Date(memberRole.obtained).toLocaleDateString()})</span>
                         </div>
                         <Button
                           variant="destructive"
@@ -221,34 +211,29 @@ export function RoleManagementModal({ userId, username, userRoles, onClose }: Ro
 
               {/* Available Roles */}
               <div>
-                <h3 className="text-lg font-medium text-white/90 mb-3">Available Roles</h3>
+                <h3 className="mb-3 text-lg font-medium text-white/90">Available Roles</h3>
                 <div className="grid gap-3">
                   {roles.map((role) => {
                     const alreadyHas = hasRole(role.tier);
                     const isEligible = isEligibleForRole(role);
 
                     return (
-                      <div key={role._id} className="bg-[#12141e]/40 p-3 rounded-lg border border-gray-800/40">
-                        <div className="flex justify-between items-start mb-2">
+                      <div key={role._id} className="rounded-lg border border-gray-800/40 bg-[#12141e]/40 p-3">
+                        <div className="mb-2 flex items-start justify-between">
                           <div>
                             <div className="flex items-center gap-2">
-                              <div className={`w-3 h-3 rounded-full ${getRoleDotColorClass(role.tier)}`} />
+                              <div className={`h-3 w-3 rounded-full ${getRoleDotColorClass(role.tier)}`} />
                               <span className="font-medium text-white/90">{role.roleName}</span>
                             </div>
-                            <p className="text-sm text-gray-400 mt-1">{role.description}</p>
+                            <p className="mt-1 text-sm text-gray-400">{role.description}</p>
                           </div>
                           <div className="flex gap-2">
                             {alreadyHas ? (
-                              <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded-full flex items-center gap-1">
+                              <span className="flex items-center gap-1 rounded-full bg-green-500/20 px-2 py-1 text-xs text-green-400">
                                 <Check className="h-3 w-3" /> Assigned
                               </span>
                             ) : isEligible ? (
-                              <Button
-                                variant="default"
-                                size="sm"
-                                onClick={() => handleGrantRole(role._id, false)}
-                                className="h-8"
-                              >
+                              <Button variant="default" size="sm" onClick={() => handleGrantRole(role._id, false)} className="h-8">
                                 Grant Role
                               </Button>
                             ) : (
@@ -281,7 +266,7 @@ export function RoleManagementModal({ userId, username, userRoles, onClose }: Ro
 
                         {/* Requirements */}
                         <div className="mt-3">
-                          <h4 className="text-sm font-medium text-white mb-2">Requirements</h4>
+                          <h4 className="mb-2 text-sm font-medium text-white">Requirements</h4>
 
                           {/* If there are no groups at all */}
                           {!role.requirementGroups || role.requirementGroups.length === 0 ? (
@@ -289,36 +274,27 @@ export function RoleManagementModal({ userId, username, userRoles, onClose }: Ro
                           ) : (
                             <div>
                               {/* Explain how groups combine (ANY_GROUP vs. ALL_GROUPS) */}
-                              <p className="text-xs text-gray-400 italic mb-2">
-                                {role.requirements === "ANY_GROUP"
-                                  ? "User must satisfy ALL requirements in at least ONE group."
-                                  : "User must satisfy ALL requirements in ALL groups."}
+                              <p className="mb-2 text-xs text-gray-400 italic">
+                                {role.requirements === "ANY_GROUP" ? "User must satisfy ALL requirements in at least ONE group." : "User must satisfy ALL requirements in ALL groups."}
                               </p>
 
                               {role.requirementGroups.map((group, groupIdx) => (
-                                <div key={groupIdx} className="bg-[#12141e]/40 p-2 rounded-md mb-2">
-                                  <h5 className="text-sm font-medium text-white mb-1">
+                                <div key={groupIdx} className="mb-2 rounded-md bg-[#12141e]/40 p-2">
+                                  <h5 className="mb-1 text-sm font-medium text-white">
                                     {group.name || `Group ${groupIdx + 1}`}
-                                    <span className="text-xs text-gray-400 ml-2">
-                                      ({group.groupMode === "ALL" ? "All required" : "Any required"})
-                                    </span>
+                                    <span className="ml-2 text-xs text-gray-400">({group.groupMode === "ALL" ? "All required" : "Any required"})</span>
                                   </h5>
-                                  <ul className="list-disc pl-5 text-sm text-gray-400 space-y-1">
+                                  <ul className="list-disc space-y-1 pl-5 text-sm text-gray-400">
                                     {group.requirements.map((req, reqIdx) => (
                                       <li key={reqIdx}>
                                         {req.type === "Discord" && "Join Discord"}
                                         {req.type === "SocialVerification" && "Verify social account"}
                                         {req.type === "StellarAccount" && "Verify Stellar address"}
-                                        {req.type === "BadgeCount" &&
-                                          `${req.minCount} badges from ${req.badgeCategory || "any"} category`}
+                                        {req.type === "BadgeCount" && `${req.minCount} badges from ${req.badgeCategory || "any"} category`}
                                         {req.type === "ConcurrentRole" && `Have ${req.concurrentRoleName} role`}
                                         {req.type === "ExistingRole" && `Already have ${req.existingRole} role`}
-                                        {req.type === "Nomination" &&
-                                          `Get nominated and receive ${req.nominationRequiredCount} upvotes from ${req.eligibleVoterRoles?.join(" or ")
-                                          }`}
-                                        {req.type === "CommunityVote" &&
-                                          `Participate in ${req.participationRounds} Community Vote round${req.participationRounds !== 1 ? "s" : ""
-                                          }`}
+                                        {req.type === "Nomination" && `Get nominated and receive ${req.nominationRequiredCount} upvotes from ${req.eligibleVoterRoles?.join(" or ")}`}
+                                        {req.type === "CommunityVote" && `Participate in ${req.participationRounds} Community Vote round${req.participationRounds !== 1 ? "s" : ""}`}
                                       </li>
                                     ))}
                                   </ul>
@@ -327,9 +303,6 @@ export function RoleManagementModal({ userId, username, userRoles, onClose }: Ro
                             </div>
                           )}
                         </div>
-
-
-
                       </div>
                     );
                   })}
@@ -367,4 +340,3 @@ function getRoleDotColorClass(roleName: string): string {
       return "bg-gray-400";
   }
 }
-

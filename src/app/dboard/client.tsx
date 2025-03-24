@@ -15,13 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage, Button } from "@/components/ui";
 import Image from "next/image";
 
 // Member card component - reusing the MemberInfo type from discord-bot/types
-function MemberCard({
-  member,
-  precomputedBadge,
-}: {
-  member: MemberInfo;
-  precomputedBadge?: PrecomputedBadge;
-}) {
+function MemberCard({ member, precomputedBadge }: { member: MemberInfo; precomputedBadge?: PrecomputedBadge }) {
   const router = useRouter();
 
   const handleClick = () => {
@@ -29,31 +23,26 @@ function MemberCard({
   };
 
   return (
-    <div
-      className="card-container transition-all h-full flex flex-col hover:translate-y-[-2px] hover:shadow-lg cursor-pointer"
-      onClick={handleClick}
-    >
-      <div className="flex items-center gap-3 mb-3">
+    <div className="card-container flex h-full cursor-pointer flex-col transition-all hover:translate-y-[-2px] hover:shadow-lg" onClick={handleClick}>
+      <div className="mb-3 flex items-center gap-3">
         <Avatar>
           <AvatarImage src={member.avatar || undefined} alt={member.username} />
           <AvatarFallback>
-            {
-              (() => {
-                try {
-                  return member.username ? member.username.substring(0, 2).toUpperCase() : "??";
-                } catch (error) {
-                  console.error(`Error generating avatar fallback for user: ${member}`, error);
-                  return "??";
-                }
-              })()
-            }
+            {(() => {
+              try {
+                return member.username ? member.username.substring(0, 2).toUpperCase() : "??";
+              } catch (error) {
+                console.error(`Error generating avatar fallback for user: ${member}`, error);
+                return "??";
+              }
+            })()}
           </AvatarFallback>
         </Avatar>
         <div>
           <h3 className="card-title">{member.username}</h3>
           {precomputedBadge?.publicKey && (
             <div className="flex items-center gap-1">
-              <span className="text-xs text-gray-400 truncate max-w-[120px]">
+              <span className="max-w-[120px] truncate text-xs text-gray-400">
                 {precomputedBadge.publicKey.substring(0, 8)}...
                 {precomputedBadge.publicKey.substring(precomputedBadge.publicKey.length - 8)}
               </span>
@@ -62,7 +51,7 @@ function MemberCard({
                   e.stopPropagation();
                   window.open(`https://stellar.expert/explorer/public/account/${precomputedBadge.publicKey}`, "_blank");
                 }}
-                className="text-blue-400 inline-flex cursor-pointer"
+                className="inline-flex cursor-pointer text-blue-400"
               >
                 <ExternalLink size={12} />
               </span>
@@ -72,12 +61,12 @@ function MemberCard({
       </div>
 
       <div className="mb-3 flex-1">
-        <h4 className="text-sm font-medium text-white mb-2">Roles</h4>
+        <h4 className="mb-2 text-sm font-medium text-white">Roles</h4>
 
         {member.roles.length > 0 ? (
           <div className="flex flex-wrap gap-1">
             {member.roles.map((role, index) => (
-              <span key={index} className={`text-xs px-2 py-0.5 rounded-full badge-bg-${role.shortname.toLowerCase()}`}>
+              <span key={index} className={`rounded-full px-2 py-0.5 text-xs badge-bg-${role.shortname.toLowerCase()}`}>
                 {role.name}
               </span>
             ))}
@@ -88,25 +77,17 @@ function MemberCard({
       </div>
 
       <div>
-        <h4 className="text-sm font-medium text-white mb-2">Badges</h4>
+        <h4 className="mb-2 text-sm font-medium text-white">Badges</h4>
 
         {precomputedBadge && precomputedBadge.badges.length > 0 ? (
           <div className="flex flex-wrap gap-1">
             {precomputedBadge.badges.slice(0, 3).map((badge, index) => (
-              <div key={index} className="w-6 h-6 rounded overflow-hidden" title={badge.code}>
-                <Image
-                  width={120}
-                  height={120}
-                  src={badge.image}
-                  alt={badge.code}
-                  className="w-full h-full object-cover"
-                />
+              <div key={index} className="h-6 w-6 overflow-hidden rounded" title={badge.code}>
+                <Image width={120} height={120} src={badge.image} alt={badge.code} className="h-full w-full object-cover" />
               </div>
             ))}
             {precomputedBadge.badges.length > 3 && (
-              <div className="w-6 h-6 rounded bg-[#12141e]/40 flex items-center justify-center text-xs font-medium text-gray-400">
-                +{precomputedBadge.badges.length - 3}
-              </div>
+              <div className="flex h-6 w-6 items-center justify-center rounded bg-[#12141e]/40 text-xs font-medium text-gray-400">+{precomputedBadge.badges.length - 3}</div>
             )}
           </div>
         ) : (
@@ -119,26 +100,24 @@ function MemberCard({
 
 // TierRole card component
 
-function DashboardRoleCard({ role }: { role: TierRole; }) {
+function DashboardRoleCard({ role }: { role: TierRole }) {
   return (
-    <Link href="/manageroles" className="block no-underline text-inherit">
-      <div className="card-container transition-all h-full flex flex-col hover:translate-y-[-2px] hover:shadow-lg">
-        <div className="flex items-center gap-3 mb-3">
+    <Link href="/manageroles" className="block text-inherit no-underline">
+      <div className="card-container flex h-full flex-col transition-all hover:translate-y-[-2px] hover:shadow-lg">
+        <div className="mb-3 flex items-center gap-3">
           <div className={`badge-dot badge-${role.tier?.toLowerCase() || "default"}`} />
           <div>
             <h3 className="card-title">{role.roleName}</h3>
-            <span className="text-xs bg-[#12141e]/40 text-gray-400 px-2 py-0.5 rounded-full">
-              {role.tier}
-            </span>
+            <span className="rounded-full bg-[#12141e]/40 px-2 py-0.5 text-xs text-gray-400">{role.tier}</span>
           </div>
         </div>
 
         <div className="flex-1">
-          <p className="text-sm text-gray-300 mb-3">{role.description}</p>
+          <p className="mb-3 text-sm text-gray-300">{role.description}</p>
         </div>
 
         <div>
-          <h4 className="text-sm font-medium text-white mb-2">Requirements</h4>
+          <h4 className="mb-2 text-sm font-medium text-white">Requirements</h4>
 
           {/* If there are no groups, display a simple message */}
           {!role.requirementGroups || role.requirementGroups.length === 0 ? (
@@ -146,44 +125,28 @@ function DashboardRoleCard({ role }: { role: TierRole; }) {
           ) : (
             <div>
               {/* Show how the groups are combined overall */}
-              <p className="text-xs text-gray-400 italic mb-2">
-                {role.requirements === "ANY_GROUP"
-                  ? "User must satisfy ALL requirements in at least ONE group."
-                  : "User must satisfy ALL requirements in ALL groups."}
+              <p className="mb-2 text-xs text-gray-400 italic">
+                {role.requirements === "ANY_GROUP" ? "User must satisfy ALL requirements in at least ONE group." : "User must satisfy ALL requirements in ALL groups."}
               </p>
 
               {/* Display each group */}
               {role.requirementGroups.map((group, gIdx) => (
                 <div key={gIdx} className="mb-2">
-                  <p className="text-sm text-gray-200 font-medium mb-1">
+                  <p className="mb-1 text-sm font-medium text-gray-200">
                     {group.name || `Group ${gIdx + 1}`}
-                    <span className="text-xs text-gray-400 ml-2">
-                      (
-                      {group.groupMode === "ALL"
-                        ? "All"
-                        : "Any"}{" "}
-                      required)
-                    </span>
+                    <span className="ml-2 text-xs text-gray-400">({group.groupMode === "ALL" ? "All" : "Any"} required)</span>
                   </p>
-                  <ul className="list-disc pl-5 text-sm text-gray-400 space-y-1">
+                  <ul className="list-disc space-y-1 pl-5 text-sm text-gray-400">
                     {group.requirements.map((req, rIdx) => (
                       <li key={rIdx}>
                         {req.type === "Discord" && "Join Discord"}
                         {req.type === "SocialVerification" && "Verify social account"}
                         {req.type === "StellarAccount" && "Verify Stellar address"}
-                        {req.type === "BadgeCount" &&
-                          `${req.minCount} badges from ${req.badgeCategory || "any category"
-                          }`}
-                        {req.type === "ConcurrentRole" &&
-                          `Have ${req.concurrentRoleName} role`}
-                        {req.type === "ExistingRole" &&
-                          `Already have ${req.existingRole} role`}
-                        {req.type === "Nomination" &&
-                          `Get nominated and receive ${req.nominationRequiredCount} upvotes`}
-                        {req.type === "CommunityVote" &&
-                          `Participate in ${req.participationRounds
-                          } Community Vote round${req.participationRounds !== 1 ? "s" : ""
-                          }`}
+                        {req.type === "BadgeCount" && `${req.minCount} badges from ${req.badgeCategory || "any category"}`}
+                        {req.type === "ConcurrentRole" && `Have ${req.concurrentRoleName} role`}
+                        {req.type === "ExistingRole" && `Already have ${req.existingRole} role`}
+                        {req.type === "Nomination" && `Get nominated and receive ${req.nominationRequiredCount} upvotes`}
+                        {req.type === "CommunityVote" && `Participate in ${req.participationRounds} Community Vote round${req.participationRounds !== 1 ? "s" : ""}`}
                       </li>
                     ))}
                   </ul>
@@ -198,23 +161,15 @@ function DashboardRoleCard({ role }: { role: TierRole; }) {
 }
 
 // Stats card component
-function StatsCard({
-  title,
-  value,
-  icon,
-}: {
-  title: string;
-  value: number;
-  icon: React.ReactNode;
-}) {
+function StatsCard({ title, value, icon }: { title: string; value: number; icon: React.ReactNode }) {
   return (
     <div className="card-container h-full">
-      <div className="flex justify-between items-start">
+      <div className="flex items-start justify-between">
         <div>
-          <h3 className="text-sm font-medium text-gray-400 mb-1">{title}</h3>
+          <h3 className="mb-1 text-sm font-medium text-gray-400">{title}</h3>
           <p className="text-2xl font-bold text-white">{value}</p>
         </div>
-        <div className="bg-[#12141e]/40 rounded-lg p-2 flex items-center justify-center">{icon}</div>
+        <div className="flex items-center justify-center rounded-lg bg-[#12141e]/40 p-2">{icon}</div>
       </div>
     </div>
   );
@@ -274,7 +229,6 @@ export default function DashboardClient({ initialGuildData, initialRoles }: Dash
         // Sort members by lastProcessed date from precomputedBadge first,
         // then by memberSince date if no badge exists or as secondary criteria
         const sortedMembers = [...guildData.members].sort((a, b) => {
-
           const aBadge = badgeMap.get(a.discordId);
           const bBadge = badgeMap.get(b.discordId);
 
@@ -319,37 +273,33 @@ export default function DashboardClient({ initialGuildData, initialRoles }: Dash
         member.roles.some((role) => role.name.toLowerCase().includes(searchText.toLowerCase()))),
   );
 
-  const filteredRoles = roles.filter(
-    (role) => {
-      // Only include roles that start with "SCF "
-      if (!role.roleName.startsWith("SCF ")) {
-        return false;
-      }
-
-      // Apply text search - FIXED SAFELY HANDLING UNDEFINED PROPERTIES
-      const matchesSearch =
-        role.roleName.toLowerCase().includes(searchText.toLowerCase()) ||
-        (role.description ? role.description.toLowerCase().includes(searchText.toLowerCase()) : false) ||
-        (role.tier ? role.tier.toLowerCase().includes(searchText.toLowerCase()) : false);
-
-      // Apply role tier filters
-      const matchesFilter =
-        activeFilters.length === 0 ||
-        (role.tier && activeFilters.includes(role.tier));
-
-      return matchesSearch && matchesFilter;
+  const filteredRoles = roles.filter((role) => {
+    // Only include roles that start with "SCF "
+    if (!role.roleName.startsWith("SCF ")) {
+      return false;
     }
-  );
+
+    // Apply text search - FIXED SAFELY HANDLING UNDEFINED PROPERTIES
+    const matchesSearch =
+      role.roleName.toLowerCase().includes(searchText.toLowerCase()) ||
+      (role.description ? role.description.toLowerCase().includes(searchText.toLowerCase()) : false) ||
+      (role.tier ? role.tier.toLowerCase().includes(searchText.toLowerCase()) : false);
+
+    // Apply role tier filters
+    const matchesFilter = activeFilters.length === 0 || (role.tier && activeFilters.includes(role.tier));
+
+    return matchesSearch && matchesFilter;
+  });
 
   // Calculate stats
   const totalMembers = members.length;
   const totalRoles = roles.length;
   const totalBadges = userBadges.reduce((acc, userBadge) => acc + userBadge.badges.length, 0);
   // Calculate additional stats
-  const uniquePublicKeys = new Set(userBadges.map(badge => badge.publicKey)).size;
+  const uniquePublicKeys = new Set(userBadges.map((badge) => badge.publicKey)).size;
 
   // Count badges that belong to members in our system
-  const memberDiscordIds = new Set(members.map(member => member.discordId));
+  const memberDiscordIds = new Set(members.map((member) => member.discordId));
   const badgesForMembers = userBadges.reduce((count, userBadge) => {
     if (userBadge.discordId && memberDiscordIds.has(userBadge.discordId)) {
       return count + userBadge.badges.length;
@@ -358,10 +308,8 @@ export default function DashboardClient({ initialGuildData, initialRoles }: Dash
   }, 0);
 
   // Calculate average badges per member with badges
-  const membersWithBadges = userBadges.filter(badge => badge.discordId && memberDiscordIds.has(badge.discordId)).length;
-  const averageBadgesPerMember = membersWithBadges > 0
-    ? Math.round((badgesForMembers / membersWithBadges) * 10) / 10
-    : 0;
+  const membersWithBadges = userBadges.filter((badge) => badge.discordId && memberDiscordIds.has(badge.discordId)).length;
+  const averageBadgesPerMember = membersWithBadges > 0 ? Math.round((badgesForMembers / membersWithBadges) * 10) / 10 : 0;
 
   // Handle view all users with search
   const handleViewAllUsers = () => {
@@ -379,19 +327,13 @@ export default function DashboardClient({ initialGuildData, initialRoles }: Dash
 
   return (
     <div className="container mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <h1 className="page-title">Dashboard</h1>
       </div>
 
       <div className="search-input-wrapper flex items-center">
         <Search className="search-input-icon" />
-        <input
-          type="text"
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          placeholder="Search users, roles, badges..."
-          className="search-input"
-        />
+        <input type="text" value={searchText} onChange={(e) => setSearchText(e.target.value)} placeholder="Search users, roles, badges..." className="search-input" />
       </div>
 
       {isLoading ? (
@@ -409,23 +351,13 @@ export default function DashboardClient({ initialGuildData, initialRoles }: Dash
             </div>
 
             {/* First row of stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-              <StatsCard title="Total Users" value={totalMembers} icon={<UserIcon className="text-blue-400 h-5 w-5" />} />
+            <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <StatsCard title="Total Users" value={totalMembers} icon={<UserIcon className="h-5 w-5 text-blue-400" />} />
               <StatsCard
                 title="Total Roles"
                 value={totalRoles}
                 icon={
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="text-indigo-400"
-                  >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400">
                     <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
                     <circle cx="9" cy="7" r="4"></circle>
                     <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
@@ -437,17 +369,7 @@ export default function DashboardClient({ initialGuildData, initialRoles }: Dash
                 title="Total Badges"
                 value={totalBadges}
                 icon={
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="text-purple-400"
-                  >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-400">
                     <path d="M12 15l-2 5l9-9l-9-9l2 5l-9 9l9-9"></path>
                   </svg>
                 }
@@ -455,22 +377,12 @@ export default function DashboardClient({ initialGuildData, initialRoles }: Dash
             </div>
 
             {/* Second row of stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <StatsCard
                 title="Unique Wallets"
                 value={uniquePublicKeys}
                 icon={
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="text-green-400"
-                  >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-400">
                     <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
                     <line x1="2" y1="10" x2="22" y2="10"></line>
                   </svg>
@@ -480,17 +392,7 @@ export default function DashboardClient({ initialGuildData, initialRoles }: Dash
                 title="Members with Badges"
                 value={membersWithBadges}
                 icon={
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="text-amber-400"
-                  >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-400">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                     <circle cx="9" cy="7" r="4"></circle>
                     <path d="M23 21v-2a4 4 0 0 0-2-3.5"></path>
@@ -503,17 +405,7 @@ export default function DashboardClient({ initialGuildData, initialRoles }: Dash
                 title="Avg. Badges per User"
                 value={averageBadgesPerMember}
                 icon={
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="text-cyan-400"
-                  >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-cyan-400">
                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                     <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                   </svg>
@@ -522,18 +414,11 @@ export default function DashboardClient({ initialGuildData, initialRoles }: Dash
             </div>
           </div>
 
-
-
           {/* Recent Users */}
           <div>
-            <div className="flex justify-between items-center mb-4">
+            <div className="mb-4 flex items-center justify-between">
               <h2 className="section-title">Recent Users</h2>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleViewAllUsers}
-                className="text-sm text-blue-400 hover:text-blue-300 border-blue-400/30 hover:border-blue-400/50"
-              >
+              <Button variant="outline" size="sm" onClick={handleViewAllUsers} className="border-blue-400/30 text-sm text-blue-400 hover:border-blue-400/50 hover:text-blue-300">
                 View all
               </Button>
             </div>
@@ -541,66 +426,58 @@ export default function DashboardClient({ initialGuildData, initialRoles }: Dash
             {/* Show filtered recent members if search/filter is active, otherwise show all recent members */}
             {searchText || activeFilters.length > 0 ? (
               filteredMembers.length > 0 ? (
-                <div className="overflow-x-auto pb-4 custom-scrollbar">
-                  <div className="flex gap-4 min-w-full" style={{ width: "max-content" }}>
+                <div className="custom-scrollbar overflow-x-auto pb-4">
+                  <div className="flex min-w-full gap-4" style={{ width: "max-content" }}>
                     {filteredMembers.slice(0, 8).map((member) => (
-                      <div key={member.discordId} className="min-w-[280px] w-[280px]">
-                        <MemberCard
-                          member={member}
-                          precomputedBadge={findPrecomputedBadge(member.discordId)}
-                        />
+                      <div key={member.discordId} className="w-[280px] min-w-[280px]">
+                        <MemberCard member={member} precomputedBadge={findPrecomputedBadge(member.discordId)} />
                       </div>
                     ))}
                   </div>
                 </div>
               ) : (
-                <div className="bg-[#1a1d29]/80 border border-gray-800/60 rounded-lg p-6 text-center">
+                <div className="rounded-lg border border-gray-800/60 bg-[#1a1d29]/80 p-6 text-center">
                   <p className="text-gray-400">No users found matching your search criteria.</p>
                 </div>
               )
+            ) : recentMembers.length > 0 ? (
+              <div className="custom-scrollbar overflow-x-auto pb-4">
+                <div className="flex min-w-full gap-4" style={{ width: "max-content" }}>
+                  {recentMembers.map((member) => (
+                    <div key={member.discordId} className="w-[280px] min-w-[280px]">
+                      <MemberCard member={member} precomputedBadge={findPrecomputedBadge(member.discordId)} />
+                    </div>
+                  ))}
+                </div>
+              </div>
             ) : (
-              recentMembers.length > 0 ? (
-                <div className="overflow-x-auto pb-4 custom-scrollbar">
-                  <div className="flex gap-4 min-w-full" style={{ width: "max-content" }}>
-                    {recentMembers.map((member) => (
-                      <div key={member.discordId} className="min-w-[280px] w-[280px]">
-                        <MemberCard
-                          member={member}
-                          precomputedBadge={findPrecomputedBadge(member.discordId)}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-[#1a1d29]/80 border border-gray-800/60 rounded-lg p-6 text-center">
-                  <p className="text-gray-400">No recent users found.</p>
-                </div>
-              )
+              <div className="rounded-lg border border-gray-800/60 bg-[#1a1d29]/80 p-6 text-center">
+                <p className="text-gray-400">No recent users found.</p>
+              </div>
             )}
           </div>
 
           {/* Roles */}
           <div>
-            <div className="flex justify-between items-center mb-4">
+            <div className="mb-4 flex items-center justify-between">
               <h2 className="section-title">Roles</h2>
-              <Link href="/manageroles" className="text-sm text-blue-400 hover:text-blue-300 no-underline">
+              <Link href="/manageroles" className="text-sm text-blue-400 no-underline hover:text-blue-300">
                 View all
               </Link>
             </div>
 
             {filteredRoles.length > 0 ? (
-              <div className="overflow-x-auto pb-4 custom-scrollbar">
-                <div className="flex gap-4 min-w-full" style={{ width: "max-content" }}>
+              <div className="custom-scrollbar overflow-x-auto pb-4">
+                <div className="flex min-w-full gap-4" style={{ width: "max-content" }}>
                   {filteredRoles.slice(0, 8).map((role) => (
-                    <div key={role._id} className="min-w-[280px] w-[280px]">
+                    <div key={role._id} className="w-[280px] min-w-[280px]">
                       <DashboardRoleCard role={role} />
                     </div>
                   ))}
                 </div>
               </div>
             ) : (
-              <div className="bg-[#1a1d29]/80 border border-gray-800/60 rounded-lg p-6 text-center">
+              <div className="rounded-lg border border-gray-800/60 bg-[#1a1d29]/80 p-6 text-center">
                 <p className="text-gray-400">No roles found matching your search criteria.</p>
               </div>
             )}
@@ -610,4 +487,3 @@ export default function DashboardClient({ initialGuildData, initialRoles }: Dash
     </div>
   );
 }
-

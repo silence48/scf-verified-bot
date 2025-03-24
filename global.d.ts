@@ -1,6 +1,6 @@
 /* eslint-disable no-var */
 //// filepath: c:\SCF\scf-roles-bot\global.d.ts
-import { Client } from 'discord.js';
+import { Client } from "discord.js";
 
 declare global {
   // Option A: Extend the NodeJS Global interface
@@ -13,7 +13,7 @@ declare global {
       didRunReadyBlock: boolean;
       last_member_sync: Map<string, Date>;
       holders_refreshing: boolean;
-      membersCacheByGuild: Map<string, {data: MemberInfo[], timestamp: number}>;
+      membersCacheByGuild: Map<string, { data: MemberInfo[]; timestamp: number }>;
       membersWatcherRunning: boolean;
       refreshScheduledMembers: boolean;
       badgeWatcherRunning: boolean;
@@ -29,7 +29,7 @@ declare global {
   var didRunReadyBlock: boolean;
   var last_member_sync: Map<string, Date>;
   var holders_refreshing: boolean;
-  var membersCacheByGuild: Map<string, {data: MemberInfo[], timestamp: number}>;
+  var membersCacheByGuild: Map<string, { data: MemberInfo[]; timestamp: number }>;
   var membersWatcherRunning: boolean;
   var refreshScheduledMembers: boolean;
   var badgeWatcherRunning: boolean;

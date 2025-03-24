@@ -6,14 +6,14 @@ import { ChevronDown, ChevronUp, Edit, Trash } from "lucide-react";
 import { Button } from "@/components/ui";
 import { NominationModal } from "./nomination-modal";
 import { BadgeAsset } from "@/types/discord-bot";
-import { ClientBadge } from "@/actions/badges"; 
+import { ClientBadge } from "@/actions/badges";
 import Image from "next/image";
 
 interface RoleCardProps {
-  role: TierRole
-  badges: ClientBadge[]
-  onEdit: (role: TierRole) => void
-  onDelete: (roleId: string) => void
+  role: TierRole;
+  badges: ClientBadge[];
+  onEdit: (role: TierRole) => void;
+  onDelete: (roleId: string) => void;
 }
 
 export function RoleCard({ role, badges, onEdit, onDelete }: RoleCardProps) {
@@ -55,7 +55,7 @@ export function RoleCard({ role, badges, onEdit, onDelete }: RoleCardProps) {
   };
 
   const badgeIds = getBadgeIds(role.requirementGroups);
-  const roleBadges = badges.filter((badge) => badgeIds.includes (String(badge._id) ));
+  const roleBadges = badges.filter((badge) => badgeIds.includes(String(badge._id)));
 
   // Format requirements for display
   const formatRequirements = () => {
@@ -65,21 +65,17 @@ export function RoleCard({ role, badges, onEdit, onDelete }: RoleCardProps) {
 
     return (
       <div className="space-y-3">
-        <p className="text-xs text-gray-400 italic mb-2">
-          {role.requirements === "ANY_GROUP"
-            ? "User must satisfy ALL requirements in at least ONE group."
-            : "User must satisfy ALL requirements in ALL groups."}
+        <p className="mb-2 text-xs text-gray-400 italic">
+          {role.requirements === "ANY_GROUP" ? "User must satisfy ALL requirements in at least ONE group." : "User must satisfy ALL requirements in ALL groups."}
         </p>
 
         {role.requirementGroups.map((group, groupIdx) => (
-          <div key={groupIdx} className="bg-[#12141e]/40 p-2 rounded-md">
-            <h5 className="text-sm font-medium text-white mb-1">
+          <div key={groupIdx} className="rounded-md bg-[#12141e]/40 p-2">
+            <h5 className="mb-1 text-sm font-medium text-white">
               {group.name || `Group ${groupIdx + 1}`}
-              <span className="text-xs text-gray-400 ml-2">
-                ({group.groupMode === "ALL" ? "All required" : "Any required"})
-              </span>
+              <span className="ml-2 text-xs text-gray-400">({group.groupMode === "ALL" ? "All required" : "Any required"})</span>
             </h5>
-            <ul className="list-disc pl-5 space-y-1">
+            <ul className="list-disc space-y-1 pl-5">
               {group.requirements.map((req, reqIdx) => (
                 <li key={reqIdx} className="text-xs text-gray-300">
                   {req.type === "Discord" && "Join Discord"}
@@ -88,10 +84,8 @@ export function RoleCard({ role, badges, onEdit, onDelete }: RoleCardProps) {
                   {req.type === "BadgeCount" && `${req.minCount} badges from ${req.badgeCategory || "any category"}`}
                   {req.type === "ConcurrentRole" && `Have ${req.concurrentRoleName} role`}
                   {req.type === "ExistingRole" && `Already have ${req.existingRole} role`}
-                  {req.type === "Nomination" &&
-                    `Get nominated and receive ${req.nominationRequiredCount} upvotes from ${req.eligibleVoterRoles?.join(" or ")}`}
-                  {req.type === "CommunityVote" &&
-                    `Participate in ${req.participationRounds} Community Vote round${req.participationRounds !== 1 ? "s" : ""}`}
+                  {req.type === "Nomination" && `Get nominated and receive ${req.nominationRequiredCount} upvotes from ${req.eligibleVoterRoles?.join(" or ")}`}
+                  {req.type === "CommunityVote" && `Participate in ${req.participationRounds} Community Vote round${req.participationRounds !== 1 ? "s" : ""}`}
                 </li>
               ))}
             </ul>
@@ -102,16 +96,13 @@ export function RoleCard({ role, badges, onEdit, onDelete }: RoleCardProps) {
   };
 
   return (
-    <div className="bg-[#1a1d29]/80 border border-gray-800/60 rounded-lg overflow-hidden">
-      <div
-        className={`p-4 flex justify-between items-center cursor-pointer ${expanded ? "border-b border-gray-800/60" : ""}`}
-        onClick={() => setExpanded(!expanded)}
-      >
+    <div className="overflow-hidden rounded-lg border border-gray-800/60 bg-[#1a1d29]/80">
+      <div className={`flex cursor-pointer items-center justify-between p-4 ${expanded ? "border-b border-gray-800/60" : ""}`} onClick={() => setExpanded(!expanded)}>
         <div className="flex items-center gap-3">
-          <div className={`w-3 h-3 rounded-full ${getTierColor(role.tier).replace("text-", "bg-")}`} />
+          <div className={`h-3 w-3 rounded-full ${getTierColor(role.tier).replace("text-", "bg-")}`} />
           <div>
             <h3 className="font-medium text-white/90">{role.roleName}</h3>
-            <span className="text-xs bg-[#12141e]/40 text-gray-400 px-2 py-0.5 rounded-full">{role.tier}</span>
+            <span className="rounded-full bg-[#12141e]/40 px-2 py-0.5 text-xs text-gray-400">{role.tier}</span>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -141,11 +132,7 @@ export function RoleCard({ role, badges, onEdit, onDelete }: RoleCardProps) {
             </Button>
           )}
 
-          {expanded ? (
-            <ChevronUp className="h-4 w-4 text-gray-400" />
-          ) : (
-            <ChevronDown className="h-4 w-4 text-gray-400" />
-          )}
+          {expanded ? <ChevronUp className="h-4 w-4 text-gray-400" /> : <ChevronDown className="h-4 w-4 text-gray-400" />}
         </div>
       </div>
 
@@ -154,24 +141,18 @@ export function RoleCard({ role, badges, onEdit, onDelete }: RoleCardProps) {
           <p className="mb-4">{role.description}</p>
 
           <div className="mb-4">
-            <h4 className="font-medium text-white mb-2">Requirements</h4>
+            <h4 className="mb-2 font-medium text-white">Requirements</h4>
             {formatRequirements()}
           </div>
 
           {roleBadges.length > 0 && (
             <div className="mb-4">
-              <h4 className="font-medium text-white mb-2">Required Badges</h4>
+              <h4 className="mb-2 font-medium text-white">Required Badges</h4>
 
               <div className="flex flex-wrap gap-2">
                 {roleBadges.map((badge) => (
-                  <div key={ String(badge._id) } className="flex items-center gap-1 bg-[#12141e]/40 px-2 py-1 rounded-md">
-                    <Image
-                      src={badge.image}
-                      alt={badge.code}
-                      height={120}
-                      width={120}
-                      className="w-4 h-4 rounded"
-                    />
+                  <div key={String(badge._id)} className="flex items-center gap-1 rounded-md bg-[#12141e]/40 px-2 py-1">
+                    <Image src={badge.image} alt={badge.code} height={120} width={120} className="h-4 w-4 rounded" />
                     <span className="text-xs">{badge.code || "Badge"}</span>
                   </div>
                 ))}
@@ -186,7 +167,7 @@ export function RoleCard({ role, badges, onEdit, onDelete }: RoleCardProps) {
                   e.stopPropagation();
                   setNominationModalOpen(true);
                 }}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                className="bg-indigo-600 text-white hover:bg-indigo-700"
               >
                 Nominate User
               </Button>
@@ -200,4 +181,3 @@ export function RoleCard({ role, badges, onEdit, onDelete }: RoleCardProps) {
     </div>
   );
 }
-

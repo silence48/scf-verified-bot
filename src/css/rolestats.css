@@ -2,30 +2,30 @@
 
 /* Overall grid container */
 .role-stats-grid {
-    @apply grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6;
-  }
-  
-  /* Base card styling */
-  .role-stats-card {
-    @apply border rounded-xl p-4 flex items-center space-x-4 cursor-pointer transition-colors shadow-md;
-  }
-  
-  /* Inactive state (i.e., not selected) */
-  .role-stats-card-inactive {
-    @apply border-gray-800/60 bg-[#1a1d29]/80 hover:bg-[#1e2235]/80;
-  }
-  
-  /* Close (X) button in top-right corner */
-  .role-stats-card-close {
-    @apply absolute -top-2 -right-2 rounded-full bg-gray-800/60 p-0.5 hover:bg-gray-700/60;
-  }
-  
-  /* Name text (defaults) */
-  .role-stats-name {
-    @apply text-sm font-medium text-white/90;
-  }
-  
-  /* Count text (defaults) */
-  .role-stats-count {
-    @apply text-xl font-bold text-gray-400;
-  }
+  @apply mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4;
+}
+
+/* Base card styling */
+.role-stats-card {
+  @apply flex cursor-pointer items-center space-x-4 rounded-xl border p-4 shadow-md transition-colors;
+}
+
+/* Inactive state (i.e., not selected) */
+.role-stats-card-inactive {
+  @apply border-gray-800/60 bg-[#1a1d29]/80 hover:bg-[#1e2235]/80;
+}
+
+/* Close (X) button in top-right corner */
+.role-stats-card-close {
+  @apply absolute -top-2 -right-2 rounded-full bg-gray-800/60 p-0.5 hover:bg-gray-700/60;
+}
+
+/* Name text (defaults) */
+.role-stats-name {
+  @apply text-sm font-medium text-white/90;
+}
+
+/* Count text (defaults) */
+.role-stats-count {
+  @apply text-xl font-bold text-gray-400;
+}

@@ -7,10 +7,7 @@ import { getExactGuildMemberUsernames } from "@/discord-bot/mongo-db";
 /**
  * Primary message handler for the "messageCreate" event.
  */
-export async function handleMessageCreateEvent(
-  message: Message,
-  client: Client
-): Promise<void> {
+export async function handleMessageCreateEvent(message: Message, client: Client): Promise<void> {
   try {
     // Ignore non-text messages or empty content
     if (!message.content.trim()) return;
@@ -18,7 +15,7 @@ export async function handleMessageCreateEvent(
     console.log(`Processing message: ${message.content}`);
 
     if (message.content.startsWith("!ping")) {
-      if ('send' in message.channel) {
+      if ("send" in message.channel) {
         await message.channel.send({ content: "Pong!" });
       }
     }
@@ -28,7 +25,7 @@ export async function handleMessageCreateEvent(
         // use DB helper to get exact matches by guild_id
         const usernames = await getExactGuildMemberUsernames(message.guild.id);
         const memberList = usernames.join(", ");
-        if ('send' in message.channel) {
+        if ("send" in message.channel) {
           await message.channel.send({ content: `Members: ${memberList}` });
         }
       } else {

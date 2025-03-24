@@ -4,11 +4,7 @@ import { Guild, GuildMember, Role, DiscordAPIError, Client } from "discord.js";
 import { logger } from "./logger";
 import { BOT_READONLY_MODE } from "./constants";
 
-export async function getRoleIdByName(
-  guild: Guild,
-  roleName: string,
-  client: Client
-): Promise<string | null> {
+export async function getRoleIdByName(guild: Guild, roleName: string, client: Client): Promise<string | null> {
   try {
     const role = guild.roles.cache.find((r) => r.name === roleName);
     return role ? role.id : null;
@@ -23,15 +19,8 @@ export async function getRoleIdByName(
 export async function fixUserRoles(member: GuildMember, client: Client): Promise<void> {
   try {
     logger(`fixUserRoles: Checking roles for ${member.user.tag}`, client);
-    const scfRoles = [
-      "SCF Verified",
-      "SCF Pathfinder",
-      "SCF Navigator",
-      "SCF Pilot",
-    ];
-    const currentRoles = member.roles.cache.filter((r) =>
-      scfRoles.includes(r.name)
-    );
+    const scfRoles = ["SCF Verified", "SCF Pathfinder", "SCF Navigator", "SCF Pilot"];
+    const currentRoles = member.roles.cache.filter((r) => scfRoles.includes(r.name));
 
     if (currentRoles.size > 1) {
       let highestRoleIndex = -1;
@@ -46,10 +35,7 @@ export async function fixUserRoles(member: GuildMember, client: Client): Promise
       for (const role of currentRoles.values()) {
         if (scfRoles.indexOf(role.name) < highestRoleIndex && highestRole) {
           if (!BOT_READONLY_MODE) {
-           await member.roles.remove(
-            role.id,
-              `${member.user.tag} had extra role ${role.name}, only keeping ${highestRole.name}`
-            );
+            await member.roles.remove(role.id, `${member.user.tag} had extra role ${role.name}, only keeping ${highestRole.name}`);
             logger(`Removed role ${role.name} from ${member.user.tag} because they already had ${highestRole.name}`, client);
           }
         }
@@ -81,28 +67,18 @@ export async function syncRoles(client: Client, guild: Guild): Promise<void> {
 export async function syncMembers(client: Client, guild: Guild): Promise<void> {
   try {
     const members = await guild.members.fetch();
-    logger(
-      `syncMembers: Fetched ${members.size} members for guild ${guild.name}`,
-      client
-    );
+    logger(`syncMembers: Fetched ${members.size} members for guild ${guild.name}`, client);
 
-    const scfTierRoles = [
-      "SCF Verified",
-      "SCF Pathfinder",
-      "SCF Navigator",
-      "SCF Pilot",
-    ];
-      for (const member of members.values()) {
-        const scfRoles = member.roles.cache.filter((r) =>
-          scfTierRoles.includes(r.name)
-        );
-        if (scfRoles.size > 1) {
-          await fixUserRoles(member, client);
-        }
+    const scfTierRoles = ["SCF Verified", "SCF Pathfinder", "SCF Navigator", "SCF Pilot"];
+    for (const member of members.values()) {
+      const scfRoles = member.roles.cache.filter((r) => scfTierRoles.includes(r.name));
+      if (scfRoles.size > 1) {
+        await fixUserRoles(member, client);
+      }
 
-        // Upsert this member
-        // If you want to store multiple guild IDs for each member, do so in a CSV
-        /*
+      // Upsert this member
+      // If you want to store multiple guild IDs for each member, do so in a CSV
+      /*
         const guildIds = guild.id;
         await upsertMember(
           member.id,
@@ -118,27 +94,18 @@ export async function syncMembers(client: Client, guild: Guild): Promise<void> {
           }
         }
           */
-      }
     }
-   catch (err) {
+  } catch (err) {
     logger(`Error in syncMembers: ${String(err)}`, client);
     console.error(err);
   }
 }
 
 /** Update a user's SCF role, removing the old tier if needed. */
-export async function updateUserRole(
-  guild: Guild,
-  userId: string,
-  roleName: string,
-  client: Client
-): Promise<boolean> {
+export async function updateUserRole(guild: Guild, userId: string, roleName: string, client: Client): Promise<boolean> {
   try {
     const member = await guild.members.fetch(userId);
-    logger(
-      `Assigning role [${roleName}] to user [${userId}] in guild [${guild.name}]`,
-      client
-    );
+    logger(`Assigning role [${roleName}] to user [${userId}] in guild [${guild.name}]`, client);
 
     let previousRoleName: string | undefined;
     if (roleName === "SCF Pathfinder") previousRoleName = "SCF Verified";
@@ -147,9 +114,7 @@ export async function updateUserRole(
 
     const roleId = await getRoleIdByName(guild, roleName, client);
 
-    const previousRoleId = previousRoleName
-      ? await getRoleIdByName(guild, previousRoleName, client)
-      : null;
+    const previousRoleId = previousRoleName ? await getRoleIdByName(guild, previousRoleName, client) : null;
 
     if (!roleId) {
       logger(`ERROR: Role ${roleName} not found in guild ${guild.name}`, client);
@@ -159,8 +124,8 @@ export async function updateUserRole(
     // If user had no previous role
     if (!previousRoleId) {
       if (!BOT_READONLY_MODE) {
-      await member.roles.add(roleId, `${member.user.tag} earned ${roleName}`);
-      return true;
+        await member.roles.add(roleId, `${member.user.tag} earned ${roleName}`);
+        return true;
       } else {
         logger(`[updateUserRole] BOT_READONLY_MODE is true, not adding role ${roleName} to ${member.user.tag}`, client);
         return true;
@@ -170,38 +135,26 @@ export async function updateUserRole(
     // If user had SCF Verified, moving to SCF Pathfinder
     if (previousRoleName === "SCF Verified" && previousRoleId) {
       if (!BOT_READONLY_MODE) {
-      await member.roles.remove(
-        previousRoleId,
-        `${member.user.tag} advanced from Verified to ${roleName}`
-      );
-      await member.roles.add(
-        roleId,
-        `${member.user.tag} advanced from Verified to ${roleName}`
-      );
-      return true;
-    } else{
-      logger(`[updateUserRole] BOT_READONLY_MODE is true, not removing role ${previousRoleName} from ${member.user.tag}`, client);
-      logger(`[updateUserRole] BOT_READONLY_MODE is true, not adding role ${roleName} to ${member.user.tag}`, client);
-      return true;
-    }
+        await member.roles.remove(previousRoleId, `${member.user.tag} advanced from Verified to ${roleName}`);
+        await member.roles.add(roleId, `${member.user.tag} advanced from Verified to ${roleName}`);
+        return true;
+      } else {
+        logger(`[updateUserRole] BOT_READONLY_MODE is true, not removing role ${previousRoleName} from ${member.user.tag}`, client);
+        logger(`[updateUserRole] BOT_READONLY_MODE is true, not adding role ${roleName} to ${member.user.tag}`, client);
+        return true;
+      }
     }
 
     // Otherwise remove old SCF tier
     if (!BOT_READONLY_MODE) {
-    await member.roles.remove(
-      previousRoleId,
-      `${member.user.tag} advanced from ${previousRoleName} to ${roleName}`
-    );
-    await member.roles.add(
-      roleId,
-      `${member.user.tag} advanced to ${roleName}`
-    );
-    return true;
-  } else {
-    logger(`[updateUserRole] BOT_READONLY_MODE is true, not removing role ${previousRoleName} from ${member.user.tag}`, client);
-    logger(`[updateUserRole] BOT_READONLY_MODE is true, not adding role ${roleName} to ${member.user.tag}`, client);
-    return true;
-  }
+      await member.roles.remove(previousRoleId, `${member.user.tag} advanced from ${previousRoleName} to ${roleName}`);
+      await member.roles.add(roleId, `${member.user.tag} advanced to ${roleName}`);
+      return true;
+    } else {
+      logger(`[updateUserRole] BOT_READONLY_MODE is true, not removing role ${previousRoleName} from ${member.user.tag}`, client);
+      logger(`[updateUserRole] BOT_READONLY_MODE is true, not adding role ${roleName} to ${member.user.tag}`, client);
+      return true;
+    }
   } catch (error) {
     logger(`Error assigning or removing role: ${String(error)}`, client);
     console.error(error);
@@ -214,7 +167,7 @@ export async function grantRoleWithChecks(
   guild: Guild,
   userId: string,
   requestedRoleName: string,
-  client: Client
+  client: Client,
 ): Promise<{
   success: boolean;
   statusCode: number;
@@ -233,16 +186,11 @@ export async function grantRoleWithChecks(
     }
 
     // If user has "SCF Project" role, upgrade "SCF Verified" -> "SCF Pathfinder"
-    const hasProjectRole = member.roles.cache.some(
-      (r) => r.name === "SCF Project"
-    );
+    const hasProjectRole = member.roles.cache.some((r) => r.name === "SCF Project");
     let finalRoleName = requestedRoleName;
     if (hasProjectRole && requestedRoleName === "SCF Verified") {
       finalRoleName = "SCF Pathfinder";
-      logger(
-        `${member.user.username}#${member.user.discriminator} upgraded to SCF Pathfinder (SCF Project).`, 
-        client
-      );
+      logger(`${member.user.username}#${member.user.discriminator} upgraded to SCF Pathfinder (SCF Project).`, client);
     }
     const hasExistingRole: boolean = member.roles.cache.some((r) => r.name === finalRoleName);
     if (hasExistingRole) {
@@ -275,9 +223,7 @@ export async function grantRoleWithChecks(
     }
 
     // If user already has the finalRoleName
-    const hasThisRole = member.roles.cache.some(
-      (r) => r.name === finalRoleName
-    );
+    const hasThisRole = member.roles.cache.some((r) => r.name === finalRoleName);
     if (hasThisRole) {
       return {
         success: false,
@@ -287,7 +233,7 @@ export async function grantRoleWithChecks(
     }
 
     // Actually update the user role
-    
+
     const success = await updateUserRole(guild, userId, finalRoleName, client);
     if (!success) {
       return {

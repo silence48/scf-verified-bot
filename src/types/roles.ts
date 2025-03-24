@@ -2,18 +2,10 @@
 
 // Role tier type
 export type RoleTier = "SCF Verified" | "SCF Pathfinder" | "SCF Navigator" | "SCF Pilot";
-export type scfRoles = "SCF Verified" | "SCF Pathfinder" | "SCF Navigator" | "SCF Pilot" |  "SCF Project" | "SCF Category Delegate";
+export type scfRoles = "SCF Verified" | "SCF Pathfinder" | "SCF Navigator" | "SCF Pilot" | "SCF Project" | "SCF Category Delegate";
 
 // Verification type
-export type VerificationType =
-  | "Discord"
-  | "SocialVerification"
-  | "StellarAccount"
-  | "BadgeCount"
-  | "Nomination"
-  | "CommunityVote"
-  | "ExistingRole"
-  | "ConcurrentRole"
+export type VerificationType = "Discord" | "SocialVerification" | "StellarAccount" | "BadgeCount" | "Nomination" | "CommunityVote" | "ExistingRole" | "ConcurrentRole";
 
 export type RoleMode = "ANY_GROUP" | "ALL_GROUPS";
 export type GroupMode = "ANY" | "ALL";
@@ -79,7 +71,6 @@ export interface RequirementResult {
   id: string;
   met: boolean;
   reason?: string | string[] | { [category: string]: number };
-
 }
 
 // Role management types

@@ -82,9 +82,7 @@ export interface DiscordOAuthConfig<P> {
  * It returns a shape that NextAuth can interpret as an OAuth provider,
  * but with no `any` types in the core fields.
  */
-export default function DiscordProvider(
-  options: DiscordProviderOptions
-): DiscordOAuthConfig<DiscordProfile> {
+export default function DiscordProvider(options: DiscordProviderOptions): DiscordOAuthConfig<DiscordProfile> {
   return {
     id: "discord",
     name: "Discord",
@@ -107,10 +105,7 @@ export default function DiscordProvider(
       // Derive an avatar if missing:
       if (!profile.avatar) {
         // If the user’s avatar is null, use a “default avatar”.
-        const defaultAvatarNumber =
-          profile.discriminator === "0"
-            ? Number(BigInt(profile.id) >> BigInt(22)) % 6
-            : parseInt(profile.discriminator) % 5;
+        const defaultAvatarNumber = profile.discriminator === "0" ? Number(BigInt(profile.id) >> BigInt(22)) % 6 : parseInt(profile.discriminator) % 5;
         profile.image_url = `https://cdn.discordapp.com/embed/avatars/${defaultAvatarNumber}.png`;
       } else {
         // If we have a user avatar, figure out its format (png vs gif).

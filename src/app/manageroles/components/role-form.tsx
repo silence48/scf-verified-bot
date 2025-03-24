@@ -2,36 +2,26 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import type {
-  TierRole,
-  RoleTier,
-  VerificationType,
-  RoleRequirement,
-  RequirementGroup,
-  RoleMode,
-  GroupMode,
-} from "@/types/roles";
+import type { TierRole, RoleTier, VerificationType, RoleRequirement, RequirementGroup, RoleMode, GroupMode } from "@/types/roles";
 import { X, Plus, Trash, Info } from "lucide-react";
 import { Button } from "@/components/ui";
 import { BadgeSelector } from "./badge-selector";
 import { BadgeAsset } from "@/types/discord-bot";
-import { ClientBadge } from "@/actions/badges"; 
+import { ClientBadge } from "@/actions/badges";
 
 interface RoleFormProps {
-  role?: TierRole
-  badges: ClientBadge[]
-  onSave: (role: TierRole) => void
-  onCancel: () => void
+  role?: TierRole;
+  badges: ClientBadge[];
+  onSave: (role: TierRole) => void;
+  onCancel: () => void;
 }
 
 // Tier descriptions
 const TIER_DESCRIPTIONS: Record<RoleTier, string> = {
-  "SCF Verified":
-    "Basic entry level requiring Discord join, social account verification, and Stellar address verification",
+  "SCF Verified": "Basic entry level requiring Discord join, social account verification, and Stellar address verification",
   "SCF Pathfinder": "Requires Soroban/Stellar expertise through project roles or specific badge requirements",
   "SCF Navigator": "Requires participation in Community Vote, nomination by Navigator/Pilot, and upvotes",
-  "SCF Pilot":
-    "Requires participation in multiple SCF rounds, active community involvement, nomination by Pilot, and upvotes",
+  "SCF Pilot": "Requires participation in multiple SCF rounds, active community involvement, nomination by Pilot, and upvotes",
 };
 
 export function RoleForm({ role, badges, onSave, onCancel }: RoleFormProps) {
@@ -66,9 +56,7 @@ export function RoleForm({ role, badges, onSave, onCancel }: RoleFormProps) {
     ],
   );
 
-  const [nominationEnabled, setNominationEnabled] = useState<boolean>(
-    role?.nominationEnabled || tier === "SCF Navigator" || tier === "SCF Pilot",
-  );
+  const [nominationEnabled, setNominationEnabled] = useState<boolean>(role?.nominationEnabled || tier === "SCF Navigator" || tier === "SCF Pilot");
 
   const [votesRequired, setVotesRequired] = useState<number>(role?.votesRequired || 5);
 
@@ -159,22 +147,14 @@ export function RoleForm({ role, badges, onSave, onCancel }: RoleFormProps) {
         break;
     }
 
-    setRequirementGroups(
-      requirementGroups.map((group) =>
-        group.id === groupId ? { ...group, requirements: [...group.requirements, newRequirement] } : group,
-      ),
-    );
+    setRequirementGroups(requirementGroups.map((group) => (group.id === groupId ? { ...group, requirements: [...group.requirements, newRequirement] } : group)));
 
     setActiveRequirementDropdown(null);
   };
 
   // Remove a requirement
   const removeRequirement = (groupId: string, reqId: string) => {
-    setRequirementGroups(
-      requirementGroups.map((group) =>
-        group.id === groupId ? { ...group, requirements: group.requirements.filter((req) => req.id !== reqId) } : group,
-      ),
-    );
+    setRequirementGroups(requirementGroups.map((group) => (group.id === groupId ? { ...group, requirements: group.requirements.filter((req) => req.id !== reqId) } : group)));
   };
 
   // Update a requirement
@@ -216,51 +196,43 @@ export function RoleForm({ role, badges, onSave, onCancel }: RoleFormProps) {
   const isCoreRole = role && ["SCF Verified", "SCF Pathfinder", "SCF Navigator", "SCF Pilot"].includes(role.roleName);
 
   return (
-    <div
-      ref={formRef}
-      className="bg-[#1a1d29]/80 border border-gray-800/60 rounded-lg p-6 shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto"
-    >
-      <div className="flex justify-between items-center mb-6">
+    <div ref={formRef} className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg border border-gray-800/60 bg-[#1a1d29]/80 p-6 shadow-lg">
+      <div className="mb-6 flex items-center justify-between">
         <h2 className="text-xl font-bold tracking-wide text-white/90">{role ? "Edit Role" : "Create New Role"}</h2>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onCancel}
-          className="h-8 w-8 hover:bg-gray-700/50 hover:text-white"
-        >
+        <Button variant="ghost" size="icon" onClick={onCancel} className="h-8 w-8 hover:bg-gray-700/50 hover:text-white">
           <X className="h-4 w-4" />
         </Button>
       </div>
 
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">Role Name</label>
+          <label className="mb-1 block text-sm font-medium text-gray-300">Role Name</label>
           <input
             type="text"
             value={roleName}
             onChange={(e) => setRoleName(e.target.value)}
-            className="w-full bg-[#0c0e14]/80 border border-gray-700/50 rounded-md px-3 py-2 focus:border-gray-600 focus:outline-none text-white"
+            className="w-full rounded-md border border-gray-700/50 bg-[#0c0e14]/80 px-3 py-2 text-white focus:border-gray-600 focus:outline-none"
             placeholder="Enter role name"
             disabled={isCoreRole}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">Description</label>
+          <label className="mb-1 block text-sm font-medium text-gray-300">Description</label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full bg-[#0c0e14]/80 border border-gray-700/50 rounded-md px-3 py-2 focus:border-gray-600 focus:outline-none min-h-[80px] text-white"
+            className="min-h-[80px] w-full rounded-md border border-gray-700/50 bg-[#0c0e14]/80 px-3 py-2 text-white focus:border-gray-600 focus:outline-none"
             placeholder="Enter role description"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">Role Tier</label>
+          <label className="mb-1 block text-sm font-medium text-gray-300">Role Tier</label>
           <select
             value={tier}
             onChange={(e) => setTier(e.target.value as RoleTier)}
-            className="w-full bg-[#0c0e14]/80 border border-gray-700/50 rounded-md px-3 py-2 focus:border-gray-600 focus:outline-none text-white"
+            className="w-full rounded-md border border-gray-700/50 bg-[#0c0e14]/80 px-3 py-2 text-white focus:border-gray-600 focus:outline-none"
             disabled={isCoreRole}
           >
             <option value="SCF Verified">SCF Verified</option>
@@ -268,7 +240,7 @@ export function RoleForm({ role, badges, onSave, onCancel }: RoleFormProps) {
             <option value="SCF Navigator">SCF Navigator</option>
             <option value="SCF Pilot">SCF Pilot</option>
           </select>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="mt-1 text-xs text-gray-400">
             <strong>Tier Description:</strong>
             <br />
             {TIER_DESCRIPTIONS[tier]}
@@ -277,11 +249,11 @@ export function RoleForm({ role, badges, onSave, onCancel }: RoleFormProps) {
 
         {/* Requirements Mode */}
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">Requirements Mode</label>
+          <label className="mb-1 block text-sm font-medium text-gray-300">Requirements Mode</label>
           <select
             value={requirementsMode}
             onChange={(e) => setRequirementsMode(e.target.value as RoleMode)}
-            className="w-full bg-[#0c0e14]/80 border border-gray-700/50 rounded-md px-3 py-2 focus:border-gray-600 focus:outline-none text-white"
+            className="w-full rounded-md border border-gray-700/50 bg-[#0c0e14]/80 px-3 py-2 text-white focus:border-gray-600 focus:outline-none"
           >
             <option value="ANY_GROUP">ANY_GROUP - User must satisfy at least one requirement group</option>
             <option value="ALL_GROUPS">ALL_GROUPS - User must satisfy all requirement groups</option>
@@ -290,63 +262,49 @@ export function RoleForm({ role, badges, onSave, onCancel }: RoleFormProps) {
 
         {/* Requirements Section with Groups */}
         <div>
-          <div className="flex justify-between items-center mb-2">
+          <div className="mb-2 flex items-center justify-between">
             <label className="block text-sm font-medium text-gray-300">Requirements</label>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={addRequirementGroup}
-              className="border-gray-700/50 bg-[#0c0e14]/80 hover:bg-[#1e2235]/80 hover:text-white flex items-center gap-1"
-            >
+            <Button variant="outline" size="sm" onClick={addRequirementGroup} className="flex items-center gap-1 border-gray-700/50 bg-[#0c0e14]/80 hover:bg-[#1e2235]/80 hover:text-white">
               <Plus className="h-3 w-3" /> Add Requirement Group
             </Button>
           </div>
 
-          <div className="flex items-center gap-2 mb-4">
+          <div className="mb-4 flex items-center gap-2">
             <Info className="h-4 w-4 text-blue-400" />
             <p className="text-xs text-gray-400">
-              {requirementsMode === "ANY_GROUP"
-                ? "User must satisfy ALL requirements in at least ONE group."
-                : "User must satisfy ALL requirements in ALL groups."}
+              {requirementsMode === "ANY_GROUP" ? "User must satisfy ALL requirements in at least ONE group." : "User must satisfy ALL requirements in ALL groups."}
             </p>
           </div>
 
           {requirementGroups.length === 0 ? (
-            <p className="text-sm text-gray-400 bg-[#0c0e14]/80 p-3 rounded-md">
-              No requirement groups added. Click &ldquo;Add Requirement Group&ldquo; to add requirements for this role.
-            </p>
+            <p className="rounded-md bg-[#0c0e14]/80 p-3 text-sm text-gray-400">No requirement groups added. Click &ldquo;Add Requirement Group&ldquo; to add requirements for this role.</p>
           ) : (
             <div className="space-y-6">
               {requirementGroups.map((group, groupIndex) => (
-                <div key={group.id} className="bg-[#0c0e14]/80 p-4 rounded-md border border-gray-800/40">
-                  <div className="flex justify-between items-center mb-3">
+                <div key={group.id} className="rounded-md border border-gray-800/40 bg-[#0c0e14]/80 p-4">
+                  <div className="mb-3 flex items-center justify-between">
                     <div className="flex-1">
                       <input
                         type="text"
                         value={group.name}
                         onChange={(e) => updateRequirementGroupName(group.id, e.target.value)}
-                        className="w-full bg-[#12141e]/40 border border-gray-700/50 rounded-md px-3 py-2 focus:border-gray-600 focus:outline-none text-sm text-white"
+                        className="w-full rounded-md border border-gray-700/50 bg-[#12141e]/40 px-3 py-2 text-sm text-white focus:border-gray-600 focus:outline-none"
                         placeholder="Group name"
                       />
                     </div>
 
-                    <div className="flex items-center gap-2 ml-2">
+                    <div className="ml-2 flex items-center gap-2">
                       <select
                         value={group.groupMode}
                         onChange={(e) => updateRequirementGroupMode(group.id, e.target.value as GroupMode)}
-                        className="bg-[#12141e]/40 border border-gray-700/50 rounded-md px-2 py-1 focus:border-gray-600 focus:outline-none text-sm text-white"
+                        className="rounded-md border border-gray-700/50 bg-[#12141e]/40 px-2 py-1 text-sm text-white focus:border-gray-600 focus:outline-none"
                       >
                         <option value="ALL">ALL - All requirements must be met</option>
                         <option value="ANY">ANY - Any requirement can be met</option>
                       </select>
 
                       {requirementGroups.length > 1 && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removeRequirementGroup(group.id)}
-                          className="h-8 w-8 hover:bg-gray-700/50 hover:text-white"
-                        >
+                        <Button variant="ghost" size="icon" onClick={() => removeRequirementGroup(group.id)} className="h-8 w-8 hover:bg-gray-700/50 hover:text-white">
                           <Trash className="h-4 w-4" />
                         </Button>
                       )}
@@ -355,20 +313,13 @@ export function RoleForm({ role, badges, onSave, onCancel }: RoleFormProps) {
 
                   <div className="space-y-3">
                     {group.requirements.length === 0 ? (
-                      <p className="text-sm text-gray-400 bg-[#12141e]/40 p-2 rounded-md">
-                        No requirements in this group. Add requirements below.
-                      </p>
+                      <p className="rounded-md bg-[#12141e]/40 p-2 text-sm text-gray-400">No requirements in this group. Add requirements below.</p>
                     ) : (
                       group.requirements.map((req, reqIndex) => (
-                        <div key={req.id} className="bg-[#12141e]/40 p-3 rounded-md border border-gray-700/40">
-                          <div className="flex justify-between items-center mb-2">
+                        <div key={req.id} className="rounded-md border border-gray-700/40 bg-[#12141e]/40 p-3">
+                          <div className="mb-2 flex items-center justify-between">
                             <h4 className="font-medium text-white">{req.type} Requirement</h4>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => removeRequirement(group.id, req.id)}
-                              className="h-6 w-6 hover:bg-gray-700/50 hover:text-white"
-                            >
+                            <Button variant="ghost" size="icon" onClick={() => removeRequirement(group.id, req.id)} className="h-6 w-6 hover:bg-gray-700/50 hover:text-white">
                               <Trash className="h-3 w-3" />
                             </Button>
                           </div>
@@ -376,22 +327,18 @@ export function RoleForm({ role, badges, onSave, onCancel }: RoleFormProps) {
                           {req.type === "Discord" && <p className="text-sm text-gray-400">User must join Discord</p>}
 
                           {req.type === "SocialVerification" && (
-                            <p className="text-sm text-gray-400">
-                              User must verify a social account (For now this only verifies discord so it&apos;s the same as discord it will need updated.)
-                            </p>
+                            <p className="text-sm text-gray-400">User must verify a social account (For now this only verifies discord so it&apos;s the same as discord it will need updated.)</p>
                           )}
 
-                          {req.type === "StellarAccount" && (
-                            <p className="text-sm text-gray-400">User must verify a funded Stellar address</p>
-                          )}
+                          {req.type === "StellarAccount" && <p className="text-sm text-gray-400">User must verify a funded Stellar address</p>}
 
                           {req.type === "ExistingRole" && (
                             <div>
-                              <label className="block text-xs font-medium text-gray-400 mb-1">Required Role</label>
+                              <label className="mb-1 block text-xs font-medium text-gray-400">Required Role</label>
                               <select
                                 value={req.existingRole}
                                 onChange={(e) => updateRequirement(group.id, req.id, { existingRole: e.target.value })}
-                                className="w-full bg-[#12141e]/40 border border-gray-700/50 rounded-md px-3 py-2 focus:border-gray-600 focus:outline-none text-sm h-8 text-white"
+                                className="h-8 w-full rounded-md border border-gray-700/50 bg-[#12141e]/40 px-3 py-2 text-sm text-white focus:border-gray-600 focus:outline-none"
                               >
                                 <option value="">Select a role</option>
                                 <option value="SCF Verified">SCF Verified</option>
@@ -405,52 +352,40 @@ export function RoleForm({ role, badges, onSave, onCancel }: RoleFormProps) {
                           {req.type === "BadgeCount" && (
                             <div className="space-y-2">
                               <div>
-                                <label className="block text-xs font-medium text-gray-400 mb-1">Badge Category</label>
+                                <label className="mb-1 block text-xs font-medium text-gray-400">Badge Category</label>
                                 <input
                                   type="text"
                                   value={req.badgeCategory}
-                                  onChange={(e) =>
-                                    updateRequirement(group.id, req.id, { badgeCategory: e.target.value })
-                                  }
-                                  className="w-full bg-[#12141e]/40 border border-gray-700/50 rounded-md px-3 py-2 focus:border-gray-600 focus:outline-none text-sm h-8 text-white"
+                                  onChange={(e) => updateRequirement(group.id, req.id, { badgeCategory: e.target.value })}
+                                  className="h-8 w-full rounded-md border border-gray-700/50 bg-[#12141e]/40 px-3 py-2 text-sm text-white focus:border-gray-600 focus:outline-none"
                                   placeholder="e.g., Stellar Quest, SDF"
                                 />
                               </div>
                               <div>
-                                <label className="block text-xs font-medium text-gray-400 mb-1">
-                                  Minimum Badge Count
-                                </label>
+                                <label className="mb-1 block text-xs font-medium text-gray-400">Minimum Badge Count</label>
                                 <input
                                   type="number"
                                   value={req.minCount}
-                                  onChange={(e) =>
-                                    updateRequirement(group.id, req.id, { minCount: Number(e.target.value) })
-                                  }
+                                  onChange={(e) => updateRequirement(group.id, req.id, { minCount: Number(e.target.value) })}
                                   min={1}
-                                  className="w-full bg-[#12141e]/40 border border-gray-700/50 rounded-md px-3 py-2 focus:border-gray-600 focus:outline-none text-sm h-8 text-white"
+                                  className="h-8 w-full rounded-md border border-gray-700/50 bg-[#12141e]/40 px-3 py-2 text-sm text-white focus:border-gray-600 focus:outline-none"
                                 />
                               </div>
                               <div>
-                                <label className="block text-xs font-medium text-gray-400 mb-1">Required Badges</label>
-                                <BadgeSelector
-                                  badges={badges}
-                                  selectedBadgeIds={req.badgeIds || []}
-                                  setSelectedBadgeIds={(ids) => updateRequirement(group.id, req.id, { badgeIds: ids })}
-                                />
+                                <label className="mb-1 block text-xs font-medium text-gray-400">Required Badges</label>
+                                <BadgeSelector badges={badges} selectedBadgeIds={req.badgeIds || []} setSelectedBadgeIds={(ids) => updateRequirement(group.id, req.id, { badgeIds: ids })} />
                               </div>
                             </div>
                           )}
 
                           {req.type === "ConcurrentRole" && (
                             <div>
-                              <label className="block text-xs font-medium text-gray-400 mb-1">Project Role Name</label>
+                              <label className="mb-1 block text-xs font-medium text-gray-400">Project Role Name</label>
                               <input
                                 type="text"
                                 value={req.concurrentRoleName}
-                                onChange={(e) =>
-                                  updateRequirement(group.id, req.id, { concurrentRoleName: e.target.value })
-                                }
-                                className="w-full bg-[#12141e]/40 border border-gray-700/50 rounded-md px-3 py-2 focus:border-gray-600 focus:outline-none text-sm h-8 text-white"
+                                onChange={(e) => updateRequirement(group.id, req.id, { concurrentRoleName: e.target.value })}
+                                className="h-8 w-full rounded-md border border-gray-700/50 bg-[#12141e]/40 px-3 py-2 text-sm text-white focus:border-gray-600 focus:outline-none"
                                 placeholder="e.g., SCF Project"
                               />
                             </div>
@@ -459,7 +394,7 @@ export function RoleForm({ role, badges, onSave, onCancel }: RoleFormProps) {
                           {req.type === "Nomination" && (
                             <div className="space-y-2">
                               <div>
-                                <label className="block text-xs font-medium text-gray-400 mb-1">Required Votes</label>
+                                <label className="mb-1 block text-xs font-medium text-gray-400">Required Votes</label>
                                 <input
                                   type="number"
                                   value={req.nominationRequiredCount}
@@ -469,27 +404,20 @@ export function RoleForm({ role, badges, onSave, onCancel }: RoleFormProps) {
                                     })
                                   }
                                   min={1}
-                                  className="w-full bg-[#12141e]/40 border border-gray-700/50 rounded-md px-3 py-2 focus:border-gray-600 focus:outline-none text-sm h-8 text-white"
+                                  className="h-8 w-full rounded-md border border-gray-700/50 bg-[#12141e]/40 px-3 py-2 text-sm text-white focus:border-gray-600 focus:outline-none"
                                 />
                               </div>
                               <div>
-                                <label className="block text-xs font-medium text-gray-400 mb-1">
-                                  Eligible Voter Roles
-                                </label>
-                                <div className="flex flex-wrap gap-2 mt-1">
+                                <label className="mb-1 block text-xs font-medium text-gray-400">Eligible Voter Roles</label>
+                                <div className="mt-1 flex flex-wrap gap-2">
                                   {["SCF Navigator", "SCF Pilot"].map((roleName) => (
-                                    <label
-                                      key={roleName}
-                                      className="flex items-center gap-1 bg-[#12141e]/40 px-2 py-1 rounded-md cursor-pointer"
-                                    >
+                                    <label key={roleName} className="flex cursor-pointer items-center gap-1 rounded-md bg-[#12141e]/40 px-2 py-1">
                                       <input
                                         type="checkbox"
                                         checked={(req.eligibleVoterRoles || []).includes(roleName)}
                                         onChange={(e) => {
                                           const current = req.eligibleVoterRoles || [];
-                                          const updated = e.target.checked
-                                            ? [...current, roleName]
-                                            : current.filter((r) => r !== roleName);
+                                          const updated = e.target.checked ? [...current, roleName] : current.filter((r) => r !== roleName);
                                           updateRequirement(group.id, req.id, { eligibleVoterRoles: updated });
                                         }}
                                         className="ui-checkbox"
@@ -504,17 +432,13 @@ export function RoleForm({ role, badges, onSave, onCancel }: RoleFormProps) {
 
                           {req.type === "CommunityVote" && (
                             <div>
-                              <label className="block text-xs font-medium text-gray-400 mb-1">
-                                Required Participation Rounds
-                              </label>
+                              <label className="mb-1 block text-xs font-medium text-gray-400">Required Participation Rounds</label>
                               <input
                                 type="number"
                                 value={req.participationRounds}
-                                onChange={(e) =>
-                                  updateRequirement(group.id, req.id, { participationRounds: Number(e.target.value) })
-                                }
+                                onChange={(e) => updateRequirement(group.id, req.id, { participationRounds: Number(e.target.value) })}
                                 min={1}
-                                className="w-full bg-[#12141e]/40 border border-gray-700/50 rounded-md px-3 py-2 focus:border-gray-600 focus:outline-none text-sm h-8 text-white"
+                                className="h-8 w-full rounded-md border border-gray-700/50 bg-[#12141e]/40 px-3 py-2 text-sm text-white focus:border-gray-600 focus:outline-none"
                               />
                             </div>
                           )}
@@ -524,64 +448,40 @@ export function RoleForm({ role, badges, onSave, onCancel }: RoleFormProps) {
                   </div>
 
                   {/* Add Requirement Button - Simple dropdown implementation */}
-                  <div className="mt-3 relative">
+                  <div className="relative mt-3">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => toggleRequirementDropdown(group.id)}
-                      className="border-gray-700/50 bg-[#0c0e14]/80 hover:bg-[#1e2235]/80 hover:text-white flex items-center gap-1"
+                      className="flex items-center gap-1 border-gray-700/50 bg-[#0c0e14]/80 hover:bg-[#1e2235]/80 hover:text-white"
                     >
                       <Plus className="h-3 w-3" /> Add Requirement
                     </Button>
 
                     {activeRequirementDropdown === group.id && (
-                      <div className="absolute left-0 mt-1 bg-[#1a1d29] border border-gray-800/60 rounded-md shadow-lg z-10">
-                        <div
-                          className="px-3 py-2 hover:bg-[#1e2235]/80 cursor-pointer text-white"
-                          onClick={() => addRequirement(group.id, "Discord")}
-                        >
+                      <div className="absolute left-0 z-10 mt-1 rounded-md border border-gray-800/60 bg-[#1a1d29] shadow-lg">
+                        <div className="cursor-pointer px-3 py-2 text-white hover:bg-[#1e2235]/80" onClick={() => addRequirement(group.id, "Discord")}>
                           Discord
                         </div>
-                        <div
-                          className="px-3 py-2 hover:bg-[#1e2235]/80 cursor-pointer text-white"
-                          onClick={() => addRequirement(group.id, "SocialVerification")}
-                        >
+                        <div className="cursor-pointer px-3 py-2 text-white hover:bg-[#1e2235]/80" onClick={() => addRequirement(group.id, "SocialVerification")}>
                           Social Verification
                         </div>
-                        <div
-                          className="px-3 py-2 hover:bg-[#1e2235]/80 cursor-pointer text-white"
-                          onClick={() => addRequirement(group.id, "StellarAccount")}
-                        >
+                        <div className="cursor-pointer px-3 py-2 text-white hover:bg-[#1e2235]/80" onClick={() => addRequirement(group.id, "StellarAccount")}>
                           Stellar Account
                         </div>
-                        <div
-                          className="px-3 py-2 hover:bg-[#1e2235]/80 cursor-pointer text-white"
-                          onClick={() => addRequirement(group.id, "BadgeCount")}
-                        >
+                        <div className="cursor-pointer px-3 py-2 text-white hover:bg-[#1e2235]/80" onClick={() => addRequirement(group.id, "BadgeCount")}>
                           Badge Count
                         </div>
-                        <div
-                          className="px-3 py-2 hover:bg-[#1e2235]/80 cursor-pointer text-white"
-                          onClick={() => addRequirement(group.id, "ConcurrentRole")}
-                        >
+                        <div className="cursor-pointer px-3 py-2 text-white hover:bg-[#1e2235]/80" onClick={() => addRequirement(group.id, "ConcurrentRole")}>
                           Project Role
                         </div>
-                        <div
-                          className="px-3 py-2 hover:bg-[#1e2235]/80 cursor-pointer text-white"
-                          onClick={() => addRequirement(group.id, "ExistingRole")}
-                        >
+                        <div className="cursor-pointer px-3 py-2 text-white hover:bg-[#1e2235]/80" onClick={() => addRequirement(group.id, "ExistingRole")}>
                           Existing Role
                         </div>
-                        <div
-                          className="px-3 py-2 hover:bg-[#1e2235]/80 cursor-pointer text-white"
-                          onClick={() => addRequirement(group.id, "Nomination")}
-                        >
+                        <div className="cursor-pointer px-3 py-2 text-white hover:bg-[#1e2235]/80" onClick={() => addRequirement(group.id, "Nomination")}>
                           Nomination
                         </div>
-                        <div
-                          className="px-3 py-2 hover:bg-[#1e2235]/80 cursor-pointer text-white"
-                          onClick={() => addRequirement(group.id, "CommunityVote")}
-                        >
+                        <div className="cursor-pointer px-3 py-2 text-white hover:bg-[#1e2235]/80" onClick={() => addRequirement(group.id, "CommunityVote")}>
                           Community Vote
                         </div>
                       </div>
@@ -594,7 +494,7 @@ export function RoleForm({ role, badges, onSave, onCancel }: RoleFormProps) {
         </div>
 
         <div>
-          <label className="flex items-center gap-2 cursor-pointer">
+          <label className="flex cursor-pointer items-center gap-2">
             <input
               type="checkbox"
               checked={nominationEnabled}
@@ -604,43 +504,34 @@ export function RoleForm({ role, badges, onSave, onCancel }: RoleFormProps) {
             />
             <span className="text-gray-300">Enable Nomination Process</span>
           </label>
-          <p className="text-xs text-gray-400 mt-1 ml-6">
-            {tier === "SCF Navigator" || tier === "SCF Pilot"
-              ? "Nomination is required for Navigator and Pilot roles"
-              : "Users can nominate others for this role"}
+          <p className="mt-1 ml-6 text-xs text-gray-400">
+            {tier === "SCF Navigator" || tier === "SCF Pilot" ? "Nomination is required for Navigator and Pilot roles" : "Users can nominate others for this role"}
           </p>
         </div>
 
         {nominationEnabled && (
-          <div className="space-y-3 bg-[#0c0e14]/80 p-3 rounded-md border border-gray-800/40">
+          <div className="space-y-3 rounded-md border border-gray-800/40 bg-[#0c0e14]/80 p-3">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Votes Required</label>
+              <label className="mb-1 block text-sm font-medium text-gray-300">Votes Required</label>
               <input
                 type="number"
                 value={votesRequired}
                 onChange={(e) => setVotesRequired(Number(e.target.value))}
                 min={1}
-                className="w-full bg-[#12141e]/40 border border-gray-700/50 rounded-md px-3 py-2 focus:border-gray-600 focus:outline-none text-white"
+                className="w-full rounded-md border border-gray-700/50 bg-[#12141e]/40 px-3 py-2 text-white focus:border-gray-600 focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Eligible Nominators</label>
-              <div className="flex flex-wrap gap-2 mt-1">
+              <label className="mb-1 block text-sm font-medium text-gray-300">Eligible Nominators</label>
+              <div className="mt-1 flex flex-wrap gap-2">
                 {["SCF Verified", "SCF Pathfinder", "SCF Navigator", "SCF Pilot"].map((roleName) => (
-                  <label
-                    key={roleName}
-                    className="flex items-center gap-1 bg-[#12141e]/40 px-2 py-1 rounded-md cursor-pointer"
-                  >
+                  <label key={roleName} className="flex cursor-pointer items-center gap-1 rounded-md bg-[#12141e]/40 px-2 py-1">
                     <input
                       type="checkbox"
                       checked={eligibleNominators.includes(roleName)}
                       onChange={(e) => {
-                        setEligibleNominators(
-                          e.target.checked
-                            ? [...eligibleNominators, roleName]
-                            : eligibleNominators.filter((r) => r !== roleName),
-                        );
+                        setEligibleNominators(e.target.checked ? [...eligibleNominators, roleName] : eligibleNominators.filter((r) => r !== roleName));
                       }}
                       className="ui-checkbox"
                     />
@@ -653,21 +544,13 @@ export function RoleForm({ role, badges, onSave, onCancel }: RoleFormProps) {
         )}
 
         <div className="flex justify-end gap-2 pt-4">
-          <Button
-            variant="outline"
-            onClick={onCancel}
-            className="border-gray-700/50 bg-[#0c0e14]/80 hover:bg-[#1e2235]/80 hover:text-white"
-          >
+          <Button variant="outline" onClick={onCancel} className="border-gray-700/50 bg-[#0c0e14]/80 hover:bg-[#1e2235]/80 hover:text-white">
             Cancel
           </Button>
           <Button
             onClick={handleSave}
             disabled={!roleName || requirementGroups.every((group) => group.requirements.length === 0)}
-            className={`${
-              !roleName || requirementGroups.every((group) => group.requirements.length === 0)
-                ? "opacity-50 cursor-not-allowed"
-                : ""
-            }`}
+            className={`${!roleName || requirementGroups.every((group) => group.requirements.length === 0) ? "cursor-not-allowed opacity-50" : ""}`}
           >
             {role ? "Update Role" : "Create Role"}
           </Button>
@@ -676,4 +559,3 @@ export function RoleForm({ role, badges, onSave, onCancel }: RoleFormProps) {
     </div>
   );
 }
-

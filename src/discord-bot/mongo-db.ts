@@ -1,5 +1,5 @@
 import { MongoClient, Db } from "mongodb";
-import { Client, Collection, Guild, Role  } from "discord.js";
+import { Client, Collection, Guild, Role } from "discord.js";
 import { logger } from "./logger";
 import { GuildDoc, RoleDoc, BaseRole, UserDoc, BaseUserRole, BaseVote, VoteDoc, VotingThreadDoc, BaseVotingThread, UserRoleDoc, InterestedMemberDoc, MemberInfo, MemberRoleInfo } from "./types";
 import { type BaseUser } from "./client";
@@ -28,7 +28,6 @@ $mul = multiply a field by a specified value.
 $rename = rename a field in a document.
 */
 
-
 const API_KEY = process.env.SXX_API_KEY;
 const BASE_URL = "https://api.stellar.expert";
 let mongoClient: MongoClient | null = null;
@@ -45,8 +44,6 @@ export async function getMongoDatabase(): Promise<Db> {
   return mongoDb;
 }
 
-
-
 export async function getDb(): Promise<Db> {
   return getMongoDatabase();
 }
@@ -55,7 +52,7 @@ export async function upsertGuild(guildId: string, guildName: string, date_added
   const db = await getMongoDatabase();
   const coll = db.collection<GuildDoc>("guilds");
   const now = new Date();
-  
+
   let createdAt = now;
   if (date_added) {
     if (typeof date_added === "string") {
@@ -75,7 +72,7 @@ export async function upsertGuild(guildId: string, guildName: string, date_added
         $setOnInsert: { createdAt },
         $set: { guildName, updatedAt: now },
       },
-      { upsert: true }
+      { upsert: true },
     );
   } catch (err) {
     console.error("[upsertGuild] Error:", err);
@@ -83,12 +80,7 @@ export async function upsertGuild(guildId: string, guildName: string, date_added
   }
 }
 
-export async function bulkUpsertGuildRoles(
-  guild: Guild,
-  fetchedRoles: Collection<string, Role>,
-  client: Client
-): Promise<void> {
- 
+export async function bulkUpsertGuildRoles(guild: Guild, fetchedRoles: Collection<string, Role>, client: Client): Promise<void> {
   const now = new Date();
 
   // Build an array of bulk "updateOne" operations
@@ -113,17 +105,15 @@ export async function bulkUpsertGuildRoles(
 
   try {
     const db: Db = await getMongoDatabase();
-  const rollsColl = db.collection<RoleDoc>("guild_roles");
+    const rollsColl = db.collection<RoleDoc>("guild_roles");
 
     const result = await rollsColl.bulkWrite(ops, { ordered: false });
     logger(`[bulkUpsertGuildRoles] Upsert result: upserted=${result.upsertedCount}, modified=${result.modifiedCount}`, client);
-    
   } catch (err) {
     logger(`[bulkUpsertGuildRoles] Error: ${err}`, client);
     throw err;
   }
 }
-
 
 export async function upsertGuildRole(role: BaseRole): Promise<void> {
   const db = await getMongoDatabase();
@@ -136,7 +126,7 @@ export async function upsertGuildRole(role: BaseRole): Promise<void> {
         $setOnInsert: { createdAt: now, guildId: role.guildId },
         $set: { roleName: role.roleName, updatedAt: now },
       },
-      { upsert: true }
+      { upsert: true },
     );
   } catch (err) {
     console.error("[upsertGuildRole] Error:", err);
@@ -151,18 +141,18 @@ export async function syncMembersFromDiscord(guild: Guild, client: Client): Prom
   try {
     if (globalThis.last_member_sync === undefined) {
       globalThis.last_member_sync = new Map<string, Date>();
-    };
+    }
     const now = new Date();
     const guildId = guild.id;
     const lastSync = globalThis.last_member_sync.get(guildId);
     console.log(`[sync members] the last sync was ${lastSync}`);
     // Check if we've synced recently (within the last hour)
-    if (lastSync && (now.getTime() - lastSync.getTime() < SYNC_COOLDOWN_MS)) {
+    if (lastSync && now.getTime() - lastSync.getTime() < SYNC_COOLDOWN_MS) {
       logger(`[syncMembersFromDiscord] Skipping bulk upsert - last sync was ${Math.floor((now.getTime() - lastSync.getTime()) / 60000)} minutes ago`, client);
       // Just return data from database without re-syncing
       return await getAllMembersAgg(guildId);
     }
-    if (donotsync === true){
+    if (donotsync === true) {
       console.log("do not sync is true returning data");
       return await getAllMembersAgg(guildId);
     }
@@ -175,7 +165,7 @@ export async function syncMembersFromDiscord(guild: Guild, client: Client): Prom
     const db = await getMongoDatabase();
     const usersColl = db.collection<BaseUser>("users");
     const allOps = [];
-    
+
     // 3) Build operations array
     for (const member of members.values()) {
       allOps.push({
@@ -189,14 +179,14 @@ export async function syncMembersFromDiscord(guild: Guild, client: Client): Prom
               discriminator: member.user.discriminator,
               updatedAt: now,
               discordProfile: member.toJSON() as typeof member,
-              user: member.user.toJSON() as typeof member.user
+              user: member.user.toJSON() as typeof member.user,
             },
             $addToSet: {
-              guildIds: guild.id
+              guildIds: guild.id,
             },
           },
-          upsert: true
-        }
+          upsert: true,
+        },
       });
     }
 
@@ -210,29 +200,31 @@ export async function syncMembersFromDiscord(guild: Guild, client: Client): Prom
     let totalMatched = 0;
     let totalModified = 0;
     let totalUpserted = 0;
-    
+
     for (let i = 0; i < allOps.length; i += batchSize) {
       const batch = allOps.slice(i, i + batchSize);
       logger(`[bulkUpsertMembers] Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(allOps.length / batchSize)}, size: ${batch.length}`, client);
-      
+
       const result = await usersColl.bulkWrite(batch, { ordered: false });
-      
+
       totalMatched += result.matchedCount;
       totalModified += result.modifiedCount;
       totalUpserted += result.upsertedCount;
     }
-    
-    logger(`[bulkUpsertMembers] All batches completed. 
+
+    logger(
+      `[bulkUpsertMembers] All batches completed. 
       matchedCount=${totalMatched}, 
       modifiedCount=${totalModified}, 
-      upsertedCount=${totalUpserted}`, client);
-    
+      upsertedCount=${totalUpserted}`,
+      client,
+    );
+
     // Update the last sync time
     globalThis.last_member_sync.set(guildId, now);
-  
+
     const memberInfoArray = await getAllMembersAgg(guild.id);
     return memberInfoArray;
-    
   } catch (err) {
     logger(`[bulkUpsertMembers] Error: ${String(err)}`, client);
     console.error(err);
@@ -240,17 +232,15 @@ export async function syncMembersFromDiscord(guild: Guild, client: Client): Prom
   }
 }
 
-export async function upsertMember(
-  memberId: string,
-  username: string,
-  discriminator: string,
-  guildIds: string
-): Promise<void> {
+export async function upsertMember(memberId: string, username: string, discriminator: string, guildIds: string): Promise<void> {
   const db = await getMongoDatabase();
   const coll = db.collection<UserDoc>("users");
   const now = new Date();
   try {
-    const guildArray = guildIds.split(",").map((g) => g.trim()).filter(Boolean);
+    const guildArray = guildIds
+      .split(",")
+      .map((g) => g.trim())
+      .filter(Boolean);
     await coll.updateOne(
       { _id: memberId },
       {
@@ -258,7 +248,7 @@ export async function upsertMember(
         $set: { username, discriminator, updatedAt: now },
         $addToSet: { guildIds: { $each: guildArray } },
       },
-      { upsert: true }
+      { upsert: true },
     );
   } catch (err) {
     console.error("[upsertMember] Error:", err);
@@ -266,15 +256,13 @@ export async function upsertMember(
   }
 }
 
-export async function upsertUserRole(
-  userRoleData: Partial<BaseUserRole> & { userId: string; roleId: string; guildId: string }
-): Promise<void> {
+export async function upsertUserRole(userRoleData: Partial<BaseUserRole> & { userId: string; roleId: string; guildId: string }): Promise<void> {
   const db = await getMongoDatabase();
   const coll = db.collection<BaseUserRole>("user_roles");
   const now = new Date();
   const { userId, roleId, guildId } = userRoleData;
   const docId = `${userId}_${roleId}_${guildId}`;
-  
+
   try {
     const existing = await coll.findOne({ _id: docId });
     if (!existing) {
@@ -286,7 +274,7 @@ export async function upsertUserRole(
         roleAssignedAt: userRoleData.roleAssignedAt || now,
         createdAt: now,
         updatedAt: now,
-        removedAt: userRoleData.removedAt
+        removedAt: userRoleData.removedAt,
       });
     } else {
       await coll.updateOne(
@@ -295,9 +283,9 @@ export async function upsertUserRole(
           $set: {
             updatedAt: now,
             ...(userRoleData.roleAssignedAt && { roleAssignedAt: userRoleData.roleAssignedAt }),
-            ...(userRoleData.removedAt !== undefined && { removedAt: userRoleData.removedAt })
-          }
-        }
+            ...(userRoleData.removedAt !== undefined && { removedAt: userRoleData.removedAt }),
+          },
+        },
       );
     }
   } catch (err) {
@@ -310,9 +298,7 @@ export async function getGuildMemberUsernames(guildId: string): Promise<string[]
   const db = await getMongoDatabase();
   const coll = db.collection<UserDoc>("users");
   try {
-    const rows = await coll
-      .find({ guildIds: guildId }, { projection: { username: 1, discriminator: 1 } })
-      .toArray();
+    const rows = await coll.find({ guildIds: guildId }, { projection: { username: 1, discriminator: 1 } }).toArray();
     return rows.map((r: UserDoc) => r.username);
   } catch (err) {
     console.error("[getGuildMemberUsernames] Error:", err);
@@ -331,8 +317,7 @@ export async function insertVote(threadId: string, voterId: string): Promise<voi
       voteTimestamp: now,
       createdAt: now,
     });
-
-    } catch (err) {
+  } catch (err) {
     console.error("[insertVote] Error:", err);
     throw err;
   }
@@ -342,9 +327,7 @@ export async function getThreadVotes(threadId: string): Promise<string[]> {
   const db = await getMongoDatabase();
   const coll = db.collection<VoteDoc>("nomination_votes");
   try {
-    const votes = await coll
-      .find({ threadId }, { projection: { voterId: 1 } })
-      .toArray();
+    const votes = await coll.find({ threadId }, { projection: { voterId: 1 } }).toArray();
     return votes.map((r: VoteDoc) => r.voterId);
   } catch (err) {
     console.error("[getThreadVotes] Error:", err);
@@ -352,12 +335,7 @@ export async function getThreadVotes(threadId: string): Promise<string[]> {
   }
 }
 
-export async function insertNewVotingThread(
-  threadId: string,
-  nominatorId: string,
-  nomineeId: string,
-  roleName: string
-): Promise<void> {
+export async function insertNewVotingThread(threadId: string, nominatorId: string, nomineeId: string, roleName: string): Promise<void> {
   const db = await getMongoDatabase();
   const threads = db.collection<VotingThreadDoc>("nomination_threads");
   const roles = db.collection<BaseRole>("guild_roles");
@@ -379,9 +357,8 @@ export async function insertNewVotingThread(
           updatedAt: now,
         },
       },
-      { upsert: true }
+      { upsert: true },
     );
-
   } catch (err) {
     console.error("[insertNewVotingThread] Error:", err);
     throw err;
@@ -405,7 +382,6 @@ export async function markVotingThreadClosed(threadId: string): Promise<void> {
   const coll = db.collection<VotingThreadDoc>("nomination_threads");
   try {
     await coll.updateOne({ _id: threadId }, { $set: { status: "CLOSED", updatedAt: new Date() } });
-   
   } catch (err) {
     console.error("[markVotingThreadClosed] Error:", err);
     throw err;
@@ -435,14 +411,16 @@ export async function getThreadVoteCount(threadId: string): Promise<number | nul
   }
 }
 
-export async function getOpenVotingThreads(): Promise<{
-  thread_id: string;
-  role_name: string;
-  nominee_id: string;
-  nominator_id: string;
-  vote_count: number;
-  created_at: string;
-}[]> {
+export async function getOpenVotingThreads(): Promise<
+  {
+    thread_id: string;
+    role_name: string;
+    nominee_id: string;
+    nominator_id: string;
+    vote_count: number;
+    created_at: string;
+  }[]
+> {
   const db = await getMongoDatabase();
   const coll = db.collection<BaseVotingThread>("nomination_threads");
   try {
@@ -476,7 +454,7 @@ export async function getExactGuildMemberUsernames(guildId: string): Promise<str
   }
 }
 
-export async function getRoleCounts(guild: Guild ): Promise<RoleStats> {
+export async function getRoleCounts(guild: Guild): Promise<RoleStats> {
   const db = await getMongoDatabase();
   const rolesColl = db.collection<RoleDoc>("guild_roles");
   const userRolesColl = db.collection<BaseUserRole>("user_roles");
@@ -506,7 +484,7 @@ export async function getRoleCounts(guild: Guild ): Promise<RoleStats> {
       navigator: results["SCF Navigator"],
       pilot: results["SCF Pilot"],
       categoryDelegate: results["SCF Category Delegate"],
-      project: results["SCF Project"]
+      project: results["SCF Project"],
     };
   } catch (err) {
     console.error("[getRoleCounts] Error:", err);
@@ -519,29 +497,28 @@ export async function getRoleCounts(guild: Guild ): Promise<RoleStats> {
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour in milliseconds
 
 export async function getAllMembersAgg1(guildId: string): Promise<MemberInfo[]> {
-  
   // Check if we have cached data that's still valid
-  if(globalThis.membersCacheByGuild === undefined) {
-    globalThis.membersCacheByGuild = new Map<string, { data: MemberInfo[], timestamp: number }>();
+  if (globalThis.membersCacheByGuild === undefined) {
+    globalThis.membersCacheByGuild = new Map<string, { data: MemberInfo[]; timestamp: number }>();
     console.log("[getAllMembersAgg] Initialized global cache for guild members.");
   }
   const cached = globalThis.membersCacheByGuild.get(guildId);
   const now = Date.now();
-  
+
   if (cached && now - cached.timestamp < CACHE_TTL) {
     console.log(`[getAllMembersAgg] Using cached members for guild ${guildId}, age: ${Math.floor((now - cached.timestamp) / 1000)} seconds`);
     return cached.data;
   }
-  
+
   console.log(`[getAllMembersAgg] Cache miss or expired for guild ${guildId}, running aggregation pipeline`);
-  
+
   const pipeline = [
     {
       $match: {
         guildIds: { $in: [guildId] },
         user: { $exists: true, $ne: null },
-        discordProfile: { $exists: true, $ne: null }
-      }
+        discordProfile: { $exists: true, $ne: null },
+      },
     },
     {
       $lookup: {
@@ -551,30 +528,27 @@ export async function getAllMembersAgg1(guildId: string): Promise<MemberInfo[]> 
           {
             $match: {
               $expr: {
-                $and: [
-                  { $eq: ["$userId", "$$uid"] },
-                  { $eq: ["$guildId", guildId] }
-                ]
-              }
-            }
-          }
+                $and: [{ $eq: ["$userId", "$$uid"] }, { $eq: ["$guildId", guildId] }],
+              },
+            },
+          },
         ],
-        as: "userRoles"
-      }
+        as: "userRoles",
+      },
     },
     {
-      $unwind: { path: "$userRoles", preserveNullAndEmptyArrays: true }
+      $unwind: { path: "$userRoles", preserveNullAndEmptyArrays: true },
     },
     {
       $lookup: {
         from: "guild_Roles",
         localField: "userRoles.roleId",
         foreignField: "_id",
-        as: "roleDoc"
-      }
+        as: "roleDoc",
+      },
     },
     {
-      $unwind: { path: "$roleDoc", preserveNullAndEmptyArrays: true }
+      $unwind: { path: "$roleDoc", preserveNullAndEmptyArrays: true },
     },
     {
       $group: {
@@ -589,35 +563,27 @@ export async function getAllMembersAgg1(guildId: string): Promise<MemberInfo[]> 
                 name: "$roleDoc.roleName",
                 // If roleName starts with "SCF ", remove the first four characters; otherwise use roleName as is.
                 shortname: {
-                  $cond: [
-                    { $eq: [ { $substrCP: ["$roleDoc.roleName", 0, 4] }, "SCF " ] },
-                    { $substrCP: ["$roleDoc.roleName", 4, { $strLenCP: "$roleDoc.roleName" } ] },
-                    "$roleDoc.roleName"
-                  ]
+                  $cond: [{ $eq: [{ $substrCP: ["$roleDoc.roleName", 0, 4] }, "SCF "] }, { $substrCP: ["$roleDoc.roleName", 4, { $strLenCP: "$roleDoc.roleName" }] }, "$roleDoc.roleName"],
                 },
-                obtained: "$userRoles.roleAssignedAt"
+                obtained: "$userRoles.roleAssignedAt",
               },
-              "$$REMOVE"
-            ]
-          }
-        }
-      }
+              "$$REMOVE",
+            ],
+          },
+        },
+      },
     },
     {
       $addFields: {
         username: {
-          $cond: [
-            { $eq: [ { $toInt: "$user.discriminator" }, 0 ] },
-            "$user.username",
-            { $concat: [ "$user.username", "#", "$user.discriminator" ] }
-          ]
+          $cond: [{ $eq: [{ $toInt: "$user.discriminator" }, 0] }, "$user.username", { $concat: ["$user.username", "#", "$user.discriminator"] }],
         },
         memberSince: { $min: "$mappedRoles.obtained" },
         joinedDiscord: { $toDate: "$user.createdTimestamp" },
-        joinedStellarDevelopers: { $ifNull: [ "$discordProfile.joinedAt", "$user.createdTimestamp" ] },
+        joinedStellarDevelopers: { $ifNull: ["$discordProfile.joinedAt", "$user.createdTimestamp"] },
         avatar: "$discordProfile.displayAvatarURL",
-        profileDescription: ""
-      }
+        profileDescription: "",
+      },
     },
     {
       $project: {
@@ -628,11 +594,11 @@ export async function getAllMembersAgg1(guildId: string): Promise<MemberInfo[]> 
         roles: "$mappedRoles",
         profileDescription: 1,
         joinedStellarDevelopers: 1,
-        avatar: 1
-      }
-    }
+        avatar: 1,
+      },
+    },
   ];
-  
+
   const db = await getMongoDatabase();
   const collections = await db.listCollections({ name: "materialized_members" }).toArray();
   if (collections.length === 0) {
@@ -646,12 +612,12 @@ export async function getAllMembersAgg1(guildId: string): Promise<MemberInfo[]> 
   await db.collection("user_roles").createIndex({ userId: 1, guildId: 1 });
   await db.collection("user_roles").createIndex({ userId: 1, guildId: 1, roleId: 1 });
   const members: MemberInfo[] = await usersColl.aggregate<MemberInfo>(pipeline).toArray();
-  
+
   // Update cache
   globalThis.membersCacheByGuild.set(guildId, { data: members, timestamp: now });
-  
+
   return members;
-};
+}
 
 export async function getAllMembers(guildId: string): Promise<MemberInfo[]> {
   const db = await getMongoDatabase();
@@ -659,10 +625,12 @@ export async function getAllMembers(guildId: string): Promise<MemberInfo[]> {
   const userRolesColl = db.collection<UserRoleDoc>("user_roles");
   const rolesColl = db.collection<RoleDoc>("guild_roles");
   try {
-    const users = await usersColl.find({ 
-      guildIds: guildId, 
-      user: { $exists: true, $ne: null } 
-    }).toArray();
+    const users = await usersColl
+      .find({
+        guildIds: guildId,
+        user: { $exists: true, $ne: null },
+      })
+      .toArray();
     const members: MemberInfo[] = [];
 
     for (const user of users) {
@@ -675,10 +643,8 @@ export async function getAllMembers(guildId: string): Promise<MemberInfo[]> {
       for (const userRole of userRoleDocs) {
         const roleDoc = await rolesColl.findOne({ _id: userRole.roleId });
         if (!roleDoc) continue;
-        
-        const shortName = roleDoc.roleName.startsWith("SCF ") ? 
-          roleDoc.roleName.substring(4) : 
-          roleDoc.roleName;
+
+        const shortName = roleDoc.roleName.startsWith("SCF ") ? roleDoc.roleName.substring(4) : roleDoc.roleName;
         mappedRoles.push({
           name: roleDoc.roleName,
           shortname: shortName,
@@ -686,21 +652,20 @@ export async function getAllMembers(guildId: string): Promise<MemberInfo[]> {
         });
       }
 
-       
       const username = Number(user.user.discriminator) === 0 ? user.user.username : `${user.user.username}#${user.user.discriminator}`;
 
-      const verifiedSince = mappedRoles.map(r => r.obtained).sort()[0] || null;
+      const verifiedSince = mappedRoles.map((r) => r.obtained).sort()[0] || null;
       members.push({
         _id: user._id,
         discordId: user._id,
         username: username,
         memberSince: verifiedSince,
-        joinedDiscord:  new Date(user.user.createdTimestamp),
+        joinedDiscord: new Date(user.user.createdTimestamp),
         roles: mappedRoles,
         profileDescription: "",
         joinedStellarDevelopers: user.discordProfile.joinedAt ?? user.user.createdTimestamp,
         avatar: user.discordProfile.displayAvatarURL,
-        guildId: user.guildIds[0]
+        guildId: user.guildIds[0],
       });
     }
     return members;
@@ -710,13 +675,7 @@ export async function getAllMembers(guildId: string): Promise<MemberInfo[]> {
   }
 }
 
-
-export async function upsertInterestedMember(
-  memberId: string,
-  guildId: string,
-  interestedRole: string,
-  reason: string
-): Promise<void> {
+export async function upsertInterestedMember(memberId: string, guildId: string, interestedRole: string, reason: string): Promise<void> {
   const db = await getMongoDatabase();
   const coll = db.collection<InterestedMemberDoc>("interested_members");
   const now = new Date();
@@ -734,9 +693,8 @@ export async function upsertInterestedMember(
         },
         $set: { reason, updatedAt: now },
       },
-      { upsert: true }
+      { upsert: true },
     );
-
   } catch (err) {
     console.error("[upsertInterestedMember] Error:", err);
     throw err;
@@ -969,4 +927,3 @@ export async function ingestAssetHolders(db: Db, assets?: Asset[]): Promise<Badg
   return allHolders;
 }
 */
-

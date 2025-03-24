@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 import withBundleAnalyzer from "@next/bundle-analyzer";
-import  { type NextConfig } from "next";
+import { type NextConfig } from "next";
 // Load environment variables
 dotenv.config();
 
@@ -34,35 +34,33 @@ const nextConfig: NextConfig = {
   productionBrowserSourceMaps: false,
   staticPageGenerationTimeout: 6000,
   experimental: {
-    ppr: "incremental", 
+    ppr: "incremental",
     optimizePackageImports: [],
     staticGenerationMaxConcurrency: 1,
     staticGenerationMinPagesPerWorker: 1,
     staticGenerationRetryCount: 20,
     parallelServerCompiles: false,
   },
-
-webpack(config, options/* { isServer }*/ ) {
-  config.stats = "verbose";
-  //config.infrastructureLogging = {
+  webpack(config, options /* { isServer }*/) {
+    config.stats = "verbose";
+    //config.infrastructureLogging = {
     //level: 'verbose',
-  // };
-  config.ignoreWarnings = [
-    {
-      module: /@discordjs\/ws/,
-      message: /the request of a dependency is an expression/,
-    },
-  ];
-  config.module.rules.push({
-    test: /\.node/,
-    use: "node-loader"
-  });
-  if (!options.dev){
-    config.devtool = options.isServer ? false : "source-map";
-       
-  }
-  
-     /*
+    // };
+    config.ignoreWarnings = [
+      {
+        module: /@discordjs\/ws/,
+        message: /the request of a dependency is an expression/,
+      },
+    ];
+    config.module.rules.push({
+      test: /\.node/,
+      use: "node-loader",
+    });
+    if (!options.dev) {
+      config.devtool = options.isServer ? false : "source-map";
+    }
+
+    /*
   if (isServer) {
     interface DevtoolModuleFilenameTemplateInfo {
       absoluteResourcePath: string;
@@ -86,9 +84,8 @@ webpack(config, options/* { isServer }*/ ) {
     config.output.devtoolFallbackModuleFilenameTemplate = "[resource-path]?[hash]";
   }
 */
-  return config;
-},
-
+    return config;
+  },
 };
 
 // Export the Next.js configuration

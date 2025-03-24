@@ -1,7 +1,6 @@
 // constants.ts
 //import { rpc as StellarRpc } from "@stellar/stellar-sdk";
 
-
 //export const rpcServer = new StellarRpc.Server(RPC_URL, { allowHttp: true });
 
 /** Map<threadId, Map<voterId,true>> for local caching */
@@ -14,9 +13,7 @@ export const RUN_DATABASE_MIGRATION = process.env.RUN_DATABASE_MIGRATION === "tr
 export const BOT_IS_LOGGED_IN: { value: boolean } = { value: false };
 console.log(`constants was imported and BOT_READONLY_MODE is ${BOT_READONLY_MODE}`);
 if (!DISCORD_BOT_TOKEN) {
-  console.error(
-    "No bot token found in environment variables. Please set DISCORD_BOT_TOKEN."
-  );
+  console.error("No bot token found in environment variables. Please set DISCORD_BOT_TOKEN.");
   process.exit(1);
 }
 

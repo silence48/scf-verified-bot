@@ -9,8 +9,8 @@ globalThis.badgeWatcherRunning = false;
 interface TransactionBadge extends Omit<Transaction, "_id" | "badge_ids">, Omit<BadgeAsset, "_id"> {
   _id: string | ObjectId; // badge objectid as a string.
   badge_ids: ObjectId[] | string[]; // badge_ids as string[] instead of ObjectId[]
-};
-type precomputedUserBadge =  Omit<SCFUser, "_id"> & Omit<Transaction, "_id"> 
+}
+type precomputedUserBadge = Omit<SCFUser, "_id"> & Omit<Transaction, "_id">;
 export interface PrecomputedBadge extends precomputedUserBadge, Document {
   _id: string; // account id
   badges: TransactionBadge[];
@@ -24,67 +24,66 @@ async function setupIndexes(db: Db) {
     db.collection<SCFUser>("SCF_Users").createIndex({ publicKey: 1 }),
     db.collection<SCFUser>("SCF_Users").createIndex({ publicKeys: 1 }),
   ];
-    indexPromises.push(db.collection<PrecomputedBadge>("precomputedBadges").createIndex({ _id: 1 }));
-  
+  indexPromises.push(db.collection<PrecomputedBadge>("precomputedBadges").createIndex({ _id: 1 }));
 
   await Promise.all(indexPromises);
 }
 
 async function refreshMaterializedView(db: Db) {
-  await db.collection<Transaction>("transactions").aggregate([
-    {
-      $lookup: {
-        from: "badges",
-        localField: "badge_ids",
-        foreignField: "_id",
-        as: "badge"
-      }
-    },
-    { $unwind: { path: "$badge", preserveNullAndEmptyArrays: true } },
-    { $replaceRoot: { newRoot: { $mergeObjects: ["$$ROOT", "$badge"] } } },
-    { $project: { badge: 0 } },
-    {
-      $group: {
-        _id: "$account_id",
-        badges: { $push: "$$ROOT" }
-      }
-    },
-    {
-      $lookup: {
-        from: "SCF_Users",
-        localField: "_id",
-        foreignField: "publicKey",
-        as: "user"
-      }
-    },
-    { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
-    {
-      $lookup: {
-        from: "SCF_Users",
-        let: { accountId: "$_id", userMatched: "$user" },
-        pipeline: [
-          { $match: { $expr: { $and: [ { $in: ["$$accountId", { $ifNull: ["$publicKeys", []] }] }, { $eq: ["$$userMatched", null] } ] } } },
-          { $project: { _id: 0 } }
-        ],
-        as: "userAlt"
-      }
-    },
-    { $unwind: { path: "$userAlt", preserveNullAndEmptyArrays: true } },
-    { $addFields: { user: { $ifNull: ["$user", "$userAlt"] } } },
-    { $project: { userAlt: 0 } },
-    { $addFields: { "user.useroid": "$user._id" } },
-    { $project: { "user._id": 0 } },
-    { $replaceRoot: { newRoot: { $mergeObjects: ["$$ROOT", "$user"] } } },
-    { $project: { user: 0 } },
-    {
-      $merge: {
-        into: "precomputedBadges",
-        on: "_id",
-        whenMatched: "replace",
-        whenNotMatched: "insert"
-      }
-    }
-  ]).toArray();
+  await db
+    .collection<Transaction>("transactions")
+    .aggregate([
+      {
+        $lookup: {
+          from: "badges",
+          localField: "badge_ids",
+          foreignField: "_id",
+          as: "badge",
+        },
+      },
+      { $unwind: { path: "$badge", preserveNullAndEmptyArrays: true } },
+      { $replaceRoot: { newRoot: { $mergeObjects: ["$$ROOT", "$badge"] } } },
+      { $project: { badge: 0 } },
+      {
+        $group: {
+          _id: "$account_id",
+          badges: { $push: "$$ROOT" },
+        },
+      },
+      {
+        $lookup: {
+          from: "SCF_Users",
+          localField: "_id",
+          foreignField: "publicKey",
+          as: "user",
+        },
+      },
+      { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: "SCF_Users",
+          let: { accountId: "$_id", userMatched: "$user" },
+          pipeline: [{ $match: { $expr: { $and: [{ $in: ["$$accountId", { $ifNull: ["$publicKeys", []] }] }, { $eq: ["$$userMatched", null] }] } } }, { $project: { _id: 0 } }],
+          as: "userAlt",
+        },
+      },
+      { $unwind: { path: "$userAlt", preserveNullAndEmptyArrays: true } },
+      { $addFields: { user: { $ifNull: ["$user", "$userAlt"] } } },
+      { $project: { userAlt: 0 } },
+      { $addFields: { "user.useroid": "$user._id" } },
+      { $project: { "user._id": 0 } },
+      { $replaceRoot: { newRoot: { $mergeObjects: ["$$ROOT", "$user"] } } },
+      { $project: { user: 0 } },
+      {
+        $merge: {
+          into: "precomputedBadges",
+          on: "_id",
+          whenMatched: "replace",
+          whenNotMatched: "insert",
+        },
+      },
+    ])
+    .toArray();
   console.log(`[Badges - refreshMaterializedView] precomputedBadges refreshed with ${await db.collection<PrecomputedBadge>("precomputedBadges").countDocuments()} documents`);
 }
 
@@ -93,7 +92,7 @@ export async function startBadgeWatcher() {
   if (globalThis.badgeWatcherRunning) return;
   console.log("[startBadgeWatcher] badge watcher already running");
   globalThis.badgeWatcherRunning = true;
-  
+
   const db = await getMongoDatabase();
   // u might need to create the collection on first run? i'm not sure.
   //const collectionsList = await db.listCollections({ name: "precomputedBadges" }).toArray();
@@ -104,9 +103,7 @@ export async function startBadgeWatcher() {
   const collections = ["transactions", "badges", "SCF_Users"];
 
   collections.forEach((collectionName) => {
-    const changeStream = db.collection(collectionName).watch([
-      { $match: { operationType: { $in: ["insert", "update", "delete"] } } }
-    ], { collation: { locale: "en", strength: 1 } });
+    const changeStream = db.collection(collectionName).watch([{ $match: { operationType: { $in: ["insert", "update", "delete"] } } }], { collation: { locale: "en", strength: 1 } });
 
     changeStream.on("change", () => {
       if (!globalThis.refreshScheduledBadges) {
@@ -130,32 +127,37 @@ export async function getAllPrecomputedBadges(): Promise<PrecomputedBadge[]> {
   await startBadgeWatcher();
   const db: Db = await getMongoDatabase();
   const precomputedColl = db.collection<PrecomputedBadge>("precomputedBadges");
-  
+
   // Use projection to exclude specific fields from badge objects
-  const badges = await precomputedColl.find<PrecomputedBadge>({}, {
-    projection: {
-      "badges.body": 0,
-      "badges.meta": 0,
-      "badges.result": 0
-    }
-  }).toArray();
-  
+  const badges = await precomputedColl
+    .find<PrecomputedBadge>(
+      {},
+      {
+        projection: {
+          "badges.body": 0,
+          "badges.meta": 0,
+          "badges.result": 0,
+        },
+      },
+    )
+    .toArray();
+
   // Convert ObjectId to string for each document
   console.time("[getAllPrecomputedBadges]mappingtostrings");
-  const mappedbadges = badges.map(doc => {
+  const mappedbadges = badges.map((doc) => {
     // Convert useroid to string if it's not already
     if (doc.useroid && typeof doc.useroid !== "string") {
       doc.useroid = doc.useroid.toString();
     }
-    
+
     // Convert each badge._id to string if not already
     if (doc.badges && Array.isArray(doc.badges)) {
-      doc.badges = doc.badges.map(badge => {
+      doc.badges = doc.badges.map((badge) => {
         if (badge._id && typeof badge._id !== "string") {
           badge._id = badge._id.toString();
         }
         if (badge.badge_ids && Array.isArray(badge.badge_ids)) {
-          badge.badge_ids = badge.badge_ids.map(badgeId => {
+          badge.badge_ids = badge.badge_ids.map((badgeId) => {
             if (typeof badgeId === "string") return badgeId;
             // Convert ObjectId or any other type to string
             return badgeId.toString();
@@ -164,7 +166,7 @@ export async function getAllPrecomputedBadges(): Promise<PrecomputedBadge[]> {
         return badge;
       });
     }
-    
+
     return doc;
   });
   console.timeEnd("[getAllPrecomputedBadges]mappingtostrings");

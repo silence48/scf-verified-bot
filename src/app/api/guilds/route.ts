@@ -15,10 +15,6 @@ export async function GET() {
     return NextResponse.json({ guilds });
   } catch (err) {
     console.error("Error in GET /api/guilds:", err);
-    return NextResponse.json(
-      { error: "Failed to list guilds" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to list guilds" }, { status: 500 });
   }
 }
- 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";;
+import { useState } from "react";
 import { Check, ChevronDown, ChevronUp, Search, X } from "lucide-react";
 import { Button } from "@/components/ui";
 import { BadgeAsset } from "@/types/discord-bot";
@@ -35,27 +35,22 @@ export function BadgeSelector({ badges, selectedBadgeIds, setSelectedBadgeIds }:
   return (
     <div className="space-y-2">
       <div className="relative">
-        <div
-          className="flex items-center justify-between p-2 border border-gray-700/50 bg-[#0c0e14]/80 rounded-md cursor-pointer text-white"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          <span className="text-gray-300">
-            {selectedBadgeIds.length > 0 ? `${selectedBadgeIds.length} badges selected` : "Select badges"}
-          </span>
+        <div className="flex cursor-pointer items-center justify-between rounded-md border border-gray-700/50 bg-[#0c0e14]/80 p-2 text-white" onClick={() => setIsOpen(!isOpen)}>
+          <span className="text-gray-300">{selectedBadgeIds.length > 0 ? `${selectedBadgeIds.length} badges selected` : "Select badges"}</span>
           {isOpen ? <ChevronUp className="h-4 w-4 text-gray-400" /> : <ChevronDown className="h-4 w-4 text-gray-400" />}
         </div>
 
         {isOpen && (
-          <div className="absolute z-10 w-full mt-1 bg-[#1a1d29] border border-gray-800/60 rounded-md shadow-lg max-h-60 overflow-y-auto">
-            <div className="sticky top-0 bg-[#1a1d29] p-2 border-b border-gray-800/60">
+          <div className="absolute z-10 mt-1 max-h-60 w-full overflow-y-auto rounded-md border border-gray-800/60 bg-[#1a1d29] shadow-lg">
+            <div className="sticky top-0 border-b border-gray-800/60 bg-[#1a1d29] p-2">
               <div className="relative">
-                <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
                 <input
                   type="text"
                   placeholder="Search badges..."
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
-                  className="w-full bg-[#0c0e14]/80 border border-gray-700/50 rounded-md px-3 py-2 pl-8 focus:border-gray-600 focus:outline-none h-8 text-white"
+                  className="h-8 w-full rounded-md border border-gray-700/50 bg-[#0c0e14]/80 px-3 py-2 pl-8 text-white focus:border-gray-600 focus:outline-none"
                   onClick={(e) => e.stopPropagation()}
                 />
               </div>
@@ -64,21 +59,14 @@ export function BadgeSelector({ badges, selectedBadgeIds, setSelectedBadgeIds }:
             {filteredBadges.map((badge) => (
               <div
                 key={String(badge._id)}
-                className={`flex items-center justify-between p-2 cursor-pointer hover:bg-[#1e2235]/80 text-white ${selectedBadgeIds.includes(String(badge._id)) ? "bg-[#1e2235]/40" : ""
-                  }`}
+                className={`flex cursor-pointer items-center justify-between p-2 text-white hover:bg-[#1e2235]/80 ${selectedBadgeIds.includes(String(badge._id)) ? "bg-[#1e2235]/40" : ""}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleSelectBadge(String(badge._id));
                 }}
               >
                 <div className="flex items-center gap-2">
-                  <Image
-                    src={badge.image}
-                    width={120}
-                    height={120}
-                    alt={badge.code}
-                    className="w-6 h-6 rounded"
-                  />
+                  <Image src={badge.image} width={120} height={120} alt={badge.code} className="h-6 w-6 rounded" />
                   <span className="text-gray-300">{badge.code}</span>
                 </div>
                 {selectedBadgeIds.includes(String(badge._id)) && <Check className="h-4 w-4 text-indigo-400" />}
@@ -91,21 +79,10 @@ export function BadgeSelector({ badges, selectedBadgeIds, setSelectedBadgeIds }:
       {selectedBadges.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {selectedBadges.map((badge) => (
-            <div key={String(badge._id)} className="flex items-center gap-1 bg-[#12141e]/40 px-2 py-1 rounded-md">
-              <Image
-                src={badge.image}
-                width={120}
-                height={120}
-                alt={badge.code}
-                className="w-4 h-4 rounded"
-              />
+            <div key={String(badge._id)} className="flex items-center gap-1 rounded-md bg-[#12141e]/40 px-2 py-1">
+              <Image src={badge.image} width={120} height={120} alt={badge.code} className="h-4 w-4 rounded" />
               <span className="text-xs text-gray-300">{badge.code}</span>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => handleRemoveBadge(String(badge._id))}
-                className="h-4 w-4 p-0 hover:bg-gray-700/50 hover:text-white ml-1"
-              >
+              <Button variant="ghost" size="icon" onClick={() => handleRemoveBadge(String(badge._id))} className="ml-1 h-4 w-4 p-0 hover:bg-gray-700/50 hover:text-white">
                 <X className="h-3 w-3" />
               </Button>
             </div>
@@ -115,4 +92,3 @@ export function BadgeSelector({ badges, selectedBadgeIds, setSelectedBadgeIds }:
     </div>
   );
 }
-

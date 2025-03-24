@@ -10,10 +10,5 @@ export default async function DashboardPage() {
   const rolesData = await getAllRoles();
 
   // Pass data down to your client component
-  return (
-    <DashboardClient
-      initialGuildData={guildData}
-      initialRoles={rolesData}
-    />
-  );
+  return <DashboardClient initialGuildData={guildData} initialRoles={rolesData} />;
 }

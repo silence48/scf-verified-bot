@@ -14,12 +14,5 @@ export default async function MembersPage() {
   const data = await loadGuildData("897514728459468821");
   //console.log(JSON.stringify(data))
 
-  return (
-    <MembersDashboardClient
-      guildId="897514728459468821"
-      roleStats={data.roleStats}
-      members={data.members}
-      roleFilters={[]}
-    />
-  );
+  return <MembersDashboardClient guildId="897514728459468821" roleStats={data.roleStats} members={data.members} roleFilters={[]} />;
 }
