@@ -20,6 +20,7 @@ declare global {
       refreshScheduledBadges: boolean;
       migrationran: boolean;
       tierRolesInitialized: boolean;
+      changeStreams: ChangeStreams;
     }
   }
 
@@ -36,6 +37,18 @@ declare global {
   var refreshScheduledBadges: boolean;
   var migrationran: boolean;
   var tierRolesInitialized: boolean;
+  var changeStreams: ChangeStreams;
 }
 
 export {};
+
+
+// Define types for collections and their document types
+type ChangeStreams = {
+  [K in keyof CollectionTypeMap]?: import("mongodb").ChangeStream<CollectionTypeMap[K]>;
+};
+export type CollectionTypeMap = {
+  "transactions": Transaction;
+  "badges": BadgeAsset;
+  "SCF_Users": SCFUser;
+};

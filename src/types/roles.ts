@@ -32,10 +32,43 @@ export interface RoleRequirement {
   participationRounds?: number;
   requirementgrouptype?: string;
 }
+/*
+ "guild": "897514728459468821",
+    "icon": null,
+    "unicodeEmoji": null,
+    "id": "1082358910805090367",
+    "name": "SCF Project",
+    "color": 1146986,
+    "hoist": false,
+    "rawPosition": 34,
+    "permissions": "0",
+    "managed": false,
+    "mentionable": false,
+    "flags": 0,
+    "tags": null,
+    "createdTimestamp": 1678124873592
+    */
 
+export interface DiscordGuildRole {
+  guild: string,
+  icon: string | null,
+  unicodeEmoji: string | null,
+  id: string,
+  name: string,
+  color: number,
+  hoist: boolean,
+  rawPosition: number,
+  permissions: string,
+  managed: boolean,
+  mentionable: boolean,
+  flags: number,
+  tags: Record<string, unknown> | null,
+  createdTimestamp: number
+};
 export interface BaseRole {
   _id: string; // roleId
   roleName: string;
+  role: DiscordGuildRole;
   guildId: string;
   createdAt: Date;
   updatedAt: Date;

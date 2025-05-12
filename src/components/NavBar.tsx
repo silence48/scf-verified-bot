@@ -41,11 +41,17 @@ export function Navbar() {
 
         {/* Desktop Menu */}
         <div className="navbar-desktop-menu">
-          <Link href="/" className="navbar-link">
+        <Link href="/dboard" className="navbar-link">
+            Home
+          </Link>
+          <Link href="/users" className="navbar-link">
             Members
           </Link>
-          <Link href="/metrics" className="navbar-link">
-            Metrics
+          <Link href="/roles" className="navbar-link">
+            Roles
+          </Link>
+          <Link href="/badges" className="navbar-link">
+            Badges
           </Link>
 
           {/* If user is logged in, show user dropdown; otherwise show login button */}

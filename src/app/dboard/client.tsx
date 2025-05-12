@@ -2,178 +2,57 @@
 
 import type React from "react";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, ReactNode, RefObject } from "react";
 import type { LoadGuildData, MemberInfo, PrecomputedBadge } from "@/types/discord-bot";
 import type { TierRole } from "@/types/roles";
 import { loadGuildData } from "@/actions/guild";
 import { getAllRoles } from "@/actions/roles";
-import { Search, ExternalLink, UserIcon } from "lucide-react";
+import { Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { RoleStats } from "./components/role-stats";
-import { Avatar, AvatarFallback, AvatarImage, Button } from "@/components/ui";
-import Image from "next/image";
+import { Button } from "@/components/ui";
+import { DashboardRoleCard } from "./components/RoleCard";
+import  GuildStats  from "./components/GuildStats";
+import { MemberCard } from "./components/MemberCard";
 
-// Member card component - reusing the MemberInfo type from discord-bot/types
-function MemberCard({ member, precomputedBadge }: { member: MemberInfo; precomputedBadge?: PrecomputedBadge }) {
-  const router = useRouter();
+function NoUsersFound(): ReactNode {
+  return (
+    <div className="rounded-lg border border-gray-800/60 bg-[#1a1d29]/80 p-6 text-center">
+      <p className="text-gray-400">No users found matching your search criteria.</p>
+    </div>
+  );
+};
 
-  const handleClick = () => {
-    router.push(`/users?expandedUser=${member.discordId}`);
-  };
+// Reusable component for displaying scrollable member lists
+interface MemberListProps {
+  members: MemberInfo[];
+  containerRef: RefObject<HTMLDivElement | null>;
+  limit?: number;
+  findBadge: (discordId: string) => PrecomputedBadge | undefined;
+}
+
+function MemberList({
+  members,
+  containerRef,
+  limit,
+  findBadge
+}: MemberListProps): ReactNode {
+  const displayMembers = limit ? members.slice(0, limit) : members;
 
   return (
-    <div className="card-container flex h-full cursor-pointer flex-col transition-all hover:translate-y-[-2px] hover:shadow-lg" onClick={handleClick}>
-      <div className="mb-3 flex items-center gap-3">
-        <Avatar>
-          <AvatarImage src={member.avatar || undefined} alt={member.username} />
-          <AvatarFallback>
-            {(() => {
-              try {
-                return member.username ? member.username.substring(0, 2).toUpperCase() : "??";
-              } catch (error) {
-                console.error(`Error generating avatar fallback for user: ${member}`, error);
-                return "??";
-              }
-            })()}
-          </AvatarFallback>
-        </Avatar>
-        <div>
-          <h3 className="card-title">{member.username}</h3>
-          {precomputedBadge?.publicKey && (
-            <div className="flex items-center gap-1">
-              <span className="max-w-[120px] truncate text-xs text-gray-400">
-                {precomputedBadge.publicKey.substring(0, 8)}...
-                {precomputedBadge.publicKey.substring(precomputedBadge.publicKey.length - 8)}
-              </span>
-              <span
-                onClick={(e) => {
-                  e.stopPropagation();
-                  window.open(`https://stellar.expert/explorer/public/account/${precomputedBadge.publicKey}`, "_blank");
-                }}
-                className="inline-flex cursor-pointer text-blue-400"
-              >
-                <ExternalLink size={12} />
-              </span>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="mb-3 flex-1">
-        <h4 className="mb-2 text-sm font-medium text-white">Roles</h4>
-
-        {member.roles.length > 0 ? (
-          <div className="flex flex-wrap gap-1">
-            {member.roles.map((role, index) => (
-              <span key={index} className={`rounded-full px-2 py-0.5 text-xs badge-bg-${role.shortname.toLowerCase()}`}>
-                {role.name}
-              </span>
-            ))}
+    <div className="user-scroll-container" ref={containerRef}>
+      <div className="flex flex-nowrap gap-4 pb-1 min-w-max">
+        {displayMembers.map((member) => (
+          <div key={member.discordId} className="w-[280px] min-w-[280px]">
+            <MemberCard member={member} precomputedBadge={findBadge(member.discordId)} />
           </div>
-        ) : (
-          <p className="text-sm text-gray-400">No roles</p>
-        )}
-      </div>
-
-      <div>
-        <h4 className="mb-2 text-sm font-medium text-white">Badges</h4>
-
-        {precomputedBadge && precomputedBadge.badges.length > 0 ? (
-          <div className="flex flex-wrap gap-1">
-            {precomputedBadge.badges.slice(0, 3).map((badge, index) => (
-              <div key={index} className="h-6 w-6 overflow-hidden rounded" title={badge.code}>
-                <Image width={120} height={120} src={badge.image} alt={badge.code} className="h-full w-full object-cover" />
-              </div>
-            ))}
-            {precomputedBadge.badges.length > 3 && (
-              <div className="flex h-6 w-6 items-center justify-center rounded bg-[#12141e]/40 text-xs font-medium text-gray-400">+{precomputedBadge.badges.length - 3}</div>
-            )}
-          </div>
-        ) : (
-          <p className="text-sm text-gray-400">No badges</p>
-        )}
+        ))}
       </div>
     </div>
   );
 }
 
-// TierRole card component
-
-function DashboardRoleCard({ role }: { role: TierRole }) {
-  return (
-    <Link href="/manageroles" className="block text-inherit no-underline">
-      <div className="card-container flex h-full flex-col transition-all hover:translate-y-[-2px] hover:shadow-lg">
-        <div className="mb-3 flex items-center gap-3">
-          <div className={`badge-dot badge-${role.tier?.toLowerCase() || "default"}`} />
-          <div>
-            <h3 className="card-title">{role.roleName}</h3>
-            <span className="rounded-full bg-[#12141e]/40 px-2 py-0.5 text-xs text-gray-400">{role.tier}</span>
-          </div>
-        </div>
-
-        <div className="flex-1">
-          <p className="mb-3 text-sm text-gray-300">{role.description}</p>
-        </div>
-
-        <div>
-          <h4 className="mb-2 text-sm font-medium text-white">Requirements</h4>
-
-          {/* If there are no groups, display a simple message */}
-          {!role.requirementGroups || role.requirementGroups.length === 0 ? (
-            <p className="text-sm text-gray-400">No requirements defined.</p>
-          ) : (
-            <div>
-              {/* Show how the groups are combined overall */}
-              <p className="mb-2 text-xs text-gray-400 italic">
-                {role.requirements === "ANY_GROUP" ? "User must satisfy ALL requirements in at least ONE group." : "User must satisfy ALL requirements in ALL groups."}
-              </p>
-
-              {/* Display each group */}
-              {role.requirementGroups.map((group, gIdx) => (
-                <div key={gIdx} className="mb-2">
-                  <p className="mb-1 text-sm font-medium text-gray-200">
-                    {group.name || `Group ${gIdx + 1}`}
-                    <span className="ml-2 text-xs text-gray-400">({group.groupMode === "ALL" ? "All" : "Any"} required)</span>
-                  </p>
-                  <ul className="list-disc space-y-1 pl-5 text-sm text-gray-400">
-                    {group.requirements.map((req, rIdx) => (
-                      <li key={rIdx}>
-                        {req.type === "Discord" && "Join Discord"}
-                        {req.type === "SocialVerification" && "Verify social account"}
-                        {req.type === "StellarAccount" && "Verify Stellar address"}
-                        {req.type === "BadgeCount" && `${req.minCount} badges from ${req.badgeCategory || "any category"}`}
-                        {req.type === "ConcurrentRole" && `Have ${req.concurrentRoleName} role`}
-                        {req.type === "ExistingRole" && `Already have ${req.existingRole} role`}
-                        {req.type === "Nomination" && `Get nominated and receive ${req.nominationRequiredCount} upvotes`}
-                        {req.type === "CommunityVote" && `Participate in ${req.participationRounds} Community Vote round${req.participationRounds !== 1 ? "s" : ""}`}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-// Stats card component
-function StatsCard({ title, value, icon }: { title: string; value: number; icon: React.ReactNode }) {
-  return (
-    <div className="card-container h-full">
-      <div className="flex items-start justify-between">
-        <div>
-          <h3 className="mb-1 text-sm font-medium text-gray-400">{title}</h3>
-          <p className="text-2xl font-bold text-white">{value}</p>
-        </div>
-        <div className="flex items-center justify-center rounded-lg bg-[#12141e]/40 p-2">{icon}</div>
-      </div>
-    </div>
-  );
-}
 type DashboardClientProps = {
   initialGuildData: LoadGuildData;
   initialRoles: TierRole[];
@@ -189,6 +68,43 @@ export default function DashboardClient({ initialGuildData, initialRoles }: Dash
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const router = useRouter();
 
+  const userScrollContainerRef = useRef<HTMLDivElement>(null);
+  const roleScrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleWheelScroll = (event: WheelEvent) => {
+      // Prevent default vertical scrolling
+      event.preventDefault();
+
+      // Translate vertical delta to horizontal scrolling
+      const container = event.currentTarget as HTMLElement;
+      container.scrollLeft += event.deltaY * 0.8;
+    };
+
+    // Get references to the scroll containers
+    const userContainer = userScrollContainerRef.current;
+    const roleContainer = roleScrollContainerRef.current;
+
+    // Add event listeners directly to the containers
+    if (userContainer) {
+      userContainer.addEventListener("wheel", handleWheelScroll, { passive: false });
+    }
+
+    if (roleContainer) {
+      roleContainer.addEventListener("wheel", handleWheelScroll, { passive: false });
+    }
+
+    return () => {
+      // Clean up event listeners
+      if (userContainer) {
+        userContainer.removeEventListener("wheel", handleWheelScroll);
+      }
+
+      if (roleContainer) {
+        roleContainer.removeEventListener("wheel", handleWheelScroll);
+      }
+    };
+  }, []);
   // Fetch guild data and roles on component mount
   useEffect(() => {
     const fetchData = async () => {
@@ -232,7 +148,7 @@ export default function DashboardClient({ initialGuildData, initialRoles }: Dash
           const aBadge = badgeMap.get(a.discordId);
           const bBadge = badgeMap.get(b.discordId);
 
-          // Compare by lastProcessed first
+          // First priority: lastProcessed date
           if (aBadge?.lastProcessed && bBadge?.lastProcessed) {
             return new Date(bBadge.lastProcessed).getTime() - new Date(aBadge.lastProcessed).getTime();
           } else if (aBadge?.lastProcessed) {
@@ -241,14 +157,28 @@ export default function DashboardClient({ initialGuildData, initialRoles }: Dash
             return 1; // b has lastProcessed, a doesn't, so b comes first
           }
 
-          // Fall back to memberSince if no badges or as secondary sort criteria
-          const aDate = a.memberSince ? new Date(String(a.memberSince)).getTime() : 0;
-          const bDate = b.memberSince ? new Date(String(b.memberSince)).getTime() : 0;
+          // Second priority: memberSince date
+          if (a.memberSince && b.memberSince) {
+            return new Date(String(b.memberSince)).getTime() - new Date(String(a.memberSince)).getTime();
+          } else if (a.memberSince) {
+            return -1; // a has memberSince, b doesn't, so a comes first
+          } else if (b.memberSince) {
+            return 1; // b has memberSince, a doesn't, so b comes first
+          }
 
-          return bDate - aDate; // Members with memberSince come first, sorted in descending order
+          // Third priority: joinedStellarDevelopers date
+          if (a.joinedStellarDevelopers && b.joinedStellarDevelopers) {
+            return new Date(String(b.joinedStellarDevelopers)).getTime() - new Date(String(a.joinedStellarDevelopers)).getTime();
+          } else if (a.joinedStellarDevelopers) {
+            return -1;
+          } else if (b.joinedStellarDevelopers) {
+            return 1;
+          }
+
+          return 0;
         });
 
-        setRecentMembers(sortedMembers.slice(0, 4));
+        setRecentMembers(sortedMembers.slice(0, 10));
       } catch (err) {
         console.error(err);
       } finally {
@@ -287,29 +217,15 @@ export default function DashboardClient({ initialGuildData, initialRoles }: Dash
 
     // Apply role tier filters
     const matchesFilter = activeFilters.length === 0 || (role.tier && activeFilters.includes(role.tier));
+    const retval = matchesSearch && matchesFilter;
+    console.log(retval);
 
     return matchesSearch && matchesFilter;
   });
 
-  // Calculate stats
-  const totalMembers = members.length;
-  const totalRoles = roles.length;
-  const totalBadges = userBadges.reduce((acc, userBadge) => acc + userBadge.badges.length, 0);
-  // Calculate additional stats
-  const uniquePublicKeys = new Set(userBadges.map((badge) => badge.publicKey)).size;
-
-  // Count badges that belong to members in our system
-  const memberDiscordIds = new Set(members.map((member) => member.discordId));
-  const badgesForMembers = userBadges.reduce((count, userBadge) => {
-    if (userBadge.discordId && memberDiscordIds.has(userBadge.discordId)) {
-      return count + userBadge.badges.length;
-    }
-    return count;
-  }, 0);
-
-  // Calculate average badges per member with badges
-  const membersWithBadges = userBadges.filter((badge) => badge.discordId && memberDiscordIds.has(badge.discordId)).length;
-  const averageBadgesPerMember = membersWithBadges > 0 ? Math.round((badgesForMembers / membersWithBadges) * 10) / 10 : 0;
+  const membersToDisplay = (searchText || activeFilters.length > 0)
+    ? filteredMembers
+    : recentMembers;
 
   // Handle view all users with search
   const handleViewAllUsers = () => {
@@ -323,6 +239,30 @@ export default function DashboardClient({ initialGuildData, initialRoles }: Dash
   // Helper function to find the precomputed badge for a member
   const findPrecomputedBadge = (discordId: string): PrecomputedBadge | undefined => {
     return userBadges.find((badge) => badge.discordId === discordId);
+  };
+
+  // Sort roles to ensure SCF Verified, Pathfinder, Navigator, and Pilot appear first
+  const getSortedRoles = (roles: TierRole[]) => {
+    const preferredOrder = ["SCF Verified", "SCF Pathfinder", "SCF Navigator", "SCF Pilot"];
+
+    return [...roles].sort((a, b) => {
+      const aIndex = preferredOrder.indexOf(a.roleName);
+      const bIndex = preferredOrder.indexOf(b.roleName);
+
+      // If both roles are in the preferred list
+      if (aIndex !== -1 && bIndex !== -1) {
+        return aIndex - bIndex; // Sort by their order in the preferred list
+      }
+
+      // If only a is in the preferred list
+      if (aIndex !== -1) return -1;
+
+      // If only b is in the preferred list
+      if (bIndex !== -1) return 1;
+
+      // Otherwise sort alphabetically
+      return a.roleName.localeCompare(b.roleName);
+    });
   };
 
   return (
@@ -344,76 +284,7 @@ export default function DashboardClient({ initialGuildData, initialRoles }: Dash
         <div className="space-y-8">
           {/* TierRole Stats */}
           <RoleStats roles={filteredRoles} activeFilters={activeFilters} onFilterToggle={handleFilterToggle} />
-          {/* Stats */}
-          <div>
-            <div className="mb-4">
-              <h2 className="section-title">Community Stats</h2>
-            </div>
-
-            {/* First row of stats */}
-            <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <StatsCard title="Total Users" value={totalMembers} icon={<UserIcon className="h-5 w-5 text-blue-400" />} />
-              <StatsCard
-                title="Total Roles"
-                value={totalRoles}
-                icon={
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400">
-                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="9" cy="7" r="4"></circle>
-                    <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                  </svg>
-                }
-              />
-              <StatsCard
-                title="Total Badges"
-                value={totalBadges}
-                icon={
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-400">
-                    <path d="M12 15l-2 5l9-9l-9-9l2 5l-9 9l9-9"></path>
-                  </svg>
-                }
-              />
-            </div>
-
-            {/* Second row of stats */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <StatsCard
-                title="Unique Wallets"
-                value={uniquePublicKeys}
-                icon={
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-400">
-                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-                    <line x1="2" y1="10" x2="22" y2="10"></line>
-                  </svg>
-                }
-              />
-              <StatsCard
-                title="Members with Badges"
-                value={membersWithBadges}
-                icon={
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-400">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="9" cy="7" r="4"></circle>
-                    <path d="M23 21v-2a4 4 0 0 0-2-3.5"></path>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                    <circle cx="19" cy="15" r="2"></circle>
-                  </svg>
-                }
-              />
-              <StatsCard
-                title="Avg. Badges per User"
-                value={averageBadgesPerMember}
-                icon={
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-cyan-400">
-                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                  </svg>
-                }
-              />
-            </div>
-          </div>
-
+          <GuildStats members={members} roles={roles} userBadges={userBadges} />
           {/* Recent Users */}
           <div>
             <div className="mb-4 flex items-center justify-between">
@@ -424,37 +295,13 @@ export default function DashboardClient({ initialGuildData, initialRoles }: Dash
             </div>
 
             {/* Show filtered recent members if search/filter is active, otherwise show all recent members */}
-            {searchText || activeFilters.length > 0 ? (
-              filteredMembers.length > 0 ? (
-                <div className="custom-scrollbar overflow-x-auto pb-4">
-                  <div className="flex min-w-full gap-4" style={{ width: "max-content" }}>
-                    {filteredMembers.slice(0, 8).map((member) => (
-                      <div key={member.discordId} className="w-[280px] min-w-[280px]">
-                        <MemberCard member={member} precomputedBadge={findPrecomputedBadge(member.discordId)} />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="rounded-lg border border-gray-800/60 bg-[#1a1d29]/80 p-6 text-center">
-                  <p className="text-gray-400">No users found matching your search criteria.</p>
-                </div>
-              )
-            ) : recentMembers.length > 0 ? (
-              <div className="custom-scrollbar overflow-x-auto pb-4">
-                <div className="flex min-w-full gap-4" style={{ width: "max-content" }}>
-                  {recentMembers.map((member) => (
-                    <div key={member.discordId} className="w-[280px] min-w-[280px]">
-                      <MemberCard member={member} precomputedBadge={findPrecomputedBadge(member.discordId)} />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="rounded-lg border border-gray-800/60 bg-[#1a1d29]/80 p-6 text-center">
-                <p className="text-gray-400">No recent users found.</p>
-              </div>
-            )}
+            {membersToDisplay.length > 0
+              ? <MemberList
+                members={membersToDisplay}
+                containerRef={userScrollContainerRef}
+                findBadge={findPrecomputedBadge}
+              />
+              : <NoUsersFound />}
           </div>
 
           {/* Roles */}
@@ -467,10 +314,10 @@ export default function DashboardClient({ initialGuildData, initialRoles }: Dash
             </div>
 
             {filteredRoles.length > 0 ? (
-              <div className="custom-scrollbar overflow-x-auto pb-4">
-                <div className="flex min-w-full gap-4" style={{ width: "max-content" }}>
-                  {filteredRoles.slice(0, 8).map((role) => (
-                    <div key={role._id} className="w-[280px] min-w-[280px]">
+              <div className="role-scroll-container" ref={roleScrollContainerRef}>
+                <div className="flex flex-nowrap gap-4 pb-1 min-w-max">
+                  {getSortedRoles(filteredRoles).map((role) => (
+                    <div key={role._id} className="w-[250px] flex-none">
                       <DashboardRoleCard role={role} />
                     </div>
                   ))}

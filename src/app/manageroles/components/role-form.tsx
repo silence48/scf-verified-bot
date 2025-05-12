@@ -12,7 +12,7 @@ import { ClientBadge } from "@/actions/badges";
 interface RoleFormProps {
   role?: TierRole;
   badges: ClientBadge[];
-  onSave: (role: TierRole) => void;
+  onSave: (role: Partial<TierRole>) => void; // partial because the role object is coming from discord and right now we don't create new roles.
   onCancel: () => void;
 }
 
@@ -173,7 +173,7 @@ export function RoleForm({ role, badges, onSave, onCancel }: RoleFormProps) {
 
   const handleSave = () => {
     // Create a new role object with the updated values
-    const newRole: TierRole = {
+    const newRole: Omit<TierRole, "role"> = {
       _id: role?._id || `role-${Date.now()}`,
       roleName,
       description,

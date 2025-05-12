@@ -136,18 +136,20 @@
 }
 
 @layer base {
-  h1,
   h2 {
     font-family: var(--font-schabo);
     text-transform: uppercase;
     letter-spacing: 0.07em;
-    font-size: 2rem;
-    line-height: 2.5rem;
+    font-size: 2.5rem;
+    line-height: 3rem;
   }
 
   h1 {
-    font-size: 2.5rem;
-    line-height: 3rem;
+    font-family: var(--font-schabo);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 4.5rem;
+    line-height: 5rem;
   }
 
   :root {
@@ -922,26 +924,57 @@ Centralizes repeated TailwindCSS styles from the Sidebar component
     -webkit-overflow-scrolling: touch;
   }
 
-  .custom-scrollbar::-webkit-scrollbar {
+  /* Enhanced scroll containers for both horizontal and vertical scrolling */
+  .user-scroll-container, 
+  .role-scroll-container {
+    @apply overflow-x-auto overflow-y-hidden pb-4;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    max-height: 400px;
+    transition: max-height 0.3s ease;
+  }
+
+  .user-scroll-container:hover,
+  .role-scroll-container:hover {
+    @apply overflow-y-auto;
+  }
+
+  /* Style scrollbars consistently */
+  .custom-scrollbar::-webkit-scrollbar,
+  .user-scroll-container::-webkit-scrollbar,
+  .role-scroll-container::-webkit-scrollbar {
     @apply h-2 w-2;
   }
 
-  .custom-scrollbar::-webkit-scrollbar-track {
+  .custom-scrollbar::-webkit-scrollbar-track,
+  .user-scroll-container::-webkit-scrollbar-track,
+  .role-scroll-container::-webkit-scrollbar-track {
     @apply rounded-full bg-gray-800/20;
   }
 
-  .custom-scrollbar::-webkit-scrollbar-thumb {
+  .custom-scrollbar::-webkit-scrollbar-thumb,
+  .user-scroll-container::-webkit-scrollbar-thumb,
+  .role-scroll-container::-webkit-scrollbar-thumb {
     @apply rounded-full bg-gray-700/60;
     transition: all 0.3s ease;
   }
 
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover,
+  .user-scroll-container::-webkit-scrollbar-thumb:hover,
+  .role-scroll-container::-webkit-scrollbar-thumb:hover {
     @apply bg-gray-600;
+  }
+
+  /* Ensure at least some vertical space for scrolling */
+  .user-scroll-container > div,
+  .role-scroll-container > div {
+    min-height: 320px;
   }
 
   /* Card container in scrolling sections */
   .card-container {
-    @apply rounded-xl border border-gray-800/60 bg-[#1a1d29]/80 p-4 shadow-md backdrop-blur-sm;
+    @apply rounded-xl border border-gray-800/60 bg-[#1a1d29]/80 p-4 shadow-md backdrop-blur-sm h-full;
+    min-height: 120px;
   }
 
   .card-title {
@@ -1010,6 +1043,87 @@ Centralizes repeated TailwindCSS styles from the Sidebar component
 
   .section-title {
     @apply font-schabo text-lg tracking-wide text-white/90;
+  }
+
+  /* Horizontal scrolling container with visible scrollbar */
+  .custom-horizontal-scroll {
+    @apply overflow-x-auto pb-4 relative;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+
+  .custom-horizontal-scroll::-webkit-scrollbar {
+    @apply h-2;
+    display: block !important;
+  }
+
+  .custom-horizontal-scroll::-webkit-scrollbar-track {
+    @apply rounded-full bg-gray-800/20;
+  }
+
+  .custom-horizontal-scroll::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-gray-700/60;
+    transition: all 0.3s ease;
+  }
+
+  .custom-horizontal-scroll::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-600;
+  }
+
+  /* Make sure hover doesn't trigger overflow-y to avoid jittery behavior */
+  .custom-horizontal-scroll:hover {
+    @apply overflow-y-hidden;
+  }
+
+  /* Force visibility of horizontal scrollbar */
+  .custom-horizontal-scroll .flex {
+    min-width: min-content;
+  }
+
+  /* Make role cards and user cards have consistent height */
+  .card-container {
+    @apply rounded-xl border border-gray-800/60 bg-[#1a1d29]/80 p-4 shadow-md backdrop-blur-sm h-full;
+    min-height: 200px;
+  }
+
+  /* Improved horizontal scrolling container */
+  .horizontal-scroll-container {
+    @apply relative rounded-xl border border-gray-800/40 bg-[#1a1d29]/30 overflow-x-auto;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    padding: 12px;
+    max-width: 100%;
+  }
+
+  /* Custom scrollbar styling */
+  .horizontal-scroll-container::-webkit-scrollbar {
+    @apply h-2;
+    display: block !important;
+  }
+
+  .horizontal-scroll-container::-webkit-scrollbar-track {
+    @apply rounded-full bg-gray-800/20;
+  }
+
+  .horizontal-scroll-container::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-gray-700/60;
+    transition: all 0.3s ease;
+  }
+
+  .horizontal-scroll-container::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-600;
+  }
+
+  /* Enable scrolling on hover/wheel for both directions */
+  .horizontal-scroll-container {
+    overflow-y: hidden;
+  }
+
+  /* Handle scroll with wheel */
+  .horizontal-scroll-container {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(107, 114, 128, 0.6) rgba(31, 41, 55, 0.2);
   }
 }
 /* ------------------------------------------------------------------

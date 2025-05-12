@@ -104,6 +104,22 @@ export async function initializeTierRoles(): Promise<void> {
         },
       ],
       nominationEnabled: false,
+      role: {
+        guild: "897514728459468821",
+        icon: null,
+        unicodeEmoji: null,
+        id: "1116373909504274534",
+        name: "SCF Verified",
+        color: 0,
+        hoist: false,
+        rawPosition: 29,
+        permissions: "0",
+        managed: false,
+        mentionable: false,
+        flags: 0,
+        tags: null,
+        createdTimestamp: 1686234681250
+      }
     },
     {
       _id: "1082357854926807111",
@@ -136,6 +152,22 @@ export async function initializeTierRoles(): Promise<void> {
         },
       ],
       nominationEnabled: false,
+      role: {
+        guild: "897514728459468821",
+        icon: null,
+        unicodeEmoji: null,
+        id: "1082357854926807111",
+        name: "SCF Pathfinder",
+        color: 16155320,
+        hoist: false,
+        rawPosition: 30,
+        permissions: "0",
+        managed: false,
+        mentionable: false,
+        flags: 0,
+        tags: null,
+        createdTimestamp: 1678124621851
+      }
     },
     {
       _id: "1082353855041392731",
@@ -168,6 +200,22 @@ export async function initializeTierRoles(): Promise<void> {
       nominationEnabled: true,
       votesRequired: 8,
       eligibleNominators: ["SCF Navigator", "SCF Pilot"],
+      role: {
+        guild: "897514728459468821",
+        icon: null,
+        unicodeEmoji: null,
+        id: "1082353855041392731",
+        name: "SCF Navigator",
+        color: 15105570,
+        hoist: false,
+        rawPosition: 35,
+        permissions: "0",
+        managed: false,
+        mentionable: false,
+        flags: 0,
+        tags: null,
+        createdTimestamp: 1678123668204
+      }
     },
     {
       _id: "1082331251899379762",
@@ -200,6 +248,22 @@ export async function initializeTierRoles(): Promise<void> {
       nominationEnabled: true,
       votesRequired: 5,
       eligibleNominators: ["SCF Pilot"],
+      role: {
+        guild: "897514728459468821",
+        icon: null,
+        unicodeEmoji: null,
+        id: "1082353855041392731",
+        name: "SCF Pilot",
+        color: 10181046,
+        hoist: false,
+        rawPosition: 37,
+        permissions: "32768",
+        managed: false,
+        mentionable: false,
+        flags: 0,
+        tags: null,
+        createdTimestamp: 1678118279195
+      }
     },
   ];
 

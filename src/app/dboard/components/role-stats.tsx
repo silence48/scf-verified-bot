@@ -82,34 +82,72 @@ export function RoleStats({ roles, activeFilters, onFilterToggle }: RoleStatsPro
     );
   }
 
+  // Order roles properly, with primary tier roles first, then other SCF roles
+  const getOrderedRoleTiers = () => {
+    // Get all roles from roleCounts
+    const entries = Object.entries(roleCounts);
+    const primaryTiers = ["SCF Verified", "SCF Pathfinder", "SCF Navigator", "SCF Pilot"];
+    
+    // Separate into primary and secondary tiers
+    const primaryRoles = entries.filter(([name]) => primaryTiers.includes(name));
+    const secondaryRoles = entries.filter(([name]) => !primaryTiers.includes(name) && name.startsWith("SCF "));
+    
+    // Sort primary roles in specified order
+    primaryRoles.sort((a, b) => primaryTiers.indexOf(a[0]) - primaryTiers.indexOf(b[0]));
+    
+    // Sort secondary roles alphabetically
+    secondaryRoles.sort((a, b) => a[0].localeCompare(b[0]));
+    
+    return { primaryRoles, secondaryRoles };
+  };
+
+  const { primaryRoles, secondaryRoles } = getOrderedRoleTiers();
+
+  // Renders a tier role card
+  const renderRoleCard = (tier: string, count: number) => {
+    const isActive = activeFilters.includes(tier);
+
+    return (
+      <div
+        key={tier}
+        onClick={() => onFilterToggle(tier)}
+        className={`
+          relative flex h-20 items-center rounded-xl p-4 shadow-sm transition-all duration-200 
+          ${isActive 
+            ? `${getTierColor(tier)} -translate-y-0.5 transform border-2 shadow-lg` 
+            : "border border-gray-800/60 bg-[#1a1d29]/80 hover:border-gray-700 hover:bg-[#1e2235]/80"
+          } cursor-pointer
+        `}
+      >
+        {/* Background icon for visual interest */}
+        <div className="pointer-events-none absolute right-3 bottom-1 opacity-30">
+          <svg className={`h-10 w-10 ${getTierIconColor(tier)}`} fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 1v3m0 16v3M4.2 4.2l2.1 2.1m11.4 11.4l2.1 2.1M1 12h3m16 0h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" />
+          </svg>
+        </div>
+
+        <div className="z-10 flex-1">
+          <div className={`text-sm font-medium ${isActive ? getTierTextColor(tier) : "text-gray-300"} mb-1`}>{tier}</div>
+          <div className={`text-xl font-bold ${isActive ? getTierTextColor(tier) : "text-white"}`}>{count.toLocaleString()}</div>
+          <div className="text-xs text-gray-400">{count === 1 ? "member" : "members"}</div>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="custom-scrollbar grid grid-cols-1 gap-4 overflow-x-auto pb-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-      {Object.entries(roleCounts).map(([tier, count]) => {
-        const isActive = activeFilters.includes(tier);
-
-        return (
-          <div
-            key={tier}
-            onClick={() => onFilterToggle(tier)}
-            className={`relative flex h-24 items-center rounded-xl p-4 shadow-sm transition-all duration-200 ${
-              isActive ? `${getTierColor(tier)} -translate-y-0.5 transform border-2 shadow-lg` : "border border-gray-800/60 bg-[#1a1d29]/80 hover:border-gray-700 hover:bg-[#1e2235]/80"
-            } min-w-[200px] cursor-pointer`}
-          >
-            {/* Background icon for visual interest */}
-            <div className="pointer-events-none absolute right-3 bottom-1 opacity-30">
-              <svg className={`h-12 w-12 ${getTierIconColor(tier)}`} fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 1v3m0 16v3M4.2 4.2l2.1 2.1m11.4 11.4l2.1 2.1M1 12h3m16 0h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" />
-              </svg>
-            </div>
-
-            <div className="z-10 flex-1">
-              <div className={`text-sm font-medium ${isActive ? getTierTextColor(tier) : "text-gray-300"} mb-1`}>{tier}</div>
-              <div className={`text-2xl font-bold ${isActive ? getTierTextColor(tier) : "text-white"}`}>{count.toLocaleString()}</div>
-              <div className="text-xs text-gray-400">{count === 1 ? "member" : "members"}</div>
-            </div>
-          </div>
-        );
-      })}
+    <div className="space-y-4">
+      {/* Primary tier roles (always show if available) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        {primaryRoles.map(([tier, count]) => renderRoleCard(tier, count))}
+      </div>
+      
+      {/* Secondary SCF roles (show if available) */}
+      {secondaryRoles.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          {secondaryRoles.map(([tier, count]) => renderRoleCard(tier, count))}
+        </div>
+      )}
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { getMongoDatabase } from "@/discord-bot/mongo-db";
 
 import { BadgeAsset, SCFUser } from "@/discord-bot/types";
 import { Transaction } from "@/types/discord-bot";
+import { CollectionTypeMap } from "../../global";
 globalThis.badgeWatcherRunning = false;
 
 // Using type intersection instead of interface extension to avoid property conflict
@@ -28,11 +29,18 @@ async function setupIndexes(db: Db) {
 
   await Promise.all(indexPromises);
 }
-
 async function refreshMaterializedView(db: Db) {
   await db
     .collection<Transaction>("transactions")
     .aggregate([
+      // First unwind the badge_ids array to allow for proper lookup
+      {
+        $unwind: {
+          path: "$badge_ids",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      // Perform the lookup with unwound badge_ids
       {
         $lookup: {
           from: "badges",
@@ -41,15 +49,64 @@ async function refreshMaterializedView(db: Db) {
           as: "badge",
         },
       },
-      { $unwind: { path: "$badge", preserveNullAndEmptyArrays: true } },
-      { $replaceRoot: { newRoot: { $mergeObjects: ["$$ROOT", "$badge"] } } },
-      { $project: { badge: 0 } },
+      // After lookup, convert IDs to strings and rename badge_ids to badge_id
+      {
+        $addFields: {
+          _id: {
+            $toString: "$_id",
+          },
+          badge_id: {
+            $toString: "$badge_ids",
+          },
+        },
+      },
+      // Remove the original badge_ids field
+      {
+        $project: {
+          badge_ids: 0,
+          body: 0,
+          meta: 0,
+          result: 0,
+        },
+      },
+      // Unwind the badge array (should be a single item)
+      {
+        $unwind: {
+          path: "$badge",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $set:
+          /**
+           * field: The field name
+           * expression: The expression.
+           */
+          {
+            code: "$badge.code",
+            issue_date: "$badge.issue_date",
+            image: "$badge.image",
+            difficulty: "$badge.difficulty",
+            category_broad: "$badge.category_broad",
+          },
+      },
+      {
+        $project: {
+          badge: 0,
+        },
+      },
       {
         $group: {
           _id: "$account_id",
-          badges: { $push: "$$ROOT" },
+          badges: {
+            $push: "$$ROOT",
+          },
         },
       },
+      // Remove unwanted fields before grouping
+      // {
+      //   $project: {}
+      // }
       {
         $lookup: {
           from: "SCF_Users",
@@ -58,22 +115,90 @@ async function refreshMaterializedView(db: Db) {
           as: "user",
         },
       },
-      { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+      {
+        $unwind: {
+          path: "$user",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
       {
         $lookup: {
           from: "SCF_Users",
-          let: { accountId: "$_id", userMatched: "$user" },
-          pipeline: [{ $match: { $expr: { $and: [{ $in: ["$$accountId", { $ifNull: ["$publicKeys", []] }] }, { $eq: ["$$userMatched", null] }] } } }, { $project: { _id: 0 } }],
+          let: {
+            accountId: "$_id",
+            userMatched: "$user",
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    {
+                      $in: [
+                        "$$accountId",
+                        {
+                          $ifNull: ["$publicKeys", []],
+                        },
+                      ],
+                    },
+                    {
+                      $eq: ["$$userMatched", null],
+                    },
+                  ],
+                },
+              },
+            },
+            {
+              $project: {
+                _id: 0,
+              },
+            },
+          ],
           as: "userAlt",
         },
       },
-      { $unwind: { path: "$userAlt", preserveNullAndEmptyArrays: true } },
-      { $addFields: { user: { $ifNull: ["$user", "$userAlt"] } } },
-      { $project: { userAlt: 0 } },
-      { $addFields: { "user.useroid": "$user._id" } },
-      { $project: { "user._id": 0 } },
-      { $replaceRoot: { newRoot: { $mergeObjects: ["$$ROOT", "$user"] } } },
-      { $project: { user: 0 } },
+      {
+        $unwind: {
+          path: "$userAlt",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $addFields: {
+          user: {
+            $ifNull: ["$user", "$userAlt"],
+          },
+        },
+      },
+      {
+        $project: {
+          userAlt: 0,
+        },
+      },
+      {
+        $addFields: {
+          "user.useroid": {
+            $toString: "$user._id",
+          },
+        },
+      },
+      {
+        $project: {
+          "user._id": 0,
+        },
+      },
+      {
+        $replaceRoot: {
+          newRoot: {
+            $mergeObjects: ["$$ROOT", "$user"],
+          },
+        },
+      },
+      {
+        $project: {
+          user: 0,
+        },
+      },
       {
         $merge: {
           into: "precomputedBadges",
@@ -89,33 +214,67 @@ async function refreshMaterializedView(db: Db) {
 
 export async function startBadgeWatcher() {
   console.log("[startBadgeWatcher] Starting badge watcher...");
-  if (globalThis.badgeWatcherRunning) return;
-  console.log("[startBadgeWatcher] badge watcher already running");
+
+  // Initialize the changeStreams object if it doesn't exist
+  if (!globalThis.changeStreams) {
+    globalThis.changeStreams = {};
+  }
+
+  // Check if all change streams are already running
+  const streamsRunning = ["transactions", "badges", "SCF_Users"].every((name) => globalThis.changeStreams[name as keyof CollectionTypeMap]);
+
+  if (streamsRunning) {
+    console.log("[startBadgeWatcher] Change streams already running");
+    return;
+  }
+
   globalThis.badgeWatcherRunning = true;
 
   const db = await getMongoDatabase();
-  // u might need to create the collection on first run? i'm not sure.
-  //const collectionsList = await db.listCollections({ name: "precomputedBadges" }).toArray();
-  //const collectionExists = collectionsList.length > 0;
-  setupIndexes(db);
-  refreshMaterializedView(db);
+  await setupIndexes(db);
+  await refreshMaterializedView(db);
 
-  const collections = ["transactions", "badges", "SCF_Users"];
+  // Set up typed change streams for each collection
+  setupChangeStream<"transactions">(db, "transactions");
+  setupChangeStream<"badges">(db, "badges");
+  setupChangeStream<"SCF_Users">(db, "SCF_Users");
+}
 
-  collections.forEach((collectionName) => {
-    const changeStream = db.collection(collectionName).watch([{ $match: { operationType: { $in: ["insert", "update", "delete"] } } }], { collation: { locale: "en", strength: 1 } });
+function setupChangeStream<K extends keyof CollectionTypeMap>(db: Db, collectionName: K) {
+  // Skip if this change stream is already running
+  if (globalThis.changeStreams[collectionName]) {
+    console.log(`Change stream for ${collectionName} already running`);
+    return;
+  }
 
-    changeStream.on("change", () => {
-      if (!globalThis.refreshScheduledBadges) {
-        globalThis.refreshScheduledBadges = true;
-        console.log(`Change detected in ${collectionName}, scheduling materialized view refresh...`);
-        setTimeout(async () => {
-          await refreshMaterializedView(db);
-          console.log("Materialized view updated.");
-          globalThis.refreshScheduledBadges = false;
-        }, 60000); // 1-minute debounce
-      }
-    });
+  console.log(`Setting up change stream for ${collectionName}`);
+  const changeStream = db
+    .collection<CollectionTypeMap[K]>(collectionName)
+    .watch([{ $match: { operationType: { $in: ["insert", "update", "delete"] } } }], { collation: { locale: "en", strength: 1 } });
+
+  // Store the change stream in the global object
+  globalThis.changeStreams[collectionName] = changeStream;
+
+  changeStream.on("change", () => {
+    if (!globalThis.refreshScheduledBadges) {
+      globalThis.refreshScheduledBadges = true;
+      console.log(`Change detected in ${collectionName}, scheduling materialized view refresh...`);
+      setTimeout(async () => {
+        const freshDb = await getMongoDatabase();
+        await refreshMaterializedView(freshDb);
+        console.log("Materialized view updated.");
+        globalThis.refreshScheduledBadges = false;
+      }, 60000); // 1-minute debounce
+    }
+  });
+
+  // Handle errors and reconnection
+  changeStream.on("error", (error) => {
+    console.error(`Error in ${collectionName} change stream:`, error);
+    delete globalThis.changeStreams[collectionName];
+
+    // Try to reconnect after a delay
+    setTimeout(() => setupChangeStream(db, collectionName), 5000);
   });
 }
 
